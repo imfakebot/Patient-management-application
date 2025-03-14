@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="675.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="80.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <ScrollPane hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" vbarPolicy="NEVER">
+               <content>
+                  <VBox prefHeight="1300.0" prefWidth="957.0" style="-fx-background-color: rgba(20,23,26);">
+                     <children>
+                        <Label alignment="TOP_LEFT" prefHeight="53.0" prefWidth="1147.0" text="Welcome" textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="36.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets left="115.0" top="50.0" />
+                           </VBox.margin>
+                        </Label>
+                        <Label alignment="TOP_LEFT" prefHeight="24.0" prefWidth="1147.0" text="Please give me your information." textAlignment="CENTER" textFill="WHITE">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets left="115.0" />
+                           </VBox.margin>
+                        </Label>
+                        <Label text="Personal Information" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="24.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets left="115.0" top="25.0" />
+                           </VBox.margin>
+                        </Label>
+                        <HBox prefHeight="44.0" prefWidth="200.0">
+                           <children>
+                              <TextField prefHeight="44.0" prefWidth="350.0" promptText="Full Name" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                                 <cursor>
+                                    <Cursor fx:constant="DEFAULT" />
+                                 </cursor>
+                              </TextField>
+                              <Region prefHeight="200.0" prefWidth="27.0" />
+                              <TextField prefHeight="44.0" prefWidth="350.0" promptText="Username" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                                 <cursor>
+                                    <Cursor fx:constant="DEFAULT" />
+                                 </cursor>
+                              </TextField>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="25.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox prefHeight="44.0" prefWidth="700.0">
+                           <children>
+                              <PasswordField prefHeight="44.0" prefWidth="350.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </PasswordField>
+                              <Region prefHeight="200.0" prefWidth="27.0" />
+                              <PasswordField prefHeight="44.0" prefWidth="350.0" promptText="Re-enter Password" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </PasswordField>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="25.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox prefHeight="64.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Insurance Number" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                              <Region prefHeight="200.0" prefWidth="27.0" />
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label text="Identity Number" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox prefHeight="64.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Email Address" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                              <Region prefHeight="200.0" prefWidth="27.0" />
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label text="Phone Number" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox prefHeight="64.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Date Of Birth" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <DatePicker editable="false" prefHeight="44.0" prefWidth="350.0" style="-fx-background-radius: 6px; -fx-text-fill: white; -fx-control-inner-background: rgba(26, 29, 33); -fx-background-color: black; -fx-border-radius: 6px; -fx-border-color: white;" />
+                                 </children>
+                              </VBox>
+                              <Region prefHeight="200.0" prefWidth="27.0" />
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label text="Gender" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <HBox prefHeight="100.0" prefWidth="200.0">
+                                       <children>
+                                          <RadioButton mnemonicParsing="false" text="Male" textFill="WHITE">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </RadioButton>
+                                          <Region prefHeight="25.0" prefWidth="31.0" />
+                                          <RadioButton mnemonicParsing="false" text="Female" textFill="WHITE">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                          </RadioButton>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox prefHeight="64.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefWidth="729.0">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Address" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox prefHeight="64.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Emergency Contact Name" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                              <Region prefHeight="200.0" prefWidth="27.0" />
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label text="Emergency Contact Phone" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox prefHeight="64.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Relationship" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                              <Region prefHeight="200.0" prefWidth="30.0" />
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <Label text="Medical Information" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="24.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets left="115.0" top="50.0" />
+                           </VBox.margin>
+                        </Label>
+                        <HBox prefHeight="64.0" prefWidth="200.0">
+                           <children>
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Blood Type" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                              </VBox>
+                              <Region prefHeight="200.0" prefWidth="27.0" />
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label text="Allergies (if any)" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <cursor>
+                                          <Cursor fx:constant="DEFAULT" />
+                                       </cursor>
+                                    </TextField>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox fillHeight="false" prefHeight="0.0" prefWidth="727.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <VBox HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label style="-fx-font-style: #91a0ab;" text="Past medical history" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextArea prefHeight="150.0" prefWidth="348.0" style="-fx-control-inner-background: rgba(26, 29, 33);">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </TextArea>
+                                 </children>
+                              </VBox>
+                              <Region prefHeight="66.0" prefWidth="27.0" />
+                              <VBox prefWidth="350.0">
+                                 <children>
+                                    <Label text="Chronic Diseases (if any)" textFill="#91a0ab">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextArea prefHeight="150.0" prefWidth="200.0" style="-fx-control-inner-background: rgba(26, 29, 33);">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </TextArea>
+                                 </children>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </VBox>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="115.0" right="115.0" top="20.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="687.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="Submit &amp; Register" textFill="WHITE">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                           <VBox.margin>
+                              <Insets bottom="30.0" left="200.0" right="200.0" />
+                           </VBox.margin>
+                        </Button>
+                     </children>
+                  </VBox>
+               </content>
+            </ScrollPane>
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>
