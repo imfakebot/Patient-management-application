@@ -13,10 +13,11 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="675.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="675.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.PasswordToggleController">
    <children>
       <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -31,15 +32,15 @@
                <children>
                   <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="53.0" prefWidth="1147.0" text="Hello, login now." textAlignment="CENTER" textFill="WHITE">
                      <font>
-                        <Font name="Bernard MT Condensed" size="36.0" />
+                        <Font name="System Bold" size="36.0" />
                      </font>
                      <VBox.margin>
                         <Insets top="100.0" />
                      </VBox.margin>
                   </Label>
-                  <VBox prefHeight="150.0" prefWidth="100.0">
+                  <VBox prefHeight="160.0" prefWidth="100.0">
                      <children>
-                        <TextField prefHeight="44.0" prefWidth="600.0" promptText="Username" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
+                        <TextField prefHeight="44.0" prefWidth="600.0" promptText="Username" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
@@ -50,14 +51,26 @@
                               <Cursor fx:constant="DEFAULT" />
                            </cursor>
                         </TextField>
-                        <PasswordField prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
+                        <StackPane prefHeight="44.0" prefWidth="200.0" style="-fx-border-color: white; -fx-border-radius: 6px;">
+   <children>
+      <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="370.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-radius: 6px; color: white; -fx-font-size: 14px; -fx-text-fill: white;">
+                                 <StackPane.margin>
+                                    <Insets />
+                                 </StackPane.margin>
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font></PasswordField>
+      <TextField fx:id="textPasswordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: white; -fx-font-size: 14px; -fx-text-fill: white;" visible="false" />
+      <ImageView fx:id="toggleImage" fitHeight="20.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                                 <StackPane.margin>
+                                    <Insets right="10.0" />
+                                 </StackPane.margin></ImageView>
+   </children>
                            <VBox.margin>
-                              <Insets top="30.0" />
+                              <Insets top="40.0" />
                            </VBox.margin>
-                        </PasswordField>
+</StackPane>
+
                      </children>
                      <VBox.margin>
                         <Insets left="115.0" right="115.0" top="70.0" />
