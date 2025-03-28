@@ -52,50 +52,75 @@
                               <Cursor fx:constant="DEFAULT" />
                            </cursor>
                         </TextField>
+                        <<<<<<< HEAD:src/main/resources/fxml/login.fxml
                         <PasswordField prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px;">
                            <font>
                               <Font size="14.0" />
                            </font>
-                           <VBox.margin>
-                              <Insets top="30.0" />
-                           </VBox.margin>
+=======
+                           <StackPane prefHeight="44.0" prefWidth="200.0" style="-fx-border-color: white; -fx-border-radius: 6px;">
+                              <children>
+                                 <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="370.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-radius: 6px; color: white; -fx-font-size: 14px; -fx-text-fill: white;">
+                                    <StackPane.margin>
+                                       <Insets />
+                                    </StackPane.margin>
+                                    <font>
+                                       <Font size="14.0" />
+                                    </font>
+                                 </PasswordField>
+                                 <TextField fx:id="textPasswordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: white; -fx-font-size: 14px; -fx-text-fill: white;" visible="false" />
+                                 <ImageView fx:id="toggleImage" fitHeight="20.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                                    <StackPane.margin>
+                                       <Insets right="10.0" />
+                                    </StackPane.margin>
+                                 </ImageView>
+                              </children>
+>>>>>>> parent of 46aa847 (delete unnecessary file and rewrite directory in login and register):target/classes/com/pma/login.fxml
+                              <VBox.margin>
+                                 <Insets top="30.0" />
+                              </VBox.margin>
+                              <<<<<<< HEAD:src/main/resources/fxml/login.fxml
                         </PasswordField>
+=======
+</StackPane>
+
+>>>>>>> parent of 46aa847 (delete unnecessary file and rewrite directory in login and register):target/classes/com/pma/login.fxml
                      </children>
-                     <VBox.margin>
-                        <Insets left="115.0" right="115.0" top="70.0" />
-                     </VBox.margin>
+<VBox.margin>
+<Insets left="115.0" right="115.0" top="70.0" />
+                           </VBox.margin>
+                        </VBox>
+                        <HBox>
+                           <children>
+                              <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="300.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="LOGIN" textFill="WHITE">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </Button>
+                              <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="300.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="REGISTER" textFill="WHITE">
+                                 <HBox.margin>
+                                    <Insets left="40.0" />
+                                 </HBox.margin>
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </Button>
+                           </children>
+                           <VBox.margin>
+                              <Insets left="120.0" right="120.0" top="50.0" />
+                           </VBox.margin>
+                        </HBox>
+                     </children>
                   </VBox>
-                  <HBox>
-                     <children>
-                        <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="300.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="LOGIN" textFill="WHITE">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                        </Button>
-                        <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="300.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="REGISTER" textFill="WHITE">
-                           <HBox.margin>
-                              <Insets left="40.0" />
-                           </HBox.margin>
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                        </Button>
-                     </children>
-                     <VBox.margin>
-                        <Insets left="120.0" right="120.0" top="50.0" />
-                     </VBox.margin>
-                  </HBox>
+                  <ImageView fitHeight="675.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1">
+                     <viewport>
+                        <Rectangle2D height="675.0" width="600.0" />
+                     </viewport>
+                  </ImageView>
                </children>
-            </VBox>
-            <ImageView fitHeight="675.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1">
-               <viewport>
-                  <Rectangle2D height="675.0" width="600.0" />
-               </viewport>
-            </ImageView>
+            </GridPane>
          </children>
-      </GridPane>
-   </children>
-</AnchorPane>
+      </AnchorPane>
