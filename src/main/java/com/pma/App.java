@@ -8,31 +8,26 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * JavaFX App
- */
 public class App extends Application {
 
-    private static Scene scene;
-
     @Override
-    public void start(Stage stage) throws IOException {
-        scene = new Scene(loadFXML("primary"), 640, 480);
-        stage.setScene(scene);
-        stage.show();
+    public void start(Stage primaryStage) {
+        try {
+            // Nạp file FXML. Giả sử file FXML tên "login.fxml" nằm cùng thư mục resource
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/pma/login.fxml"));
+            Parent root = loader.load();
+
+            // Đặt tiêu đề cửa sổ, tạo Scene, hiển thị
+            primaryStage.setTitle("JavaFX Login");
+            primaryStage.setScene(new Scene(root, 1200, 675)); // Kích thước như file FXML
+            primaryStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
-    }
-
-    private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
-    }
-
+    // Hàm main để chạy ứng dụng JavaFX
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
-
 }

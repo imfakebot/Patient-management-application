@@ -1,4 +1,4 @@
-package com.pma;
+package com.pma.Controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
@@ -24,16 +24,16 @@ public class PasswordToggleController {
     @FXML
     private void initialize() {
         toggleImage.setImage(new Image(getClass().getResourceAsStream(HIDE_ICON)));
-    
+
         textPasswordField.setManaged(false);
         textPasswordField.setVisible(false);
         textPasswordField.textProperty().bindBidirectional(passwordField.textProperty());
     }
-    
+
     @FXML
     private void togglePasswordVisibility() {
         isPasswordVisible = !isPasswordVisible;
-    
+
         if (isPasswordVisible) {
             textPasswordField.setVisible(true);
             textPasswordField.setManaged(true);
