@@ -12,7 +12,8 @@ import javafx.stage.Stage;
 public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+        FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/fxml/login.fxml"));
         AnchorPane root = loader.load();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Login Form");
@@ -21,6 +22,6 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 }

@@ -6,5 +6,7 @@ module com.pma {
 
     opens com.pma to javafx.fxml;
 
+    opens Controller to javafx.fxml;
+
     exports com.pma;
 }
