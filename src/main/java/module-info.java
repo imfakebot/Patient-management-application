@@ -10,5 +10,5 @@ module com.pma {
     opens Controller to javafx.fxml;
 
     exports com.pma;
-    exports Util;   
+    exports Util;
 }

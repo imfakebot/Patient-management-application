@@ -18,8 +18,8 @@ public class PasswordToggleController {
 
     private boolean isPasswordVisible = false;
 
-    private final String SHOW_ICON = "/img/eye_open.png"; // Thay bằng đường dẫn ảnh "hiện mật khẩu"
-    private final String HIDE_ICON = "/img/eye_closed.png"; // Thay bằng đường dẫn ảnh "ẩn mật khẩu"
+    private final String SHOW_ICON = "/img/eye_open.png";
+    private final String HIDE_ICON = "/img/eye_closed.png";
 
     @FXML
     private void initialize() {
