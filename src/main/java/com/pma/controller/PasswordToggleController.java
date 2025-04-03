@@ -1,4 +1,4 @@
-package Controller;
+package com.pma.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;

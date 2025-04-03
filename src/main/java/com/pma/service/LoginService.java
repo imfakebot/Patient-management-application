@@ -1,11 +1,11 @@
-package Service;
+package com.pma.service;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import Repository.DatabaseConnection;
+import com.pma.config.DatabaseConnection;
 
 public class LoginService {
     private final DatabaseConnection db;

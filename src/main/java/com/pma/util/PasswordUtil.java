@@ -1,4 +1,4 @@
-package Util;
+package com.pma.util;
 
 import org.mindrot.jbcrypt.BCrypt;
 

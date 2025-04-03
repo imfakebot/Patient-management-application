@@ -1,6 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         http://maven.apache.org/maven-v4_0_0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.pma</groupId>
     <artifactId>pma</artifactId>
@@ -8,8 +7,19 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <java.version>23</java.version>
+        <!-- Phiên bản JavaFX ổn định (phù hợp với Java 23) -->
+        <javafx.version>23.0.1</javafx.version>
+        <!-- Phiên bản Hibernate ổn định -->
+        <hibernate.version>6.5.2.Final</hibernate.version>        <!-- Cập nhật lên bản mới nhất của 6.x -->
+        <!-- Phiên bản JPA API ổn định (phù hợp Java 17+) -->
+        <jakarta.persistence.version>3.1.0</jakarta.persistence.version>        <!-- Thử lại bản 3.1.0 xem sao -->
+        <!-- Phiên bản JDBC ổn định -->
+        <mssql.jdbc.version>12.6.1.jre11</mssql.jdbc.version>
+        <!-- Phiên bản plugin Compiler mới -->
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <!-- Phiên bản plugin JavaFX chuẩn -->
+        <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
     </properties>
 
     <dependencies>
@@ -17,49 +27,58 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>23.0.1</version>
+            <version>${javafx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>23.0.1</version>
+            <version>${javafx.version}</version>
         </dependency>
-        <!-- SQL Server JDBC -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <!-- Database & ORM -->
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>12.9.0.jre11-preview</version>
+            <version>${mssql.jdbc.version}</version>
         </dependency>
-        <!-- Jakarta Mail -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta.persistence.version}</version>
+        </dependency>
+
+        <!-- Other Libraries -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.1</version>
         </dependency>
-        <!-- jBCrypt -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
-        <!-- Google Zxing -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
             <version>3.5.3</version>
         </dependency>
-        <!-- Google Auth -->
         <dependency>
             <groupId>com.warrenstrange</groupId>
             <artifactId>googleauth</artifactId>
             <version>1.5.0</version>
         </dependency>
-        <!--Hibernate-->
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>7.0.0.Beta5</version>
-        </dependency>
+
     </dependencies>
 
     <build>
@@ -67,26 +86,31 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <release>11</release>
+                    <release>${java.version}</release>
                     <compilerArgs>
+                        <!-- Giữ lại add-reads cho jbcrypt không modular -->
                         <arg>--add-reads</arg>
                         <arg>com.pma=jbcrypt</arg>
+                        <!-- Có thể cần thêm cho jakarta.mail nếu nó không modular -->
+                        <!-- <arg>add-reads</arg> -->
+                        <!-- <arg>com.pma=jakarta.mail</arg> -->
                     </compilerArgs>
                 </configuration>
             </plugin>
 
-            <!-- JavaFX Maven Plugin -->
+            <!-- JavaFX Maven Plugin (phiên bản chuẩn) -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.6</version>
+                <version>${javafx.maven.plugin.version}</version>                <!-- Sử dụng property -->
                 <executions>
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.pma.App</mainClass>
+                            <!-- Định dạng đúng cho mainClass trong JPMS -->
+                            <mainClass>com.pma/com.pma.App</mainClass>
                         </configuration>
                     </execution>
                 </executions>

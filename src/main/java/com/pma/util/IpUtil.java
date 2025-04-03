@@ -1,4 +1,4 @@
-package Util;
+package com.pma.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package Util;
+package com.pma.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
