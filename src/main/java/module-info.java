@@ -1,7 +1,7 @@
 module com.pma {
+    requires transitive javafx.graphics; // Cho phép các module khác truy cập javafx.graphics thông qua com.pma
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.graphics;
 
     requires java.sql;
     requires org.hibernate.orm.core;

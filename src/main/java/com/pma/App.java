@@ -10,7 +10,7 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/fxml/login.fxml"));
+                getClass().getResource("pma\\src\\main\\resources\\com\\pma\\fxml\\login.fxml"));
         AnchorPane root = loader.load();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Login Form");
