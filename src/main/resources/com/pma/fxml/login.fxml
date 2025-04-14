@@ -1,116 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
-<AnchorPane prefHeight="675.0" prefWidth="1200.0"
-   xmlns="http://javafx.com/javafx/23.0.1"
-   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
+<StackPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
    <children>
-      <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" percentWidth="50.0" prefWidth="100.0" />
-         </columnConstraints>
-         <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-         </rowConstraints>
+      <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="Patient-management-application/src/main/resources/com/pma/img/background.jpg" />
+         </image>
+      </ImageView>
+      <StackPane maxHeight="500.0" maxWidth="500.0" prefHeight="500.0" prefWidth="500.0" style="-fx-effect: dropshadow(gaussian, #a142f5, 15, 0.8, 0, 0);">
          <children>
-            <VBox style="-fx-background-color: rgba(20,23,26);">
+            <VBox maxHeight="500.0" maxWidth="500.0" styleClass="glass-box">
                <children>
-                  <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="53.0" prefWidth="1147.0" text="Hello, login now." textAlignment="CENTER" textFill="WHITE">
+                  <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="53.0" prefWidth="1147.0" text="Login" textAlignment="CENTER" textFill="WHITE">
                      <font>
                         <Font name="System Bold" size="36.0" />
                      </font>
                      <VBox.margin>
-                        <Insets top="100.0" />
+                        <Insets top="25.0" />
                      </VBox.margin>
                   </Label>
-                  <VBox prefHeight="160.0" prefWidth="100.0">
+                  <VBox>
+                     <VBox.margin>
+                        <Insets left="50.0" right="50.0" top="30.0" />
+                     </VBox.margin>
                      <children>
-                        <TextField prefHeight="44.0" prefWidth="600.0" promptText="Username" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                           <VBox.margin>
-                              <Insets />
-                           </VBox.margin>
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                           <cursor>
-                              <Cursor fx:constant="DEFAULT" />
-                           </cursor>
-                        </TextField>
-                        <StackPane prefHeight="44.0" prefWidth="200.0" style="-fx-border-color: white; -fx-border-radius: 6px;">
+                        <StackPane prefHeight="44.0" prefWidth="200.0">
                            <children>
-                              <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="370.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-radius: 6px; color: white; -fx-font-size: 14px; -fx-text-fill: white;">
-                                 <StackPane.margin>
-                                    <Insets />
-                                 </StackPane.margin>
+                              <TextField prefHeight="44.0" prefWidth="600.0" promptText="Username" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
-                              </PasswordField>
-                              <TextField fx:id="textPasswordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: white; -fx-font-size: 14px; -fx-text-fill: white;" visible="false" />
-                              <ImageView fx:id="toggleImage" fitHeight="20.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                                 <cursor>
+                                    <Cursor fx:constant="DEFAULT" />
+                                 </cursor>
+                              </TextField>
+                              <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                                 <image>
+                                    <Image url="@hi.png" />
+                                 </image>
                                  <StackPane.margin>
                                     <Insets right="10.0" />
                                  </StackPane.margin>
                               </ImageView>
                            </children>
-                           <VBox.margin>
-                              <Insets top="40.0" />
-                           </VBox.margin>
                         </StackPane>
-
+                        <StackPane prefHeight="44.0" prefWidth="200.0">
+                           <VBox.margin>
+                              <Insets top="25.0" />
+                           </VBox.margin>
+                           <children>
+                              <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </PasswordField>
+                              <TextField fx:id="textPasswordField" prefHeight="44.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8 12; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;" />
+                              <ImageView fx:id="toggleImage" fitHeight="43.0" fitWidth="48.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT" />
+                           </children>
+                        </StackPane>
+                        <HBox prefHeight="50.0" prefWidth="200.0">
+                           <children>
+                              <CheckBox alignment="CENTER" mnemonicParsing="false" text="Remember me" textFill="#f2f2f2">
+                                 <HBox.margin>
+                                    <Insets left="2.0" top="13.0" />
+                                 </HBox.margin>
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </CheckBox>
+                              <Region blendMode="LIGHTEN" maxHeight="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                              <Hyperlink alignment="CENTER_RIGHT" text="Forgot password?" textFill="WHITE">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets top="11.0" />
+                                 </HBox.margin>
+                              </Hyperlink>
+                           </children>
+                        </HBox>
                      </children>
-                     <VBox.margin>
-                        <Insets left="115.0" right="115.0" top="70.0" />
-                     </VBox.margin>
                   </VBox>
-                  <HBox>
-                     <children>
-                        <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="300.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="LOGIN" textFill="WHITE">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                        </Button>
-                        <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="300.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="REGISTER" textFill="WHITE">
-                           <HBox.margin>
-                              <Insets left="40.0" />
-                           </HBox.margin>
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                        </Button>
-                     </children>
+                  <Button alignment="CENTER" mnemonicParsing="false" prefHeight="44.0" prefWidth="1000.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 25;" text="Login">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
                      <VBox.margin>
-                        <Insets left="120.0" right="120.0" top="50.0" />
+                        <Insets left="50.0" right="50.0" />
                      </VBox.margin>
-                  </HBox>
+                  </Button>
+                  <TextFlow prefHeight="50.0" prefWidth="200.0" textAlignment="CENTER">
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                     <children>
+                        <Text fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="Don't have an account? " />
+                        <Hyperlink text="Register" textFill="#eeeeee">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Hyperlink>
+                     </children>
+                  </TextFlow>
                </children>
             </VBox>
-            <ImageView fitHeight="675.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1">
-               <viewport>
-                  <Rectangle2D height="675.0" width="600.0" />
-               </viewport>
-            </ImageView>
          </children>
-      </GridPane>
+      </StackPane>
    </children>
-</AnchorPane>
+</StackPane>

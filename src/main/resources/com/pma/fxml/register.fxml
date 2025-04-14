@@ -11,508 +11,519 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="675.0" prefWidth="1200.0"
-   xmlns="http://javafx.com/javafx/23.0.1"
-   xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.RegisterPasswordToggleController">
+<StackPane prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.RegisterPasswordToggleController">
    <children>
-      <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="80.0" prefWidth="100.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-         </columnConstraints>
-         <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-         </rowConstraints>
+      <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@background.jpg" />
+         </image>
+      </ImageView>
+      <StackPane maxWidth="800.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: transparent;">
          <children>
-            <ScrollPane hbarPolicy="NEVER" prefHeight="200.0" prefWidth="200.0" vbarPolicy="NEVER">
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="1080.0" prefWidth="800.0" style="-fx-background-color: transparent;" vbarPolicy="NEVER" StackPane.alignment="CENTER">
                <content>
-                  <VBox prefHeight="1300.0" prefWidth="957.0" style="-fx-background-color: rgba(20,23,26);">
+                  <VBox alignment="CENTER_LEFT" maxWidth="800.0" prefWidth="800.0">
                      <children>
-                        <Label alignment="TOP_LEFT" prefHeight="53.0" prefWidth="1147.0" text="Welcome" textAlignment="CENTER" textFill="WHITE">
-                           <font>
-                              <Font name="System Bold" size="36.0" />
-                           </font>
-                           <VBox.margin>
-                              <Insets left="115.0" top="50.0" />
-                           </VBox.margin>
-                        </Label>
-                        <Label alignment="TOP_LEFT" prefHeight="24.0" prefWidth="1147.0" text="Please give me your information." textAlignment="CENTER" textFill="WHITE">
-                           <font>
-                              <Font size="18.0" />
-                           </font>
-                           <VBox.margin>
-                              <Insets left="115.0" />
-                           </VBox.margin>
-                        </Label>
-                        <Label text="Personal Information" textFill="WHITE">
-                           <font>
-                              <Font name="System Bold" size="24.0" />
-                           </font>
-                           <VBox.margin>
-                              <Insets left="115.0" top="25.0" />
-                           </VBox.margin>
-                        </Label>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
+                        <Region prefHeight="150.0" prefWidth="200.0" />
+                        <StackPane prefWidth="800.0" style="-fx-effect: dropshadow(gaussian, #a142f5, 15, 0.8, 0, 0);">
                            <children>
-                              <VBox prefWidth="350.0">
+                              <VBox maxHeight="1530.0" prefHeight="1367.0" prefWidth="778.0" styleClass="glass-box">
                                  <children>
-                                    <Label text="Full Name" textFill="#91a0ab">
+                                    <Label alignment="TOP_LEFT" prefHeight="53.0" prefWidth="749.0" text="Welcome" textAlignment="CENTER" textFill="WHITE">
                                        <font>
-                                          <Font size="14.0" />
+                                          <Font name="System Bold" size="36.0" />
                                        </font>
+                                       <VBox.margin>
+                                          <Insets left="25.0" />
+                                       </VBox.margin>
                                     </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                    <Label alignment="TOP_LEFT" prefHeight="24.0" prefWidth="1147.0" text="Please give me your information." textAlignment="CENTER" textFill="WHITE">
                                        <font>
-                                          <Font size="14.0" />
+                                          <Font size="18.0" />
                                        </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Username" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
+                                       <VBox.margin>
+                                          <Insets left="25.0" />
+                                       </VBox.margin>
                                     </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                    <Label text="Personal Information" textFill="WHITE">
                                        <font>
-                                          <Font size="14.0" />
+                                          <Font name="System Bold" size="24.0" />
                                        </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="10.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Password" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
+                                       <VBox.margin>
+                                          <Insets left="25.0" top="25.0" />
+                                       </VBox.margin>
                                     </Label>
-                                    <StackPane prefHeight="44.0" prefWidth="200.0" style="-fx-border-color: white; -fx-border-radius: 6px;">
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
                                        <children>
-                                          <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="370.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-radius: 6px; color: white; -fx-font-size: 14px; -fx-text-fill: white;">
-                                             <StackPane.margin>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Full Name" textFill="#f8f8f8">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Username" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                             <HBox.margin>
                                                 <Insets />
-                                             </StackPane.margin>
-                                             <font>
-                                                <Font size="14.0" />
-                                             </font>
-                                          </PasswordField>
-                                          <TextField fx:id="textPasswordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: white; -fx-font-size: 14px; -fx-text-fill: white;" visible="false" />
-                                          <ImageView fx:id="toggleImagePassword" fitHeight="20.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
-                                             <StackPane.margin>
-                                                <Insets right="10.0" />
-                                             </StackPane.margin>
-                                          </ImageView>
+                                             </HBox.margin>
+                                          </VBox>
                                        </children>
-                                    </StackPane>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Re-enter Password" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <StackPane prefHeight="44.0" prefWidth="200.0" style="-fx-border-color: white; -fx-border-radius: 6px;">
-                                       <children>
-                                          <PasswordField fx:id="reEnterPasswordField" prefHeight="44.0" prefWidth="370.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-radius: 6px; color: white; -fx-font-size: 14px; -fx-text-fill: white;">
-                                             <StackPane.margin>
-                                                <Insets />
-                                             </StackPane.margin>
-                                             <font>
-                                                <Font size="14.0" />
-                                             </font>
-                                          </PasswordField>
-                                          <TextField fx:id="textReEnterPasswordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: white; -fx-font-size: 14px; -fx-text-fill: white;" visible="false" />
-                                          <ImageView fx:id="toggleImageReEnterPassword" fitHeight="20.0" fitWidth="25.0" onMouseClicked="#toggleReEnterPasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
-                                             <StackPane.margin>
-                                                <Insets right="10.0" />
-                                             </StackPane.margin>
-                                          </ImageView>
-                                       </children>
-                                    </StackPane>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="25.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Insurance Number" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Identity Number" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Email Address" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Phone Number" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Date Of Birth" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <DatePicker editable="false" prefHeight="44.0" prefWidth="350.0" style="-fx-background-radius: 6px; -fx-text-fill: white; -fx-control-inner-background: rgba(26, 29, 33); -fx-background-color: black; -fx-border-radius: 6px; -fx-border-color: white;" />
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Gender" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
-                                       <children>
-                                          <RadioButton mnemonicParsing="false" text="Male" textFill="WHITE">
-                                             <font>
-                                                <Font size="14.0" />
-                                             </font>
-                                             <padding>
-                                                <Insets right="40.0" />
-                                             </padding>
-                                             <toggleGroup>
-                                                <ToggleGroup fx:id="genderGroup" />
-                                             </toggleGroup>
-                                          </RadioButton>
-                                          <RadioButton mnemonicParsing="false" text="Female" textFill="WHITE" toggleGroup="$genderGroup">
-                                             <font>
-                                                <Font size="14.0" />
-                                             </font>
-                                          </RadioButton>
-                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="10.0" />
+                                       </VBox.margin>
                                     </HBox>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Password" textFill="#f8f8f8">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <StackPane prefHeight="44.0" prefWidth="200.0" style="-fx-border-color: white; -fx-border-radius: 6px;">
+                                                   <children>
+                                                      <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="370.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-radius: 6px; color: white; -fx-font-size: 14px; -fx-text-fill: white;">
+                                                         <StackPane.margin>
+                                                            <Insets />
+                                                         </StackPane.margin>
+                                                         <font>
+                                                            <Font size="14.0" />
+                                                         </font>
+                                                      </PasswordField>
+                                                      <TextField fx:id="textPasswordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: white; -fx-font-size: 14px; -fx-text-fill: white;" visible="false" />
+                                                      <ImageView fx:id="toggleImagePassword" fitHeight="20.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                                                         <StackPane.margin>
+                                                            <Insets right="10.0" />
+                                                         </StackPane.margin>
+                                                      </ImageView>
+                                                   </children>
+                                                </StackPane>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Re-enter Password" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <StackPane prefHeight="44.0" prefWidth="200.0" style="-fx-border-color: white; -fx-border-radius: 6px;">
+                                                   <children>
+                                                      <PasswordField fx:id="reEnterPasswordField" prefHeight="44.0" prefWidth="370.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-radius: 6px; color: white; -fx-font-size: 14px; -fx-text-fill: white;">
+                                                         <StackPane.margin>
+                                                            <Insets />
+                                                         </StackPane.margin>
+                                                         <font>
+                                                            <Font size="14.0" />
+                                                         </font>
+                                                      </PasswordField>
+                                                      <TextField fx:id="textReEnterPasswordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(26, 29, 33); -fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: white; -fx-font-size: 14px; -fx-text-fill: white;" visible="false" />
+                                                      <ImageView fx:id="toggleImageReEnterPassword" fitHeight="20.0" fitWidth="25.0" onMouseClicked="#toggleReEnterPasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                                                         <StackPane.margin>
+                                                            <Insets right="10.0" />
+                                                         </StackPane.margin>
+                                                      </ImageView>
+                                                   </children>
+                                                </StackPane>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="25.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Insurance Number" textFill="#f5f5f5">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Identity Number" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Email Address" textFill="#e1e1e1">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Phone Number" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Date Of Birth" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <DatePicker editable="false" prefHeight="44.0" prefWidth="350.0" style="-fx-background-radius: 6px; -fx-text-fill: white; -fx-control-inner-background: rgba(255,255,255,0.2); -fx-background-color: black; -fx-border-radius: 6px; -fx-border-color: white;" />
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Gender" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
+                                                   <children>
+                                                      <RadioButton mnemonicParsing="false" text="Male" textFill="WHITE">
+                                                         <font>
+                                                            <Font size="14.0" />
+                                                         </font>
+                                                         <padding>
+                                                            <Insets right="40.0" />
+                                                         </padding>
+                                                         <toggleGroup>
+                                                            <ToggleGroup fx:id="genderGroup" />
+                                                         </toggleGroup>
+                                                      </RadioButton>
+                                                      <RadioButton mnemonicParsing="false" text="Female" textFill="WHITE" toggleGroup="$genderGroup">
+                                                         <font>
+                                                            <Font size="14.0" />
+                                                         </font>
+                                                      </RadioButton>
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="790.0">
+                                             <children>
+                                                <Label text="Address" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="753.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label style="-fx-font-style: #91a0ab;" text="Emergency Contact Name" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Emergency Contact Phone" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label style="-fx-font-style: #91a0ab;" text="Relationship" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="30.0" HBox.hgrow="ALWAYS" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Label text="Medical Information" textFill="WHITE">
+                                       <font>
+                                          <Font name="System Bold" size="24.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets left="25.0" top="50.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <HBox prefHeight="64.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label style="-fx-font-style: #91a0ab;" text="Blood Type" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Allergies (if any)" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                   <cursor>
+                                                      <Cursor fx:constant="DEFAULT" />
+                                                   </cursor>
+                                                </TextField>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <HBox fillHeight="false" prefHeight="0.0" prefWidth="748.0" VBox.vgrow="ALWAYS">
+                                       <children>
+                                          <VBox HBox.hgrow="ALWAYS">
+                                             <children>
+                                                <Label style="-fx-font-style: #91a0ab;" text="Past medical history" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextArea prefHeight="150.0" prefWidth="350.0" style="-fx-control-inner-background: rgba(255,255,255,0.2);">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </TextArea>
+                                             </children>
+                                          </VBox>
+                                          <Region prefHeight="66.0" prefWidth="48.0" />
+                                          <VBox prefWidth="350.0">
+                                             <children>
+                                                <Label text="Chronic Diseases (if any)" textFill="WHITE">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </Label>
+                                                <TextArea prefHeight="150.0" prefWidth="200.0" style="-fx-control-inner-background: rgba(255,255,255,0.2);">
+                                                   <font>
+                                                      <Font size="14.0" />
+                                                   </font>
+                                                </TextArea>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="20.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="687.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 10px;" text="Submit &amp; Register">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="60.0" left="200.0" right="200.0" />
+                                       </VBox.margin>
+                                    </Button>
                                  </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
+                                 <padding>
+                                    <Insets top="50.0" />
+                                 </padding>
                               </VBox>
                            </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="729.0">
-                                 <children>
-                                    <Label text="Address" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label style="-fx-font-style: #91a0ab;" text="Emergency Contact Name" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Emergency Contact Phone" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label style="-fx-font-style: #91a0ab;" text="Relationship" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="30.0" />
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <Label text="Medical Information" textFill="WHITE">
-                           <font>
-                              <Font name="System Bold" size="24.0" />
-                           </font>
-                           <VBox.margin>
-                              <Insets left="115.0" top="50.0" />
-                           </VBox.margin>
-                        </Label>
-                        <HBox prefHeight="64.0" prefWidth="200.0">
-                           <children>
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label style="-fx-font-style: #91a0ab;" text="Blood Type" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="200.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Allergies (if any)" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(26, 29, 33); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                       <cursor>
-                                          <Cursor fx:constant="DEFAULT" />
-                                       </cursor>
-                                    </TextField>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <HBox fillHeight="false" prefHeight="0.0" prefWidth="727.0" VBox.vgrow="ALWAYS">
-                           <children>
-                              <VBox HBox.hgrow="ALWAYS">
-                                 <children>
-                                    <Label style="-fx-font-style: #91a0ab;" text="Past medical history" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextArea prefHeight="150.0" prefWidth="348.0" style="-fx-control-inner-background: rgba(26, 29, 33);">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </TextArea>
-                                 </children>
-                              </VBox>
-                              <Region prefHeight="66.0" prefWidth="27.0" />
-                              <VBox prefWidth="350.0">
-                                 <children>
-                                    <Label text="Chronic Diseases (if any)" textFill="#91a0ab">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </Label>
-                                    <TextArea prefHeight="150.0" prefWidth="200.0" style="-fx-control-inner-background: rgba(26, 29, 33);">
-                                       <font>
-                                          <Font size="14.0" />
-                                       </font>
-                                    </TextArea>
-                                 </children>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </VBox>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="115.0" right="115.0" top="20.0" />
-                           </VBox.margin>
-                        </HBox>
-                        <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="687.0" style="-fx-background-color: rgba(0,140,202); -fx-font-weight: bold; -fx-background-radius: 10px;" text="Submit &amp; Register" textFill="WHITE">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                           <VBox.margin>
-                              <Insets bottom="30.0" left="200.0" right="200.0" />
-                           </VBox.margin>
-                        </Button>
+                        </StackPane>
+                        <Region prefHeight="150.0" prefWidth="200.0" />
                      </children>
+                     <padding>
+                        <Insets left="10.0" right="10.0" />
+                     </padding>
                   </VBox>
                </content>
+               <StackPane.margin>
+                  <Insets />
+               </StackPane.margin>
             </ScrollPane>
          </children>
-      </GridPane>
-      <AnchorPane prefHeight="200.0" prefWidth="200.0" />
+      </StackPane>
    </children>
-</AnchorPane>
+</StackPane>
