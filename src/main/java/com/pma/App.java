@@ -18,6 +18,8 @@ public class App extends Application {
         primaryStage.initStyle(StageStyle.DECORATED);
         primaryStage.setTitle("Login Form");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(true);
+        primaryStage.setMaximized(true);
         primaryStage.show();
     }
 
