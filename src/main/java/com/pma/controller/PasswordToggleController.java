@@ -18,8 +18,8 @@ public class PasswordToggleController {
 
     private boolean isPasswordVisible = false;
 
-    private final String SHOW_ICON = "/img/eye_open.png";
-    private final String HIDE_ICON = "/img/eye_closed.png";
+    private final String SHOW_ICON = "com/pma/img/eye_open.png";
+    private final String HIDE_ICON = "com/pma/img/eye_closed.png";
 
     @FXML
     private void initialize() {

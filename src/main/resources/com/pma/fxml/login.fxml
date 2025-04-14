@@ -18,11 +18,12 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<StackPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
+<StackPane xmlns="http://javafx.com/javafx/23.0.1"
+   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
    <children>
       <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="Patient-management-application/src/main/resources/com/pma/img/background.jpg" />
+            <Image url="@../../../images/logo.png" />
          </image>
       </ImageView>
       <StackPane maxHeight="500.0" maxWidth="500.0" prefHeight="500.0" prefWidth="500.0" style="-fx-effect: dropshadow(gaussian, #a142f5, 15, 0.8, 0, 0);">
