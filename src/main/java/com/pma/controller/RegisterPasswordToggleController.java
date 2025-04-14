@@ -33,8 +33,8 @@ public class RegisterPasswordToggleController {
     private boolean isPasswordVisible = false; // Tracks the visibility state of the main password field
     private boolean isReEnterPasswordVisible = false; // Tracks the visibility state of the re-enter password field
 
-    private final String SHOW_ICON = "/img/eye_open.png"; // Icon for showing the password
-    private final String HIDE_ICON = "/img/eye_closed.png"; // Icon for hiding the password
+    private final String SHOW_ICON = "/com/pma/img/eye_open.png"; // Icon for showing the password
+    private final String HIDE_ICON = "/com/pma/img/eye_closed.png"; // Icon for hiding the password
 
     /**
      * Initializes the controller and sets up the initial state of the password
