@@ -18,8 +18,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<StackPane xmlns="http://javafx.com/javafx/23.0.1"
-   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController" stylesheets="@../css/style.css">
+<StackPane stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
    <children>
       <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -55,7 +54,7 @@
                               </TextField>
                               <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
                                  <image>
-                                    <Image url="@hi.png" />
+                                    <Image url="@../img/hi.png" />
                                  </image>
                                  <StackPane.margin>
                                     <Insets right="10.0" />
@@ -74,7 +73,10 @@
                                  </font>
                               </PasswordField>
                               <TextField fx:id="textPasswordField" prefHeight="44.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8 12; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;" />
-                              <ImageView fx:id="toggleImage" fitHeight="43.0" fitWidth="48.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT" />
+                              <ImageView fx:id="toggleImage" fitHeight="25.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                                 <StackPane.margin>
+                                    <Insets right="10.0" />
+                                 </StackPane.margin></ImageView>
                            </children>
                         </StackPane>
                         <HBox prefHeight="50.0" prefWidth="200.0">
