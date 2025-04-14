@@ -11,7 +11,7 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/com/pma/fxml/register.fxml"));
+                getClass().getResource("/com/pma/fxml/login.fxml"));
         Parent root;
         root = loader.load();
         Scene scene = new Scene(root);
