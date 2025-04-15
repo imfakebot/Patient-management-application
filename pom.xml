@@ -94,7 +94,7 @@
                         <arg>--add-reads</arg>
                         <arg>com.pma=jbcrypt</arg>
                         <!-- Có thể cần thêm cho jakarta.mail nếu nó không modular -->
-                        <!-- <arg>add-reads</arg> -->
+                        <!-- <arg>  add-reads</arg> -->
                         <!-- <arg>com.pma=jakarta.mail</arg> -->
                     </compilerArgs>
                 </configuration>
