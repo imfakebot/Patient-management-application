@@ -27,6 +27,7 @@
     </properties>
 
     <dependencies>
+
         <!-- Spring Boot Starters (Parent quản lý version) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
