@@ -23,5 +23,8 @@
 hs_err_pid*
 replay_pid*
 
+# Ignore  project files
+*.properties
+
 # Ignore Maven target directory
 /target/
