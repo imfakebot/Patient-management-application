@@ -1,28 +1,96 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <!-- Sử dụng phiên bản ổn định gần đây (ví dụ: 3.3.10) -->
+        <version>3.4.5</version>
+        <relativePath/>
+    </parent>
+
     <groupId>com.pma</groupId>
     <artifactId>pma</artifactId>
     <version>1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>23</java.version>
-        <!-- Phiên bản JavaFX ổn định (phù hợp với Java 23) -->
-        <javafx.version>23.0.1</javafx.version>
-        <!-- Phiên bản Hibernate ổn định -->
-        <hibernate.version>6.5.2.Final</hibernate.version>        <!-- Cập nhật lên bản mới nhất của 6.x -->
-        <!-- Phiên bản JPA API ổn định (phù hợp Java 17+) -->
-        <jakarta.persistence.version>3.1.0</jakarta.persistence.version>        <!-- Thử lại bản 3.1.0 xem sao -->
-        <!-- Phiên bản JDBC ổn định -->
-        <mssql.jdbc.version>12.6.1.jre11</mssql.jdbc.version>
-        <!-- Phiên bản plugin Compiler mới -->
-        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
-        <!-- Phiên bản plugin JavaFX chuẩn -->
+        <java.version>24</java.version>
+        <javafx.version>21.0.3</javafx.version>
+
+        <!-- Chỉ giữ lại các property cần ghi đè hoặc parent không quản lý -->
+        <zxing.version>3.5.3</zxing.version>
+        <googleauth.version>1.5.0</googleauth.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
+        <!-- lombok.version được quản lý bởi parent -->
     </properties>
 
     <dependencies>
+        <!-- Spring Boot Starters (Parent quản lý version) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <!-- Loại trừ commons-logging để tránh split package -->
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <!-- Loại trừ commons-logging -->
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+            <!-- Phiên bản được quản lý bởi parent -->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <!-- Loại trừ commons-logging -->
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <!-- Loại trừ commons-logging -->
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <!-- Loại trừ commons-logging -->
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- JavaFX dependencies -->
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -40,43 +108,31 @@
             <version>${javafx.version}</version>
         </dependency>
 
-        <!-- Database & ORM -->
+        <!-- SQL Server JDBC Driver (Parent quản lý version) -->
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>${mssql.jdbc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>${jakarta.persistence.version}</version>
+            <!-- Phiên bản được quản lý bởi parent -->
         </dependency>
 
-        <!-- Other Libraries -->
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>0.4</version>
-        </dependency>
+        <!-- ZXing Core (Cố ý ghi đè version) -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
-            <version>3.5.3</version>
+            <version>${zxing.version}</version>
         </dependency>
+
+        <!-- Google Authenticator (Parent không quản lý) -->
         <dependency>
             <groupId>com.warrenstrange</groupId>
             <artifactId>googleauth</artifactId>
-            <version>1.5.0</version>
+            <version>${googleauth.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
@@ -86,32 +142,59 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
+                <!-- Phiên bản được quản lý bởi parent -->
                 <configuration>
                     <release>${java.version}</release>
-                    <compilerArgs>
-                        <!-- Giữ lại add-reads cho jbcrypt không modular -->
-                        <arg>--add-reads</arg>
-                        <arg>com.pma=jbcrypt</arg>
-                        <!-- Có thể cần thêm cho jakarta.mail nếu nó không modular -->
-                        <!-- <arg>  add-reads</arg> -->
-                        <!-- <arg>com.pma=jakarta.mail</arg> -->
-                    </compilerArgs>
+                    <!-- Khai báo Lombok processor path để khắc phục lỗi tương thích -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <!-- Sử dụng version do parent quản lý -->
+                            <version>${lombok.version}</version>
+                        </path>
+                        <!-- Thêm các annotation processor khác nếu có -->
+                    </annotationProcessorPaths>
+                    <!-- Đảm bảo không còn cấu hình `compilerArgs` cho jbcrypt -->
                 </configuration>
             </plugin>
 
-            <!-- JavaFX Maven Plugin (phiên bản chuẩn) -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <version>${javafx.maven.plugin.version}</version>                <!-- Sử dụng property -->
+                <version>${javafx.maven.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <!-- Định dạng đúng cho mainClass trong JPMS -->
-                            <mainClass>com.pma/com.pma.App</mainClass>
+                            <!-- Đảm bảo mainClass đúng với cấu trúc ứng dụng của bạn -->
+                            <mainClass>com.pma.App</mainClass>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <!-- Phiên bản được quản lý bởi parent -->
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                    <!-- Chỉ định mainClass nếu đây là ứng dụng Spring Boot chạy độc lập -->
+                    <!-- <mainClass>com.pma.YourSpringBootApplication</mainClass> -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!-- Goal 'repackage' tạo file JAR/WAR thực thi được cho Spring Boot -->
+                            <!-- Có thể không cần thiết nếu đây chỉ là thư viện hoặc ứng dụng JavaFX thuần túy -->
+                            <goal>repackage</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

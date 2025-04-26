@@ -1,4 +1,4 @@
-package com.pma.model.entity;
+package com.pma.model.enums;
 
 /**
  * Enum representing the gender of an individual.

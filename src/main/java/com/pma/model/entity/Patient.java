@@ -1,80 +1,74 @@
-package com.pma.model.entity;
+package com.pma.model.entity; // <-- THAY ĐỔI PACKAGE NẾU CẦN
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+import lombok.AccessLevel; // Cần cho Setter(AccessLevel)
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.proxy.HibernateProxy; // Cần cho equals/hashCode chuẩn
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections; // Cần cho getter view chỉ đọc
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.mapping.Set;
+// ---> IMPORT ENUM TỪ PACKAGE RIÊNG <---
+import com.pma.model.enums.Gender; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+// Cân nhắc tạo Enum BloodType nếu muốn chặt chẽ hơn
 
 /**
- * Represents a patient entity in the system.
- * 
- * This class contains personal, medical, and contact information about a
- * patient.
- * It also maintains relationships with other entities such as appointments,
- * prescriptions,
- * medical records, bills, and user accounts.
+ * Entity đại diện cho bảng Patients trong cơ sở dữ liệu.
+ * Lưu trữ thông tin chi tiết về bệnh nhân.
+ * Phiên bản tối ưu, sử dụng Lombok, equals/hashCode chuẩn, FetchType.LAZY,
+ * cascade đúng đắn và helper methods quản lý quan hệ hai chiều.
  */
+@Getter
+@Setter
+// Luôn exclude các collection và quan hệ LAZY khỏi toString
+@ToString(exclude = { "appointments", "medicalRecords", "prescriptions", "bills", "userAccount" })
+@NoArgsConstructor // Bắt buộc cho JPA
 @Entity
-@Table(name = "patient")
+@Table(name = "Patients", uniqueConstraints = {
+        // Các ràng buộc UNIQUE từ schema
+        @UniqueConstraint(name = "UQ_Patients_Phone", columnNames = { "phone" }),
+        @UniqueConstraint(name = "UQ_Patients_Email", columnNames = { "email" }) // Email có thể null nên UNIQUE
+                                                                                 // constraint có thể khác biệt tùy DB
+}, indexes = {
+        // Các index từ schema SQL
+        @Index(name = "IX_Patients_full_name", columnList = "full_name")
+// Index cho phone, email đã được bao gồm trong UNIQUE constraints
+})
 public class Patient {
-    /**
-     * The unique identifier for the patient.
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "patient_id", updatable = false, nullable = false)
-    private UUID patientID;
+    @Column(name = "patient_id", nullable = false, updatable = false)
+    private UUID patientId;
 
-    /**
-     * The full name of the patient.
-     */
-    @Column(name = "full_name", length = 255, nullable = false)
-    private String patientName;
+    @Column(name = "full_name", nullable = false, length = 255)
+    private String fullName;
 
-    /**
-     * The date of birth of the patient.
-     */
     @Column(name = "date_of_birth", nullable = false)
-    private LocalDate dateOfBirth;
+    private LocalDate dateOfBirth; // DATE -> LocalDate
 
-    /**
-     * The gender of the patient.
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender", length = 10, nullable = false)
-    private Gender gender;
+    @Enumerated(EnumType.STRING) // Lưu tên Enum
+    @Column(name = "gender", nullable = false, length = 10)
+    private Gender gender; // Sử dụng enum Gender đã import
 
-    /**
-     * The phone number of the patient.
-     */
-    @Column(name = "phone", unique = true, length = 15, nullable = false)
+    @Column(name = "phone", nullable = false, length = 15) // unique đã xử lý ở @Table
     private String phone;
 
-    /**
-     * The email address of the patient.
-     */
-    @Column(name = "email", unique = true, length = 255, nullable = true)
+    @Column(name = "email", length = 255) // nullable = true, unique đã xử lý ở @Table
     private String email;
 
+    // --- Address Fields ---
+    // Cân nhắc @Embeddable Address nếu cần tái sử dụng
     @Column(name = "address_line1", length = 255)
     private String addressLine1;
 
@@ -84,26 +78,28 @@ public class Patient {
     @Column(name = "city", length = 100)
     private String city;
 
-    @Column(name = "state_province", length = 100, nullable = true)
-    private String state;
+    @Column(name = "state_province", length = 100)
+    private String stateProvince;
 
-    @Column(name = "postal_code", length = 20, nullable = true)
+    @Column(name = "postal_code", length = 20)
     private String postalCode;
 
-    @Column(name = "country", length = 50, nullable = true)
+    @Column(name = "country", length = 50)
     private String country;
 
-    @Column(name = "blood_type", length = 3)
-    private String bloodType;
+    // --- Medical Info ---
+    @Column(name = "blood_type", length = 3) // CHECK constraint ở DB
+    private String bloodType; // Có thể dùng Enum BloodType nếu muốn
 
-    @Lob
-    @Column(name = "allergies", columnDefinition = "NVARCHAR(MAX)")
+    @Lob // Cho kiểu TEXT
+    @Column(name = "allergies", columnDefinition = "TEXT")
     private String allergies;
 
-    @Lob
-    @Column(name = "medical_history", columnDefinition = "NVARCHAR(MAX)")
+    @Lob // Cho kiểu TEXT
+    @Column(name = "medical_history", columnDefinition = "TEXT")
     private String medicalHistory;
 
+    // --- Other Info ---
     @Column(name = "insurance_number", length = 50)
     private String insuranceNumber;
 
@@ -113,350 +109,274 @@ public class Patient {
     @Column(name = "emergency_contact_phone", length = 15)
     private String emergencyContactPhone;
 
-    /**
-     * The timestamp when the patient record was created.
-     */
+    // --- Timestamps ---
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    /**
-     * The timestamp when the patient record was last updated.
-     */
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // --- Mối quan hệ OneToMany (Phía không sở hữu) ---
+
     /**
-     * The collection of appointments associated with this patient.
-     * This is a bidirectional OneToMany relationship where this patient is the
-     * owner.
-     * The collection is fetched lazily and configured with cascade ALL operations.
-     * Orphan removal is enabled to automatically delete appointments when they're
-     * removed from the collection.
+     * Danh sách các cuộc hẹn của bệnh nhân này.
+     * CascadeType.ALL: Xóa Patient sẽ xóa tất cả Appointments. THẬN TRỌNG!
+     * orphanRemoval=true: Xóa Appointment khỏi Set này cũng xóa nó khỏi DB.
+     * Fetch LAZY.
      */
-    @OneToMany(mappedBy = "patient", cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, // Xem xét kỹ lưỡng việc dùng ALL
+            fetch = FetchType.LAZY, orphanRemoval = true)
+    @Setter(AccessLevel.PACKAGE)
     private Set<Appointment> appointments = new HashSet<>();
 
     /**
-     * The collection of prescriptions issued to this patient.
-     * This is a bidirectional OneToMany relationship where this patient is the
-     * owner.
-     * The collection is fetched lazily and configured with cascade ALL operations.
-     * Orphan removal is enabled to automatically delete prescriptions when they're
-     * removed from the collection.
+     * Danh sách các bản ghi y tế của bệnh nhân này.
+     * CascadeType.ALL và orphanRemoval=true thường hợp lý.
      */
-    @OneToMany(mappedBy = "patient", cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<Prescription> prescriptions = new HashSet<>();
-
-    /**
-     * The collection of medical records belonging to this patient.
-     * This is a bidirectional OneToMany relationship where this patient is the
-     * owner.
-     * The collection is fetched lazily and configured with cascade ALL operations.
-     * Orphan removal is enabled to automatically delete medical records when
-     * they're removed from the collection.
-     */
-    @OneToMany(mappedBy = "patient", cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Setter(AccessLevel.PACKAGE)
     private Set<MedicalRecord> medicalRecords = new HashSet<>();
 
     /**
-     * The collection of bills associated with this patient.
-     * This is a bidirectional OneToMany relationship where this patient is the
-     * owner.
-     * The collection is fetched lazily and configured with cascade ALL operations.
-     * Orphan removal is enabled to automatically delete bills when they're removed
-     * from the collection.
+     * Danh sách các đơn thuốc của bệnh nhân này.
+     * CascadeType.ALL và orphanRemoval=true thường hợp lý.
      */
-    @OneToMany(mappedBy = "patient", cascade = { CascadeType.ALL }, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Setter(AccessLevel.PACKAGE)
+    private Set<Prescription> prescriptions = new HashSet<>();
+
+    /**
+     * Danh sách các hóa đơn của bệnh nhân này.
+     * CascadeType.ALL và orphanRemoval=true thường hợp lý.
+     */
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Setter(AccessLevel.PACKAGE)
     private Set<Bill> bills = new HashSet<>();
 
+    // --- Mối quan hệ OneToOne ---
+
     /**
-     * The user account associated with this patient.
-     * This is a bidirectional OneToOne relationship where this patient is the
-     * owner.
-     * The relationship is fetched lazily and configured with cascade ALL
-     * operations.
-     * Orphan removal is enabled to automatically delete the user account when it's
-     * unset.
+     * Tài khoản người dùng liên kết (nếu có).
+     * Cascade ALL và orphanRemoval=true thường hợp lý. Fetch LAZY.
      */
-    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, optional = true) // Patient
+                                                                                                                              // có
+                                                                                                                              // thể
+                                                                                                                              // không
+                                                                                                                              // có
+                                                                                                                              // UserAccount
     private UserAccount userAccount;
 
-    /**
-     * Default constructor for the Patient class.
-     * Required by JPA specification and used by the JPA provider.
-     * Initializes collection fields to empty HashSets.
-     */
-    public Patient() {
+    // --- Helper methods quản lý quan hệ hai chiều ---
+
+    // --- Cho Appointments ---
+    public void addAppointment(Appointment appointment) {
+        Objects.requireNonNull(appointment, "Appointment cannot be null");
+        if (this.appointments == null)
+            this.appointments = new HashSet<>();
+        if (this.appointments.add(appointment)) {
+            if (!this.equals(appointment.getPatient())) {
+                appointment.setPatient(this); // Gọi helper/setter ở Appointment
+            }
+        }
     }
 
-    public UUID getPatientID() {
-        return patientID;
+    public void removeAppointment(Appointment appointment) {
+        Objects.requireNonNull(appointment, "Appointment cannot be null");
+        if (this.appointments != null) {
+            if (this.appointments.remove(appointment)) {
+                if (this.equals(appointment.getPatient())) {
+                    appointment.setPatient(null); // Gọi helper/setter ở Appointment
+                }
+            }
+        }
     }
 
-    public void setPatientID(UUID patientID) {
-        this.patientID = patientID;
+    // Internal methods cho Appointment gọi lại
+    void addAppointmentInternal(Appointment appointment) {
+        if (this.appointments == null)
+            this.appointments = new HashSet<>();
+        this.appointments.add(appointment);
     }
 
-    public String getPatientName() {
-        return patientName;
+    void removeAppointmentInternal(Appointment appointment) {
+        if (this.appointments != null)
+            this.appointments.remove(appointment);
     }
 
-    public void setPatientName(String patientName) {
-        this.patientName = patientName;
+    // --- Cho MedicalRecords (Tương tự Appointments) ---
+    public void addMedicalRecord(MedicalRecord medicalRecord) {
+        Objects.requireNonNull(medicalRecord, "MedicalRecord cannot be null");
+        if (this.medicalRecords == null)
+            this.medicalRecords = new HashSet<>();
+        if (this.medicalRecords.add(medicalRecord)) {
+            if (!this.equals(medicalRecord.getPatient())) {
+                medicalRecord.setPatient(this);
+            }
+        }
     }
 
-    public LocalDate getDateOfBirth() {
-        return dateOfBirth;
+    public void removeMedicalRecord(MedicalRecord medicalRecord) {
+        Objects.requireNonNull(medicalRecord, "MedicalRecord cannot be null");
+        if (this.medicalRecords != null) {
+            if (this.medicalRecords.remove(medicalRecord)) {
+                if (this.equals(medicalRecord.getPatient())) {
+                    medicalRecord.setPatient(null);
+                }
+            }
+        }
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
+    void addMedicalRecordInternal(MedicalRecord medicalRecord) {
+        if (this.medicalRecords == null)
+            this.medicalRecords = new HashSet<>();
+        this.medicalRecords.add(medicalRecord);
     }
 
-    public Gender getGender() {
-        return gender;
+    void removeMedicalRecordInternal(MedicalRecord medicalRecord) {
+        if (this.medicalRecords != null)
+            this.medicalRecords.remove(medicalRecord);
     }
 
-    public void setGender(Gender gender) {
-        this.gender = gender;
+    // --- Cho Prescriptions (Tương tự Appointments) ---
+    public void addPrescription(Prescription prescription) {
+        Objects.requireNonNull(prescription, "Prescription cannot be null");
+        if (this.prescriptions == null)
+            this.prescriptions = new HashSet<>();
+        if (this.prescriptions.add(prescription)) {
+            if (!this.equals(prescription.getPatient())) {
+                prescription.setPatient(this);
+            }
+        }
     }
 
-    public String getPhone() {
-        return phone;
+    public void removePrescription(Prescription prescription) {
+        Objects.requireNonNull(prescription, "Prescription cannot be null");
+        if (this.prescriptions != null) {
+            if (this.prescriptions.remove(prescription)) {
+                if (this.equals(prescription.getPatient())) {
+                    prescription.setPatient(null);
+                }
+            }
+        }
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    void addPrescriptionInternal(Prescription prescription) {
+        if (this.prescriptions == null)
+            this.prescriptions = new HashSet<>();
+        this.prescriptions.add(prescription);
     }
 
-    public String getEmail() {
-        return email;
+    void removePrescriptionInternal(Prescription prescription) {
+        if (this.prescriptions != null)
+            this.prescriptions.remove(prescription);
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    // --- Cho Bills (Tương tự Appointments) ---
+    public void addBill(Bill bill) {
+        Objects.requireNonNull(bill, "Bill cannot be null");
+        if (this.bills == null)
+            this.bills = new HashSet<>();
+        if (this.bills.add(bill)) {
+            if (!this.equals(bill.getPatient())) {
+                bill.setPatient(this);
+            }
+        }
     }
 
-    public String getAddressLine1() {
-        return addressLine1;
+    public void removeBill(Bill bill) {
+        Objects.requireNonNull(bill, "Bill cannot be null");
+        if (this.bills != null) {
+            if (this.bills.remove(bill)) {
+                if (this.equals(bill.getPatient())) {
+                    bill.setPatient(null);
+                }
+            }
+        }
     }
 
-    public void setAddressLine1(String addressLine1) {
-        this.addressLine1 = addressLine1;
+    void addBillInternal(Bill bill) {
+        if (this.bills == null)
+            this.bills = new HashSet<>();
+        this.bills.add(bill);
     }
 
-    public String getAddressLine2() {
-        return addressLine2;
+    void removeBillInternal(Bill bill) {
+        if (this.bills != null)
+            this.bills.remove(bill);
     }
 
-    public void setAddressLine2(String addressLine2) {
-        this.addressLine2 = addressLine2;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getPostalCode() {
-        return postalCode;
-    }
-
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getBloodType() {
-        return bloodType;
-    }
-
-    public void setBloodType(String bloodType) {
-        this.bloodType = bloodType;
-    }
-
-    public String getAllergies() {
-        return allergies;
-    }
-
-    public void setAllergies(String allergies) {
-        this.allergies = allergies;
-    }
-
-    public String getMedicalHistory() {
-        return medicalHistory;
-    }
-
-    public void setMedicalHistory(String medicalHistory) {
-        this.medicalHistory = medicalHistory;
-    }
-
-    public String getInsuranceNumber() {
-        return insuranceNumber;
-    }
-
-    public void setInsuranceNumber(String insuranceNumber) {
-        this.insuranceNumber = insuranceNumber;
-    }
-
-    public String getEmergencyContactName() {
-        return emergencyContactName;
-    }
-
-    public void setEmergencyContactName(String emergencyContactName) {
-        this.emergencyContactName = emergencyContactName;
-    }
-
-    public String getEmergencyContactPhone() {
-        return emergencyContactPhone;
-    }
-
-    public void setEmergencyContactPhone(String emergencyContactPhone) {
-        this.emergencyContactPhone = emergencyContactPhone;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    /**
-     * Gets the timestamp of the last update to the patient record.
-     * 
-     * @return the timestamp of the last update.
-     */
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    /**
-     * Sets the timestamp of the last update to the patient record.
-     * 
-     * @param updatedAt the timestamp to set.
-     */
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    /**
-     * Gets the set of appointments associated with the patient.
-     * 
-     * @return a set of appointments.
-     */
-    public Set<Appointment> getAppointments() {
-        return appointments;
-    }
-
-    /**
-     * Sets the set of appointments associated with the patient.
-     * 
-     * @param appointments the set of appointments to associate.
-     */
-    public void setAppointments(Set<Appointment> appointments) {
-        this.appointments = appointments;
-    }
-
-    /**
-     * Gets the set of prescriptions associated with the patient.
-     * 
-     * @return a set of prescriptions.
-     */
-    public Set<Prescription> getPrescriptions() {
-        return prescriptions;
-    }
-
-    /**
-     * Sets the set of prescriptions associated with the patient.
-     * 
-     * @param prescriptions the set of prescriptions to associate.
-     */
-    public void setPrescriptions(Set<Prescription> prescriptions) {
-        this.prescriptions = prescriptions;
-    }
-
-    /**
-     * Gets the set of medical records associated with the patient.
-     * 
-     * @return a set of medical records.
-     */
-    public Set<MedicalRecord> getMedicalRecords() {
-        return medicalRecords;
-    }
-
-    /**
-     * Sets the set of medical records associated with the patient.
-     * 
-     * @param medicalRecords the set of medical records to associate.
-     */
-    public void setMedicalRecords(Set<MedicalRecord> medicalRecords) {
-        this.medicalRecords = medicalRecords;
-    }
-
-    public Set<Bill> getBills() {
-        return bills;
-    }
-
-    public void setBills(Set<Bill> bills) {
-        this.bills = bills;
-    }
-
-    public UserAccount getUserAccount() {
-        return userAccount;
-    }
-
+    // --- Cho UserAccount (OneToOne) ---
     public void setUserAccount(UserAccount userAccount) {
+        if (Objects.equals(this.userAccount, userAccount))
+            return;
+        // Ngắt kết nối cũ và thiết lập mới ở cả hai phía
+        UserAccount oldUserAccount = this.userAccount;
+        this.userAccount = null; // Ngắt phía này trước
+        if (oldUserAccount != null)
+            oldUserAccount.setPatientInternal(null); // Gọi internal ở UserAccount cũ
+
+        this.userAccount = userAccount; // Gán phía này
+        if (userAccount != null)
+            userAccount.setPatientInternal(this); // Gọi internal ở UserAccount mới
+    }
+
+    // Internal method cho UserAccount gọi lại
+    void setUserAccountInternal(UserAccount userAccount) {
         this.userAccount = userAccount;
     }
 
-    /**
-     * Compares this patient with another object for equality based on the patient
-     * ID.
-     * 
-     * @param o the object to compare with.
-     * @return true if the objects are equal, false otherwise.
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Patient patient = (Patient) o;
-        return patientID != null && patientID.equals(patient.patientID);
+    // --- Getters chỉ đọc cho Collections (Tùy chọn) ---
+    public Set<Appointment> getAppointmentsView() {
+        return Collections.unmodifiableSet(this.appointments != null ? this.appointments : Collections.emptySet());
     }
 
-    /**
-     * Computes the hash code for the patient based on the patient ID.
-     * 
-     * @return the hash code.
-     */
-    @Override
-    public int hashCode() {
-        return patientID != null ? Objects.hash(patientID) : getClass().hashCode();
+    public Set<MedicalRecord> getMedicalRecordsView() {
+        return Collections.unmodifiableSet(this.medicalRecords != null ? this.medicalRecords : Collections.emptySet());
     }
+
+    public Set<Prescription> getPrescriptionsView() {
+        return Collections.unmodifiableSet(this.prescriptions != null ? this.prescriptions : Collections.emptySet());
+    }
+
+    public Set<Bill> getBillsView() {
+        return Collections.unmodifiableSet(this.bills != null ? this.bills : Collections.emptySet());
+    }
+
+    // --- equals() và hashCode() chuẩn ---
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null)
+            return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy
+                ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
+                : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy
+                ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
+                : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass)
+            return false;
+        Patient patient = (Patient) o;
+        // So sánh dựa trên ID nếu đã có (khác null)
+        return getPatientId() != null && Objects.equals(getPatientId(), patient.getPatientId());
+    }
+
+    @Override
+    public final int hashCode() {
+        // Sử dụng hashCode của class thực sự để đảm bảo tính nhất quán
+        return (this instanceof HibernateProxy
+                ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
+                : this.getClass()).hashCode();
+    }
+
+    // --- Lưu ý về Helper Methods ---
+    // Yêu cầu các lớp liên quan (Appointment, MedicalRecord, Prescription, Bill,
+    // UserAccount)
+    // phải có các phương thức setter hoặc internal helper tương ứng để hoàn thiện
+    // việc đồng bộ hai chiều. Việc sử dụng CascadeType.ALL yêu cầu quản lý hai
+    // chiều cẩn thận.
 }
