@@ -106,4 +106,11 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
      * List<Doctor> searchByNameOrSpecialty(@Param("keyword") String keyword);
      */
 
+    /**
+     * Counts the number of doctors associated with a specific department ID.
+     *
+     * @param departmentId the UUID of the department.
+     * @return the count of doctors associated with the department.
+     */
+    long countByDepartment_DepartmentId(UUID departmentId);
 }

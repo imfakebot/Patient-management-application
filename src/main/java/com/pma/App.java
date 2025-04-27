@@ -1,5 +1,9 @@
 package com.pma;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -7,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+@SpringBootApplication
+@EnableAsync
 public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -24,6 +30,6 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        launch(args);
+        SpringApplication.run(App.class, args);
     }
 }

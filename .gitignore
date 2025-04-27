@@ -28,3 +28,9 @@ replay_pid*
 
 # Ignore Maven target directory
 /target/
+
+# Properties files containing secrets or local overrides
+application-local.properties
+application-prod.properties
+/secrets/
+*.secret
