@@ -1,27 +1,28 @@
 package com.pma.service; // Đảm bảo đúng package
 
-import com.pma.model.entity.Appointment; // Import Entity Appointment
-import com.pma.model.entity.Doctor; // Import Doctor
-import com.pma.model.entity.Patient; // Import Patient
-import com.pma.model.enums.AppointmentStatus; // Import Enum AppointmentStatus
-import com.pma.repository.AppointmentRepository; // Import Repository Appointment
-import com.pma.repository.DoctorRepository; // Import Repository Doctor để kiểm tra
-import com.pma.repository.PatientRepository; // Import Repository Patient để kiểm tra
-import jakarta.persistence.EntityNotFoundException; // Exception chuẩn
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.time.LocalDateTime; // Import Entity Appointment
+import java.util.UUID; // Import Doctor
+
+import org.slf4j.Logger; // Import Patient
+import org.slf4j.LoggerFactory; // Import Enum AppointmentStatus
+import org.springframework.beans.factory.annotation.Autowired; // Import Repository Appointment
+import org.springframework.dao.DataIntegrityViolationException; // Import Repository Doctor để kiểm tra
+import org.springframework.data.domain.Page; // Import Repository Patient để kiểm tra
+import org.springframework.data.domain.Pageable; // Exception chuẩn
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List; // Cần import nếu có phương thức trả về List
-import java.util.UUID;
+import com.pma.model.entity.Appointment;
+import com.pma.model.entity.Doctor;
+import com.pma.model.entity.Patient;
+import com.pma.model.enums.AppointmentStatus;
+import com.pma.repository.AppointmentRepository;
+import com.pma.repository.DoctorRepository;
+import com.pma.repository.PatientRepository;
+
+import jakarta.persistence.EntityNotFoundException; // Cần import nếu có phương thức trả về List
 
 /**
  * Lớp Service cho việc quản lý các nghiệp vụ liên quan đến Appointment.

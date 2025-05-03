@@ -1,19 +1,18 @@
 package com.pma.repository; // Đảm bảo đúng package
 
-import com.pma.model.entity.Appointment; // Import Entity Appointment
-import com.pma.model.entity.Doctor; // Import Doctor để tìm theo bác sĩ
-import com.pma.model.entity.Patient; // Import Patient để tìm theo bệnh nhân
-import com.pma.model.enums.AppointmentStatus; // Import Enum AppointmentStatus
-import org.springframework.data.domain.Page; // Import cho phân trang
+import java.time.LocalDateTime; // Import Entity Appointment
+import java.util.List; // Import Doctor để tìm theo bác sĩ
+import java.util.UUID; // Import Patient để tìm theo bệnh nhân
+
+import org.springframework.data.domain.Page; // Import Enum AppointmentStatus
 import org.springframework.data.domain.Pageable; // Import cho phân trang
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query; // Import nếu dùng @Query
-import org.springframework.data.repository.query.Param; // Import nếu dùng @Query với tham số
+import org.springframework.data.jpa.repository.JpaRepository; // Import cho phân trang
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime; // Import nếu tìm theo thời gian
-import java.util.List;
-import java.util.UUID; // Kiểu dữ liệu của khóa chính (appointmentId)
+import com.pma.model.entity.Appointment; // Import nếu dùng @Query
+import com.pma.model.entity.Doctor; // Import nếu dùng @Query với tham số
+import com.pma.model.entity.Patient;
+import com.pma.model.enums.AppointmentStatus; // Import nếu tìm theo thời gian
 
 /**
  * Spring Data JPA repository cho thực thể Appointment.

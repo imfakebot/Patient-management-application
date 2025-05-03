@@ -1,20 +1,32 @@
 package com.pma.model.entity; // <-- THAY ĐỔI PACKAGE NẾU CẦN
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.proxy.HibernateProxy; // Quan trọng cho equals/hashCode
-
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-// ---> IMPORT ENUM TỪ PACKAGE RIÊNG <---
-import com.pma.model.enums.AppointmentStatus; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.proxy.HibernateProxy;
+
+import com.pma.model.enums.AppointmentStatus;
+
+import jakarta.persistence.Column; // Quan trọng cho equals/hashCode
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Entity đại diện cho bảng Appointments trong cơ sở dữ liệu.
