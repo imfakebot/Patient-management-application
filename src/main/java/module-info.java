@@ -72,7 +72,9 @@ module com.pma {
     exports com.pma.service;
 
     // Thường không cần export Repository interface ra ngoài Service layer
-    // exports com.pma.repository;
+    exports com.pma.repository;
+
+    exports com.pma.util;
 
     // Export DTO nếu có và cần dùng ở tầng khác
     // exports com.pma.dto;
