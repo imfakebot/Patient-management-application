@@ -103,4 +103,12 @@ public interface PrescriptionDetailRepository extends JpaRepository<Prescription
      * Integer getTotalQuantityPrescribedForMedicine(@Param("medicineId") UUID
      * medicineId);
      */
+
+    /**
+     * Đếm số lượng chi tiết đơn thuốc có chứa một loại thuốc theo ID của thuốc.
+     * 
+     * @param medicineId ID của thuốc cần đếm
+     * @return Số lượng chi tiết đơn thuốc chứa thuốc này
+     */
+    long countByMedicine_MedicineId(UUID medicineId);
 }
