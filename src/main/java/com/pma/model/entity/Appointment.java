@@ -39,7 +39,7 @@ import lombok.ToString;
 @ToString(exclude = { "patient", "doctor" })
 @NoArgsConstructor // Bắt buộc cho JPA
 @Entity
-@Table(name = "Appointments", indexes = { // Thêm index từ schema SQL
+@Table(name = "Appointments", schema = "dbo", indexes = { // Thêm index từ schema SQL
         @Index(name = "IX_Appointments_patient_id", columnList = "patient_id"),
         @Index(name = "IX_Appointments_doctor_id", columnList = "doctor_id"),
         @Index(name = "IX_Appointments_appointment_datetime", columnList = "appointment_datetime")
