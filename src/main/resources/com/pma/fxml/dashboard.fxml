@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+    <?import javafx.scene.control.*?>
+    <?import javafx.scene.layout.*?>
+    
+    <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/modern-style.css">
+        <!-- Top Header -->
+        <top>
+            <HBox styleClass="card" alignment="CENTER" spacing="20" style="-fx-background-radius: 0 0 12 12;">
+                <padding>
+                    <Insets top="15" right="25" bottom="15" left="25"/>
+                </padding>
+                <Label text="HỆ THỐNG QUẢN LÝ" style="-fx-font-size: 20px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="logoutButton" text="Đăng xuất" style="-fx-background-color: #EF5350; -fx-text-fill: white;"/>
+            </HBox>
+        </top>
+        
+        <!-- Sidebar Navigation -->
+        <left>
+            <VBox styleClass="sidebar" spacing="10" prefWidth="250">
+                <padding>
+                    <Insets top="30" right="15" bottom="30" left="15"/>
+                </padding>
+                <Button fx:id="dashboardButton" text="Bảng điều khiển" styleClass="sidebar-button" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
+                <Button fx:id="patientButton" text="Quản lý Bệnh nhân" styleClass="sidebar-button"/>
+                <Button fx:id="appointmentButton" text="Quản lý Cuộc hẹn" styleClass="sidebar-button"/>
+                <Button fx:id="profileButton" text="Hồ sơ cá nhân" styleClass="sidebar-button"/>
+                <Button fx:id="accountButton" text="Quản lý Tài khoản" styleClass="sidebar-button"/>
+                <Button fx:id="reportButton" text="Thống kê &amp; Báo cáo" styleClass="sidebar-button"/>
+                <Region VBox.vgrow="ALWAYS"/>
+                <Label text="Phiên bản 2.0.0" style="-fx-text-fill: #757575; -fx-font-size: 12px;"/>
+            </VBox>
+        </left>
+        
+        <!-- Main Content -->
+        <center>
+            <VBox spacing="25" style="-fx-padding: 30;">
+                <!-- Summary Cards -->
+                <HBox spacing="25" alignment="TOP_CENTER">
+                    <!-- Patient Summary Card -->
+                    <VBox fx:id="patientSummaryCard" styleClass="card" spacing="15" prefWidth="280" minHeight="150">
+                        <Label text="TỔNG BỆNH NHÂN" style="-fx-text-fill: #616161; -fx-font-size: 14px;"/>
+                        <Label fx:id="totalPatientLabel" style="-fx-text-fill: -primary-dark; -fx-font-size: 36px; -fx-font-weight: bold;"/>
+                        <HBox fx:id="newPatientContainer" spacing="10" alignment="CENTER_LEFT" visible="false"/>
+                    </VBox>
+                    
+                    <!-- Appointment Summary Card -->
+                    <VBox fx:id="appointmentSummaryCard" styleClass="card" spacing="15" prefWidth="280" minHeight="150">
+                        <Label text="CUỘC HẸN HÔM NAY" style="-fx-text-fill: #616161; -fx-font-size: 14px;"/>
+                        <Label fx:id="todayAppointmentLabel" style="-fx-text-fill: -primary-dark; -fx-font-size: 36px; -fx-font-weight: bold;"/>
+                        <HBox fx:id="newAppointmentContainer" spacing="10" alignment="CENTER_LEFT" visible="false"/>
+                    </VBox>
+                    
+                    <!-- Revenue Summary Card -->
+                    <VBox fx:id="revenueSummaryCard" styleClass="card" spacing="15" prefWidth="280" minHeight="150">
+                        <Label text="DOANH THU THÁNG" style="-fx-text-fill: #616161; -fx-font-size: 14px;"/>
+                        <Label fx:id="monthlyRevenueLabel" style="-fx-text-fill: -primary-dark; -fx-font-size: 36px; -fx-font-weight: bold;"/>
+                        <HBox fx:id="revenueChangeContainer" spacing="10" alignment="CENTER_LEFT" visible="false"/>
+                    </VBox>
+                </HBox>
+                
+                <!-- Main Content Area -->
+                <HBox spacing="25" alignment="TOP_CENTER">
+                    <!-- Upcoming Appointments -->
+                    <VBox styleClass="card" spacing="15" prefWidth="600">
+                        <Label text="CUỘC HẸN SẮP TỚI" style="-fx-text-fill: -primary-dark; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <TableView fx:id="upcomingAppointmentsTable">
+                            <columns>
+                                <TableColumn fx:id="patientNameColumn" text="Bệnh nhân" prefWidth="180"/>
+                                <TableColumn fx:id="appointmentTimeColumn" text="Thời gian" prefWidth="120"/>
+                                <TableColumn fx:id="doctorColumn" text="Bác sĩ" prefWidth="150"/>
+                                <TableColumn fx:id="statusColumn" text="Trạng thái" prefWidth="100"/>
+                            </columns>
+                        </TableView>
+                        <Button fx:id="viewAllAppointmentsButton" text="XEM TẤT CẢ" style="-fx-background-color: transparent; -fx-text-fill: -primary-color; -fx-font-weight: bold; -fx-border-color: -primary-color; -fx-border-radius: 15;"/>
+                    </VBox>
+                    
+                    <!-- Quick Actions -->
+                    <VBox styleClass="card" spacing="15" prefWidth="300">
+                        <Label text="THAO TÁC NHANH" style="-fx-text-fill: -primary-dark; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <Button fx:id="addPatientButton" text="Thêm bệnh nhân mới" styleClass="button" style="-fx-alignment: CENTER_LEFT; -fx-padding: 15 20;"/>
+                        <Button fx:id="addAppointmentButton" text="Đặt lịch hẹn mới" styleClass="button" style="-fx-alignment: CENTER_LEFT; -fx-padding: 15 20;"/>
+                        <Button fx:id="generateReportButton" text="Tạo báo cáo" styleClass="button" style="-fx-alignment: CENTER_LEFT; -fx-padding: 15 20;"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <Label text="THÔNG BÁO" style="-fx-text-fill: -primary-dark; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <ListView fx:id="notificationListView" style="-fx-max-height: 100; -fx-background-color: transparent;"/>
+                    </VBox>
+                </HBox>
+                
+                <!-- Charts Section -->
+                <HBox spacing="25" alignment="TOP_CENTER">
+                    <VBox styleClass="card" spacing="15" prefWidth="450">
+                        <Label text="THỐNG KÊ BỆNH NHÂN" style="-fx-text-fill: -primary-dark; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <PieChart fx:id="patientPieChart"/>
+                    </VBox>
+                    
+                    <VBox styleClass="card" spacing="15" prefWidth="450">
+                        <Label text="CUỘC HẸN THEO THÁNG" style="-fx-text-fill: -primary-dark; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <BarChart fx:id="appointmentBarChart">
+                            <xAxis>
+                                <CategoryAxis fx:id="monthAxis" label="Tháng"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis fx:id="appointmentCountAxis" label="Số lượng"/>
+                            </yAxis>
+                        </BarChart>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </center>
+    </BorderPane>

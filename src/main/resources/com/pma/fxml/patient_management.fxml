@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+    <?import javafx.scene.control.*?>
+    <?import javafx.scene.layout.*?>
+    
+    <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/modern-style.css">
+        <top>
+            <HBox styleClass="card" alignment="CENTER" spacing="20" style="-fx-background-radius: 0 0 12 12;">
+                <padding>
+                    <Insets top="15" right="25" bottom="15" left="25"/>
+                </padding>
+                <Label text="QUẢN LÝ BỆNH NHÂN" style="-fx-font-size: 20px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="backButton" text="Quay lại" style="-fx-background-color: #757575; -fx-text-fill: white;"/>
+            </HBox>
+        </top>
+        
+        <left>
+            <VBox styleClass="sidebar" spacing="10" prefWidth="250">
+                <padding>
+                    <Insets top="30" right="15" bottom="30" left="15"/>
+                </padding>
+                <Button fx:id="dashboardButton" text="Bảng điều khiển" styleClass="sidebar-button"/>
+                <Button fx:id="patientButton" text="Quản lý Bệnh nhân" styleClass="sidebar-button" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
+                <Button fx:id="appointmentButton" text="Quản lý Cuộc hẹn" styleClass="sidebar-button"/>
+                <Button fx:id="profileButton" text="Hồ sơ cá nhân" styleClass="sidebar-button"/>
+                <Button fx:id="accountButton" text="Quản lý Tài khoản" styleClass="sidebar-button"/>
+                <Button fx:id="reportButton" text="Thống kê &amp; Báo cáo" styleClass="sidebar-button"/>
+            </VBox>
+        </left>
+        
+        <center>
+            <VBox spacing="25" style="-fx-padding: 30;">
+                <!-- Search and Action Bar -->
+                <HBox styleClass="card" spacing="15" alignment="CENTER_LEFT">
+                    <padding>
+                        <Insets top="15" right="20" bottom="15" left="20"/>
+                    </padding>
+                    <TextField fx:id="searchField" promptText="Tìm kiếm bệnh nhân..." style="-fx-pref-width: 300;"/>
+                    <ComboBox fx:id="filterComboBox" promptText="Lọc theo..."/>
+                    <Button fx:id="searchButton" text="Tìm kiếm" styleClass="button"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="addPatientButton" text="Thêm mới" styleClass="button">
+                        <graphic>
+                            <ImageView fitWidth="16" fitHeight="16">
+                                <image>
+                                    <Image url="@add-icon.png"/>
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                </HBox>
+                
+                <!-- Patient Table -->
+                <VBox styleClass="card" spacing="15">
+                    <TableView fx:id="patientTable">
+                        <columns>
+                            <TableColumn fx:id="idColumn" text="MÃ BN" prefWidth="80"/>
+                            <TableColumn fx:id="nameColumn" text="HỌ TÊN" prefWidth="200"/>
+                            <TableColumn fx:id="ageColumn" text="TUỔI" prefWidth="60"/>
+                            <TableColumn fx:id="genderColumn" text="GIỚI TÍNH" prefWidth="100"/>
+                            <TableColumn fx:id="phoneColumn" text="SỐ ĐT" prefWidth="120"/>
+                            <TableColumn fx:id="addressColumn" text="ĐỊA CHỈ" prefWidth="250"/>
+                            <TableColumn fx:id="actionColumn" text="THAO TÁC" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                    
+                    <HBox spacing="15" alignment="CENTER_RIGHT">
+                        <Label text="Tổng số:" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="totalLabel" style="-fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="exportButton" text="Xuất Excel" style="-fx-background-color: transparent; -fx-text-fill: -primary-color; -fx-border-color: -primary-color; -fx-border-radius: 15;"/>
+                        <Button fx:id="printButton" text="In báo cáo" style="-fx-background-color: transparent; -fx-text-fill: -primary-color; -fx-border-color: -primary-color; -fx-border-radius: 15;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </center>
+        
+        <!-- Patient Form Dialog -->
+        <StackPane fx:id="formContainer" visible="false" alignment="CENTER">
+            <VBox styleClass="card" spacing="20" style="-fx-pref-width: 500;">
+                <Label fx:id="formTitle" text="THÊM BỆNH NHÂN MỚI" style="-fx-font-size: 18px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                
+                <GridPane hgap="15" vgap="15">
+                    <Label text="Họ và tên:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="fullNameField" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                    
+                    <Label text="Ngày sinh:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="birthDatePicker" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    
+                    <Label text="Giới tính:" GridPane.rowIndex="1" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="genderComboBox" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+                    
+                    <Label text="Số điện thoại:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="phoneField" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                    
+                    <Label text="Địa chỉ:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                    <TextField fx:id="addressField" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                </GridPane>
+                
+                <Label fx:id="errorLabel" style="-fx-text-fill: -error-color;" visible="false"/>
+                
+                <HBox spacing="20" alignment="CENTER">
+                    <Button fx:id="cancelButton" text="Hủy bỏ" style="-fx-background-color: -error-color; -fx-text-fill: white;"/>
+                    <Button fx:id="saveButton" text="Lưu thông tin" style="-fx-background-color: -success-color; -fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+        </StackPane>
+    </BorderPane>

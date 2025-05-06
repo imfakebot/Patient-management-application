@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+    <?import javafx.scene.control.*?>
+    <?import javafx.scene.layout.*?>
+    <?import javafx.scene.image.*?>
+    
+    <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/modern-style.css">
+        <top>
+            <HBox styleClass="card" alignment="CENTER" spacing="20" style="-fx-background-radius: 0 0 12 12;">
+                <padding>
+                    <Insets top="15" right="25" bottom="15" left="25"/>
+                </padding>
+                <Label text="HỒ SƠ CÁ NHÂN" style="-fx-font-size: 20px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="backButton" text="Quay lại" style="-fx-background-color: #757575; -fx-text-fill: white;"/>
+            </HBox>
+        </top>
+        
+        <left>
+            <VBox styleClass="sidebar" spacing="10" prefWidth="250">
+                <padding>
+                    <Insets top="30" right="15" bottom="30" left="15"/>
+                </padding>
+                <Button fx:id="dashboardButton" text="Bảng điều khiển" styleClass="sidebar-button"/>
+                <Button fx:id="patientButton" text="Quản lý Bệnh nhân" styleClass="sidebar-button"/>
+                <Button fx:id="appointmentButton" text="Quản lý Cuộc hẹn" styleClass="sidebar-button"/>
+                <Button fx:id="profileButton" text="Hồ sơ cá nhân" styleClass="sidebar-button" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
+                <Button fx:id="accountButton" text="Quản lý Tài khoản" styleClass="sidebar-button"/>
+                <Button fx:id="reportButton" text="Thống kê &amp; Báo cáo" styleClass="sidebar-button"/>
+            </VBox>
+        </left>
+        
+        <center>
+            <VBox spacing="25" style="-fx-padding: 30;" alignment="TOP_CENTER">
+                <!-- Profile Section -->
+                <HBox styleClass="card" spacing="30" alignment="TOP_CENTER" style="-fx-pref-width: 700;">
+                    <padding>
+                        <Insets top="30" right="30" bottom="30" left="30"/>
+                    </padding>
+                    
+                    <!-- Avatar -->
+                    <VBox spacing="15" alignment="CENTER">
+                        <ImageView fx:id="avatarImage" fitWidth="120" fitHeight="120" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0);">
+                            <image>
+                                <Image url="@avatar-placeholder.png"/>
+                            </image>
+                        </ImageView>
+                        <Button fx:id="changeAvatarButton" text="Đổi ảnh đại diện" style="-fx-background-color: transparent; -fx-text-fill: -primary-color; -fx-border-color: -primary-color; -fx-border-radius: 15;"/>
+                    </VBox>
+                    
+                    <!-- Profile Info -->
+                    <VBox spacing="15" style="-fx-pref-width: 400;">
+                        <Label text="THÔNG TIN CÁ NHÂN" style="-fx-font-size: 18px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                        
+                        <GridPane hgap="15" vgap="15">
+                            <Label text="Họ và tên:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                            <TextField fx:id="fullNameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            
+                            <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                            <TextField fx:id="emailField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            
+                            <Label text="Số điện thoại:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                            <TextField fx:id="phoneField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            
+                            <Label text="Vai trò:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                            <Label fx:id="roleLabel" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: -primary-color; -fx-font-weight: bold;"/>
+                        </GridPane>
+                        
+                        <Label fx:id="profileErrorLabel" style="-fx-text-fill: -error-color;" visible="false"/>
+                        <Button fx:id="updateProfileButton" text="Cập nhật thông tin" styleClass="button" style="-fx-pref-width: 200;"/>
+                    </VBox>
+                </HBox>
+                
+                <!-- Change Password Section -->
+                <VBox styleClass="card" spacing="15" style="-fx-pref-width: 700;">
+                    <padding>
+                        <Insets top="20" right="30" bottom="20" left="30"/>
+                    </padding>
+                    <Label text="ĐỔI MẬT KHẨU" style="-fx-font-size: 18px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                    
+                    <GridPane hgap="15" vgap="15">
+                        <Label text="Mật khẩu hiện tại:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <PasswordField fx:id="currentPasswordField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        
+                        <Label text="Mật khẩu mới:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <PasswordField fx:id="newPasswordField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        
+                        <Label text="Xác nhận mật khẩu:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                        <PasswordField fx:id="confirmPasswordField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    </GridPane>
+                    
+                    <Label fx:id="passwordErrorLabel" style="-fx-text-fill: -error-color;" visible="false"/>
+                    <Button fx:id="changePasswordButton" text="Đổi mật khẩu" styleClass="button" style="-fx-pref-width: 200;"/>
+                </VBox>
+            </VBox>
+        </center>
+    </BorderPane>
