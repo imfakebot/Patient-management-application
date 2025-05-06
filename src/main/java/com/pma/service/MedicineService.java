@@ -1,11 +1,10 @@
 package com.pma.service;
 
-import com.pma.model.entity.Medicine; // Import Entity Medicine
-import com.pma.model.enums.MedicineStatus; // Import Enum MedicineStatus
-import com.pma.repository.MedicineRepository; // Import Repository Medicine
-import com.pma.repository.PrescriptionDetailRepository; // Import nếu cần kiểm tra ràng buộc khi xóa
-import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
+import java.math.BigDecimal; // Import Entity Medicine
+import java.util.List; // Import Enum MedicineStatus
+import java.util.UUID; // Import Repository Medicine
+
+import org.slf4j.Logger; // Import nếu cần kiểm tra ràng buộc khi xóa
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,10 +15,12 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.pma.model.entity.Medicine;
+import com.pma.model.enums.MedicineStatus;
+import com.pma.repository.MedicineRepository;
+import com.pma.repository.PrescriptionDetailRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Lớp Service cho việc quản lý các nghiệp vụ liên quan đến Medicine.
@@ -65,7 +66,7 @@ public class MedicineService {
         }
 
         // Kiểm tra trùng tên (UNIQUE constraint)
-        medicineRepository.findByMedicineNameIgnoreCase(medicine.getMedicineName()).ifPresent(existing -> {
+        medicineRepository.findByMedicineNameIgnoreCase(medicine.getMedicineName()).ifPresent(_ -> {
             log.warn("Medicine creation failed. Name already exists: {}", medicine.getMedicineName());
             throw new IllegalArgumentException("Medicine name '" + medicine.getMedicineName() + "' already exists.");
         });
@@ -116,12 +117,12 @@ public class MedicineService {
     /**
      * Cập nhật thông tin của một loại thuốc.
      *
-     * @param id              UUID của Medicine cần cập nhật.
+     * @param id UUID của Medicine cần cập nhật.
      * @param medicineDetails Đối tượng chứa thông tin mới.
      * @return Medicine đã được cập nhật.
-     * @throws EntityNotFoundException  nếu không tìm thấy Medicine.
-     * @throws IllegalArgumentException nếu tên mới bị trùng hoặc giá trị không hợp
-     *                                  lệ.
+     * @throws EntityNotFoundException nếu không tìm thấy Medicine.
+     * @throws IllegalArgumentException nếu tên mới bị trùng hoặc giá trị không
+     * hợp lệ.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Medicine updateMedicine(UUID id, Medicine medicineDetails) {
@@ -145,16 +146,21 @@ public class MedicineService {
         }
 
         // Cập nhật các trường khác nếu được cung cấp và hợp lệ
-        if (medicineDetails.getManufacturer() != null)
+        if (medicineDetails.getManufacturer() != null) {
             existingMedicine.setManufacturer(medicineDetails.getManufacturer());
-        if (medicineDetails.getUnit() != null && !medicineDetails.getUnit().trim().isEmpty())
+        }
+        if (medicineDetails.getUnit() != null && !medicineDetails.getUnit().trim().isEmpty()) {
             existingMedicine.setUnit(medicineDetails.getUnit());
-        if (medicineDetails.getDescription() != null)
+        }
+        if (medicineDetails.getDescription() != null) {
             existingMedicine.setDescription(medicineDetails.getDescription());
-        if (medicineDetails.getPrice() != null && medicineDetails.getPrice().compareTo(BigDecimal.ZERO) >= 0)
+        }
+        if (medicineDetails.getPrice() != null && medicineDetails.getPrice().compareTo(BigDecimal.ZERO) >= 0) {
             existingMedicine.setPrice(medicineDetails.getPrice());
-        if (medicineDetails.getStatus() != null)
+        }
+        if (medicineDetails.getStatus() != null) {
             existingMedicine.setStatus(medicineDetails.getStatus());
+        }
         // Không nên cho phép cập nhật tồn kho trực tiếp qua đây, nên có phương thức
         // riêng
 
@@ -164,13 +170,13 @@ public class MedicineService {
     }
 
     /**
-     * Cập nhật số lượng tồn kho cho một loại thuốc.
-     * Có thể dùng số âm để giảm tồn kho.
+     * Cập nhật số lượng tồn kho cho một loại thuốc. Có thể dùng số âm để giảm
+     * tồn kho.
      *
-     * @param medicineId     ID của thuốc.
+     * @param medicineId ID của thuốc.
      * @param quantityChange Số lượng thay đổi (dương để tăng, âm để giảm).
      * @return Medicine với số lượng tồn kho đã cập nhật.
-     * @throws EntityNotFoundException  nếu không tìm thấy Medicine.
+     * @throws EntityNotFoundException nếu không tìm thấy Medicine.
      * @throws IllegalArgumentException nếu số lượng tồn kho mới sẽ thành âm.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -204,14 +210,14 @@ public class MedicineService {
     }
 
     /**
-     * Xóa một loại thuốc theo ID.
-     * Chỉ xóa được nếu không có PrescriptionDetail nào đang tham chiếu đến nó.
-     * Thường thì không nên xóa thuốc mà nên đổi trạng thái thành Discontinued.
+     * Xóa một loại thuốc theo ID. Chỉ xóa được nếu không có PrescriptionDetail
+     * nào đang tham chiếu đến nó. Thường thì không nên xóa thuốc mà nên đổi
+     * trạng thái thành Discontinued.
      *
      * @param id UUID của Medicine cần xóa.
      * @throws EntityNotFoundException nếu không tìm thấy Medicine.
-     * @throws IllegalStateException   nếu Medicine đang được sử dụng trong
-     *                                 PrescriptionDetail.
+     * @throws IllegalStateException nếu Medicine đang được sử dụng trong
+     * PrescriptionDetail.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public void deleteMedicine(UUID id) {
@@ -231,8 +237,8 @@ public class MedicineService {
         long detailCount = prescriptionDetailRepository.countByMedicine_MedicineId(id);
         if (detailCount > 0) {
             log.warn("Deletion failed for medicine id: {}. Found {} associated prescription details.", id, detailCount);
-            throw new IllegalStateException("Cannot delete medicine with id " + id + " because " +
-                    detailCount + " prescription detail(s) are still associated with it.");
+            throw new IllegalStateException("Cannot delete medicine with id " + id + " because "
+                    + detailCount + " prescription detail(s) are still associated with it.");
         }
 
         // 3. Nếu không có ràng buộc, tiến hành xóa
