@@ -27,6 +27,7 @@ module com.pma {
     requires spring.security.core;
     requires spring.security.config;
     requires spring.security.crypto;
+   
 
     // === Third-Party Libraries (Automatic Modules / Explicit Modules) ===
     requires com.google.zxing; // Automatic module
@@ -75,6 +76,8 @@ module com.pma {
     exports com.pma.repository;
 
     exports com.pma.util;
+
+    exports com.pma.config;
 
     // Export DTO nếu có và cần dùng ở tầng khác
     // exports com.pma.dto;

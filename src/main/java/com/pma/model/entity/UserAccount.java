@@ -1,34 +1,46 @@
 package com.pma.model.entity; // <-- THAY ĐỔI PACKAGE NẾU CẦN
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.proxy.HibernateProxy; // Cần cho equals/hashCode chuẩn
-
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-// ---> IMPORT ENUM TỪ PACKAGE RIÊNG <---
-import com.pma.model.enums.UserRole; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.proxy.HibernateProxy;
+
+import com.pma.model.enums.UserRole;
+
+import jakarta.persistence.Column; // Cần cho equals/hashCode chuẩn
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
- * Entity đại diện cho bảng UserAccounts trong cơ sở dữ liệu.
- * Quản lý thông tin tài khoản người dùng hệ thống.
+ * Entity đại diện cho bảng UserAccounts trong cơ sở dữ liệu. Quản lý thông tin
+ * tài khoản người dùng hệ thống.
  */
 @Getter
 @Setter
 // Exclude các quan hệ để tránh lỗi LAZY / vòng lặp
-@ToString(exclude = { "patient", "doctor" })
+@ToString(exclude = {"patient", "doctor"})
 @NoArgsConstructor // Bắt buộc cho JPA
 @Entity
 @Table(name = "UserAccounts", uniqueConstraints = {
-        // Ràng buộc UNIQUE từ schema
-        @UniqueConstraint(name = "UQ_UserAccounts_Username", columnNames = { "username" })
+    // Ràng buộc UNIQUE từ schema
+    @UniqueConstraint(name = "UQ_UserAccounts_Username", columnNames = {"username"})
 // Các Filtered Unique Index cho patient_id/doctor_id cần tạo trực tiếp trong DB
 // Hoặc dùng @Table(uniqueConstraints = {@UniqueConstraint(columnNames =
 // "patient_id", ...) })
@@ -36,11 +48,11 @@ import com.pma.model.enums.UserRole; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
 // Có thể dùng @Column(unique=true) nhưng không hoàn toàn đúng logic filtered
 // index.
 }, indexes = {
-        // Index từ schema SQL
-        @Index(name = "IX_UserAccounts_role", columnList = "role"),
-        // Filtered indexes cho patient_id/doctor_id tạo ở DB
-        @Index(name = "IX_UserAccounts_patient_id_filtered", columnList = "patient_id"), // Chỉ mục thông thường
-        @Index(name = "IX_UserAccounts_doctor_id_filtered", columnList = "doctor_id") // Chỉ mục thông thường
+    // Index từ schema SQL
+    @Index(name = "IX_UserAccounts_role", columnList = "role"),
+    // Filtered indexes cho patient_id/doctor_id tạo ở DB
+    @Index(name = "IX_UserAccounts_patient_id_filtered", columnList = "patient_id"), // Chỉ mục thông thường
+    @Index(name = "IX_UserAccounts_doctor_id_filtered", columnList = "doctor_id") // Chỉ mục thông thường
 })
 public class UserAccount {
 
@@ -56,8 +68,8 @@ public class UserAccount {
     private String username;
 
     /**
-     * Lưu trữ BĂM (HASH) của mật khẩu, không bao giờ lưu mật khẩu gốc.
-     * Độ dài cần đủ lớn cho các thuật toán băm hiện đại (bcrypt, scrypt).
+     * Lưu trữ BĂM (HASH) của mật khẩu, không bao giờ lưu mật khẩu gốc. Độ dài
+     * cần đủ lớn cho các thuật toán băm hiện đại (bcrypt, scrypt).
      */
     @Column(name = "password_hash", nullable = false, length = 255) // Tăng độ dài nếu cần
     private String passwordHash; // Tên biến rõ ràng là hash
@@ -71,25 +83,22 @@ public class UserAccount {
 
     // --- Mối quan hệ OneToOne (Phía sở hữu khóa ngoại - optional) ---
     // UserAccount có thể liên kết với Patient hoặc Doctor (hoặc không)
-
     /**
-     * Bệnh nhân liên kết với tài khoản này (nếu có).
-     * Đây là phía sở hữu của mối quan hệ OneToOne với Patient.
-     * DB có ON DELETE SET NULL. Cascade không nên dùng ở phía này.
-     * FetchType.LAZY.
-     * Có thể thêm @JoinColumn(unique=true) nếu muốn ràng buộc 1-1 ở mức JPA,
-     * nhưng filtered index của DB mạnh hơn.
+     * Bệnh nhân liên kết với tài khoản này (nếu có). Đây là phía sở hữu của mối
+     * quan hệ OneToOne với Patient. DB có ON DELETE SET NULL. Cascade không nên
+     * dùng ở phía này. FetchType.LAZY. Có thể thêm @JoinColumn(unique=true) nếu
+     * muốn ràng buộc 1-1 ở mức JPA, nhưng filtered index của DB mạnh hơn.
      */
     @OneToOne(fetch = FetchType.LAZY, optional = true)
     // cascade không nên đặt ở đây vì UserAccount là phía sở hữu FK tùy chọn
     // orphanRemoval cũng không hợp lý ở đây
     @JoinColumn(name = "patient_id", unique = false) // unique=false vì nhiều UserAccount có thể có patient_id=NULL
-                                                     // Ràng buộc 1 UserAccount / 1 Patient (khác null) xử lý ở DB
+    // Ràng buộc 1 UserAccount / 1 Patient (khác null) xử lý ở DB
     private Patient patient;
 
     /**
-     * Bác sĩ liên kết với tài khoản này (nếu có).
-     * Tương tự như liên kết với Patient.
+     * Bác sĩ liên kết với tài khoản này (nếu có). Tương tự như liên kết với
+     * Patient.
      */
     @OneToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "doctor_id", unique = false) // unique=false vì nhiều UserAccount có thể có doctor_id=NULL
@@ -151,13 +160,11 @@ public class UserAccount {
      * tên hợp lệ
      * }
      */
-
     // --- Helper methods quản lý quan hệ hai chiều ---
-
     // --- Cho Patient (OneToOne) ---
     /**
      * Thiết lập Patient và đồng bộ hai chiều.
-     * 
+     *
      * @param patient Bệnh nhân liên quan, hoặc null.
      */
     public void setPatient(Patient patient) {
@@ -173,8 +180,7 @@ public class UserAccount {
             if (oldPatient != null) {
                 oldPatient.setUserAccountInternal(null); // Gọi internal ở Patient cũ để gỡ bỏ tham chiếu ngược
             }
-        }
-        // Nếu đang thiết lập liên kết mới
+        } // Nếu đang thiết lập liên kết mới
         else {
             // Nếu patient mới này đã có user account khác, hoặc user account này đã có
             // patient khác -> lỗi logic 1-1
@@ -195,7 +201,7 @@ public class UserAccount {
 
     /**
      * Phương thức nội bộ được gọi bởi Patient.setUserAccount.
-     * 
+     *
      * @param patient Patient hoặc null.
      */
     void setPatientInternal(Patient patient) {
@@ -205,7 +211,7 @@ public class UserAccount {
     // --- Cho Doctor (OneToOne) ---
     /**
      * Thiết lập Doctor và đồng bộ hai chiều.
-     * 
+     *
      * @param doctor Bác sĩ liên quan, hoặc null.
      */
     public void setDoctor(Doctor doctor) {
@@ -234,7 +240,7 @@ public class UserAccount {
 
     /**
      * Phương thức nội bộ được gọi bởi Doctor.setUserAccount.
-     * 
+     *
      * @param doctor Doctor hoặc null.
      */
     void setDoctorInternal(Doctor doctor) {
@@ -244,18 +250,21 @@ public class UserAccount {
     // --- equals() và hashCode() chuẩn ---
     @Override
     public final boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null)
+        }
+        if (o == null) {
             return false;
+        }
         Class<?> oEffectiveClass = o instanceof HibernateProxy
                 ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass)
+        if (thisEffectiveClass != oEffectiveClass) {
             return false;
+        }
         UserAccount that = (UserAccount) o;
         // So sánh dựa trên ID nếu đã có (khác null)
         return getUserId() != null && Objects.equals(getUserId(), that.getUserId());

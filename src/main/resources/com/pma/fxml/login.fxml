@@ -18,7 +18,9 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<StackPane stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
+<StackPane stylesheets="@../css/style.css"
+   xmlns="http://javafx.com/javafx/23.0.1"
+   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
    <children>
       <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -76,7 +78,8 @@
                               <ImageView fx:id="toggleImage" fitHeight="25.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
                                  <StackPane.margin>
                                     <Insets right="10.0" />
-                                 </StackPane.margin></ImageView>
+                                 </StackPane.margin>
+                              </ImageView>
                            </children>
                         </StackPane>
                         <HBox prefHeight="50.0" prefWidth="200.0">

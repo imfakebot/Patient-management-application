@@ -1,33 +1,33 @@
 package com.pma.service;
 
-import com.pma.model.entity.Doctor;
-import com.pma.model.entity.Patient;
-import com.pma.model.entity.UserAccount;
-import com.pma.repository.DoctorRepository;
-import com.pma.repository.PatientRepository;
-import com.pma.repository.UserAccountRepository;
-
-import jakarta.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority; // Interface quyền
-import org.springframework.security.core.authority.SimpleGrantedAuthority; // Implement quyền đơn giản
-import org.springframework.security.core.userdetails.User; // Lớp User của Spring Security
-import org.springframework.security.core.userdetails.UserDetails; // Interface UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService; // Interface cần implement
-import org.springframework.security.core.userdetails.UsernameNotFoundException; // Exception chuẩn
-import org.springframework.security.crypto.password.PasswordEncoder; // Để mã hóa mật khẩu
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails; // Interface quyền
+import org.springframework.security.core.userdetails.UserDetailsService; // Implement quyền đơn giản
+import org.springframework.security.core.userdetails.UsernameNotFoundException; // Lớp User của Spring Security
+import org.springframework.security.crypto.password.PasswordEncoder; // Interface UserDetails
+import org.springframework.stereotype.Service; // Interface cần implement
+import org.springframework.transaction.annotation.Isolation; // Exception chuẩn
+import org.springframework.transaction.annotation.Propagation; // Để mã hóa mật khẩu
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Collections; // Để tạo danh sách quyền đơn giản
-import java.util.Optional;
-import java.util.UUID;
+import com.pma.model.entity.Doctor;
+import com.pma.model.entity.Patient;
+import com.pma.model.entity.UserAccount;
+import com.pma.repository.DoctorRepository;
+import com.pma.repository.PatientRepository; // Để tạo danh sách quyền đơn giản
+import com.pma.repository.UserAccountRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Lớp Service cho việc quản lý UserAccount và tích hợp với Spring Security.
@@ -56,16 +56,15 @@ public class UserAccountService implements UserDetailsService { // Implement Use
     }
 
     /**
-     * Phương thức cốt lõi của UserDetailsService.
-     * Được Spring Security gọi tự động khi người dùng cố gắng đăng nhập.
-     * Nhiệm vụ: Tìm UserAccount theo username, nếu thấy thì tạo và trả về đối tượng
-     * UserDetails.
+     * Phương thức cốt lõi của UserDetailsService. Được Spring Security gọi tự
+     * động khi người dùng cố gắng đăng nhập. Nhiệm vụ: Tìm UserAccount theo
+     * username, nếu thấy thì tạo và trả về đối tượng UserDetails.
      *
      * @param username Tên đăng nhập do người dùng nhập.
-     * @return Đối tượng UserDetails chứa thông tin user (username, password hash,
-     *         roles/authorities).
-     * @throws UsernameNotFoundException nếu không tìm thấy user với username cung
-     *                                   cấp.
+     * @return Đối tượng UserDetails chứa thông tin user (username, password
+     * hash, roles/authorities).
+     * @throws UsernameNotFoundException nếu không tìm thấy user với username
+     * cung cấp.
      */
     @Override
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS) // Chỉ đọc
@@ -83,7 +82,7 @@ public class UserAccountService implements UserDetailsService { // Implement Use
         // Tạo danh sách quyền (authorities) từ vai trò (role) của UserAccount
         // Spring Security thường yêu cầu tiền tố "ROLE_" cho vai trò
         GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userAccount.getRole().name()); // Lấy tên Enum
-                                                                                                         // làm vai trò
+        // làm vai trò
 
         // Tạo đối tượng UserDetails chuẩn của Spring Security
         // User(username, passwordHash, enabled, accountNonExpired,
@@ -98,11 +97,10 @@ public class UserAccountService implements UserDetailsService { // Implement Use
     }
 
     /**
-     * Tạo một tài khoản người dùng mới.
-     * Mật khẩu sẽ được mã hóa trước khi lưu.
+     * Tạo một tài khoản người dùng mới. Mật khẩu sẽ được mã hóa trước khi lưu.
      *
      * @param userAccount Đối tượng UserAccount với thông tin cơ bản (username,
-     *                    password thô, role).
+     * password thô, role).
      * @return UserAccount đã được lưu với mật khẩu đã mã hóa.
      * @throws IllegalArgumentException nếu username đã tồn tại.
      */
@@ -137,14 +135,15 @@ public class UserAccountService implements UserDetailsService { // Implement Use
     }
 
     /**
-     * Liên kết một UserAccount với một Patient.
-     * Chỉ thực hiện nếu cả hai chưa được liên kết.
+     * Liên kết một UserAccount với một Patient. Chỉ thực hiện nếu cả hai chưa
+     * được liên kết.
      *
-     * @param userId    ID của UserAccount.
+     * @param userId ID của UserAccount.
      * @param patientId ID của Patient.
-     * @throws EntityNotFoundException nếu UserAccount hoặc Patient không tồn tại.
-     * @throws IllegalStateException   nếu UserAccount hoặc Patient đã được liên
-     *                                 kết.
+     * @throws EntityNotFoundException nếu UserAccount hoặc Patient không tồn
+     * tại.
+     * @throws IllegalStateException nếu UserAccount hoặc Patient đã được liên
+     * kết.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public void linkPatientToUserAccount(UUID userId, UUID patientId) {
@@ -171,13 +170,15 @@ public class UserAccountService implements UserDetailsService { // Implement Use
     }
 
     /**
-     * Liên kết một UserAccount với một Doctor.
-     * Chỉ thực hiện nếu cả hai chưa được liên kết.
+     * Liên kết một UserAccount với một Doctor. Chỉ thực hiện nếu cả hai chưa
+     * được liên kết.
      *
-     * @param userId   ID của UserAccount.
+     * @param userId ID của UserAccount.
      * @param doctorId ID của Doctor.
-     * @throws EntityNotFoundException nếu UserAccount hoặc Doctor không tồn tại.
-     * @throws IllegalStateException   nếu UserAccount hoặc Doctor đã được liên kết.
+     * @throws EntityNotFoundException nếu UserAccount hoặc Doctor không tồn
+     * tại.
+     * @throws IllegalStateException nếu UserAccount hoặc Doctor đã được liên
+     * kết.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public void linkDoctorToUserAccount(UUID userId, UUID doctorId) {
@@ -202,10 +203,10 @@ public class UserAccountService implements UserDetailsService { // Implement Use
     }
 
     /**
-     * Cập nhật thông tin đăng nhập cuối cùng.
-     * Thường được gọi sau khi xác thực thành công.
+     * Cập nhật thông tin đăng nhập cuối cùng. Thường được gọi sau khi xác thực
+     * thành công.
      *
-     * @param username  Tên đăng nhập.
+     * @param username Tên đăng nhập.
      * @param ipAddress Địa chỉ IP đăng nhập.
      */
     @Transactional(propagation = Propagation.REQUIRED) // Cần transaction để cập nhật
@@ -223,8 +224,7 @@ public class UserAccountService implements UserDetailsService { // Implement Use
     }
 
     /**
-     * Xử lý khi đăng nhập thất bại.
-     * Tăng bộ đếm và có thể khóa tài khoản.
+     * Xử lý khi đăng nhập thất bại. Tăng bộ đếm và có thể khóa tài khoản.
      *
      * @param username Tên đăng nhập đã cố gắng.
      */
@@ -248,7 +248,6 @@ public class UserAccountService implements UserDetailsService { // Implement Use
     // --- Các phương thức khác ---
     // getById, getAll (có phân trang), updateRole, changePassword, verifyEmail,
     // generatePasswordResetToken, etc.
-
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Optional<UserAccount> findByUsername(String username) {
         return userAccountRepository.findByUsername(username);
