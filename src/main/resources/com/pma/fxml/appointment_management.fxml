@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+    <?import javafx.scene.control.*?>
+    <?import javafx.scene.layout.*?>
+    
+    <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/modern-style.css">
+        <top>
+            <HBox styleClass="card" alignment="CENTER" spacing="20" style="-fx-background-radius: 0 0 12 12;">
+                <padding>
+                    <Insets top="15" right="25" bottom="15" left="25"/>
+                </padding>
+                <Label text="QUẢN LÝ CUỘC HẸN" style="-fx-font-size: 20px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="backButton" text="Quay lại" style="-fx-background-color: #757575; -fx-text-fill: white;"/>
+            </HBox>
+        </top>
+        
+        <left>
+            <VBox styleClass="sidebar" spacing="10" prefWidth="250">
+                <padding>
+                    <Insets top="30" right="15" bottom="30" left="15"/>
+                </padding>
+                <Button fx:id="dashboardButton" text="Bảng điều khiển" styleClass="sidebar-button"/>
+                <Button fx:id="patientButton" text="Quản lý Bệnh nhân" styleClass="sidebar-button"/>
+                <Button fx:id="appointmentButton" text="Quản lý Cuộc hẹn" styleClass="sidebar-button" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
+                <Button fx:id="profileButton" text="Hồ sơ cá nhân" styleClass="sidebar-button"/>
+                <Button fx:id="accountButton" text="Quản lý Tài khoản" styleClass="sidebar-button"/>
+                <Button fx:id="reportButton" text="Thống kê &amp; Báo cáo" styleClass="sidebar-button"/>
+            </VBox>
+        </left>
+        
+        <center>
+            <VBox spacing="25" style="-fx-padding: 30;">
+                <!-- Filter Section -->
+                <HBox styleClass="card" spacing="15" alignment="CENTER_LEFT">
+                    <padding>
+                        <Insets top="15" right="20" bottom="15" left="20"/>
+                    </padding>
+                    <Label text="Lọc theo:" style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="statusFilter" promptText="Trạng thái"/>
+                    <DatePicker fx:id="fromDatePicker" promptText="Từ ngày"/>
+                    <DatePicker fx:id="toDatePicker" promptText="Đến ngày"/>
+                    <ComboBox fx:id="doctorFilter" promptText="Bác sĩ"/>
+                    <Button fx:id="applyFilterButton" text="Áp dụng" styleClass="button"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="addAppointmentButton" text="Đặt lịch mới" styleClass="button"/>
+                </HBox>
+                
+                <!-- Appointment Table -->
+                <VBox styleClass="card" spacing="15">
+                    <TableView fx:id="appointmentTable">
+                        <columns>
+                            <TableColumn fx:id="appointmentIdColumn" text="MÃ CH" prefWidth="80"/>
+                            <TableColumn fx:id="patientNameColumn" text="BỆNH NHÂN" prefWidth="180"/>
+                            <TableColumn fx:id="doctorColumn" text="BÁC SĨ" prefWidth="150"/>
+                            <TableColumn fx:id="dateColumn" text="NGÀY" prefWidth="100"/>
+                            <TableColumn fx:id="timeColumn" text="GIỜ" prefWidth="80"/>
+                            <TableColumn fx:id="statusColumn" text="TRẠNG THÁI" prefWidth="100"/>
+                            <TableColumn fx:id="appointmentActionColumn" text="THAO TÁC" prefWidth="150"/>
+                        </columns>
+                    </TableView>
+                    
+                    <HBox spacing="15" alignment="CENTER_RIGHT">
+                        <Label text="Tổng số:" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="totalLabel" style="-fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="exportButton" text="Xuất Excel" style="-fx-background-color: transparent; -fx-text-fill: -primary-color; -fx-border-color: -primary-color; -fx-border-radius: 15;"/>
+                        <Button fx:id="printButton" text="In lịch hẹn" style="-fx-background-color: transparent; -fx-text-fill: -primary-color; -fx-border-color: -primary-color; -fx-border-radius: 15;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </center>
+        
+        <!-- Appointment Form Dialog -->
+        <StackPane fx:id="formContainer" visible="false" alignment="CENTER">
+            <VBox styleClass="card" spacing="20" style="-fx-pref-width: 500;">
+                <Label fx:id="formTitle" text="ĐẶT LỊCH HẸN MỚI" style="-fx-font-size: 18px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                
+                <GridPane hgap="15" vgap="15">
+                    <Label text="Bệnh nhân:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="patientComboBox" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                    
+                    <Label text="Bác sĩ:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="doctorComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    
+                    <Label text="Ngày hẹn:" GridPane.rowIndex="1" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+                    <DatePicker fx:id="appointmentDatePicker" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+                    
+                    <Label text="Giờ hẹn:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="timeComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    
+                    <Label text="Loại hẹn:" GridPane.rowIndex="2" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+                    <ComboBox fx:id="typeComboBox" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+                </GridPane>
+                
+                <Label fx:id="errorLabel" style="-fx-text-fill: -error-color;" visible="false"/>
+                
+                <HBox spacing="20" alignment="CENTER">
+                    <Button fx:id="cancelButton" text="Hủy bỏ" style="-fx-background-color: -error-color; -fx-text-fill: white;"/>
+                    <Button fx:id="saveButton" text="Đặt lịch" style="-fx-background-color: -success-color; -fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+        </StackPane>
+    </BorderPane>
