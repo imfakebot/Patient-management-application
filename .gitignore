@@ -34,3 +34,5 @@ application-local.properties
 application-prod.properties
 /secrets/
 *.secret
+
+./src/main/resources/application.properties
