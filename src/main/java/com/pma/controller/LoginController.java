@@ -1,28 +1,29 @@
-package com.pma.controller; // Package của bạn
+package com.pma.controller;
 
 import com.pma.service.UserAccountService;
-import com.pma.util.DialogUtil; // Giả sử có lớp này
-import com.pma.util.UIManager;   // Giả sử có lớp này
+import com.pma.util.DialogUtil; // Hoặc cách hiển thị lỗi của bạn
+import com.pma.util.UIManager;   // Lớp quản lý UI của bạn
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Cursor;
+import javafx.scene.Cursor; // Nếu bạn dùng cho các control
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
-import javafx.scene.control.ProgressIndicator; // Thêm import nếu dùng progress
+import javafx.scene.control.ProgressIndicator; // Nếu bạn muốn thêm
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image; // Import cho hình ảnh
-import javafx.scene.image.ImageView; // Import cho hình ảnh
-import javafx.scene.input.MouseEvent; // Import cho sự kiện click chuột
-import javafx.scene.layout.VBox; // Import layout VBox
+import javafx.scene.image.Image;     // Nếu bạn dùng cho toggle password
+import javafx.scene.image.ImageView; // Nếu bạn dùng cho toggle password
+import javafx.scene.input.MouseEvent; // Nếu bạn dùng cho toggle password
+import javafx.scene.layout.VBox;    // Nếu bạn dùng VBox làm container form
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.DisabledException; // Tài khoản bị vô hiệu hóa
+import org.springframework.security.authentication.LockedException;   // Tài khoản bị khóa
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -30,12 +31,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component // Đảm bảo đây là Spring Bean
 public class LoginController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
 
-    // Inject các Spring Beans
     @Autowired
     private AuthenticationManager authenticationManager;
 
@@ -45,61 +45,55 @@ public class LoginController {
     @Autowired
     private UserAccountService userAccountService;
 
-    // Các thành phần FXML khớp với FXML bạn cung cấp
+    // Khai báo các @FXML khớp với file LoginView.fxml của bạn
     @FXML
-    private VBox loginFormContainer; // VBox chứa các control để disable/enable (thay vì loginForm)
+    private VBox loginFormContainer; // VBox cha để disable form
     @FXML
-    private TextField usernameField; // Cần thêm fx:id="usernameField" vào FXML
+    private TextField usernameField;
     @FXML
-    private PasswordField passwordField; // fx:id="passwordField" đã có
+    private PasswordField passwordField;
     @FXML
-    private TextField textPasswordField; // fx:id="textPasswordField" đã có (để hiện pass)
+    private TextField textPasswordField; // Cho chức năng hiện mật khẩu
     @FXML
-    private ImageView toggleImage;      // fx:id="toggleImage" đã có (icon mắt)
+    private ImageView toggleImage;      // Icon mắt
     @FXML
-    private Button loginButton;         // Cần thêm fx:id="loginButton" và onAction="#handleLoginButtonAction" vào FXML
+    private Button loginButton;
     @FXML
-    private Label errorLabel;           // Cần thêm fx:id="errorLabel" vào FXML (ví dụ đặt dưới nút Login)
-    // @FXML private ProgressIndicator progressIndicator; // Thêm fx:id nếu bạn muốn dùng progress
+    private Label errorLabel;
+    @FXML
+    private ProgressIndicator progressIndicator; // Chỉ báo đang xử lý
 
-    // Biến trạng thái cho việc ẩn/hiện mật khẩu
     private boolean passwordVisible = false;
-    // Hình ảnh cho nút ẩn/hiện mật khẩu (cần đặt đường dẫn đúng)
-    private final Image eyeOpenImage = new Image(getClass().getResourceAsStream("/com/pma/img/eye_open.png")); // Thay đường dẫn
-    private final Image eyeClosedImage = new Image(getClass().getResourceAsStream("/com/pma/img/eye_closed.png")); // Thay đường dẫn
+    // Đường dẫn đến ảnh, đảm bảo chúng có trong resources/com/pma/img/
+    private final Image eyeOpenImage = new Image(getClass().getResourceAsStream("/com/pma/img/open.png"));
+    private final Image eyeClosedImage = new Image(getClass().getResourceAsStream("/com/pma/img/closed.png"));
 
     @FXML
     public void initialize() {
         clearError();
-        // hideProgress(); // Bỏ comment nếu dùng progress
+        hideProgress(); // Ẩn progress ban đầu
+
         // Thiết lập ban đầu cho ẩn/hiện mật khẩu
-        textPasswordField.setManaged(false); // Không quản lý layout
-        textPasswordField.setVisible(false); // Ẩn đi
+        textPasswordField.setManaged(false);
+        textPasswordField.setVisible(false);
         passwordField.setManaged(true);
         passwordField.setVisible(true);
-        toggleImage.setImage(eyeClosedImage); // Mặc định là mắt đóng
-
-        // Đồng bộ text giữa hai trường khi thay đổi
-        textPasswordField.textProperty().bindBidirectional(passwordField.textProperty());
-
-        // Cho phép nhấn Enter trên password field để login
-        passwordField.setOnAction(this::handleLoginButtonAction);
-        textPasswordField.setOnAction(this::handleLoginButtonAction);
-
-        // Thay đổi con trỏ khi di chuột qua icon mắt
-        if (toggleImage != null) {
+        if (toggleImage != null) { // Kiểm tra null trước khi set
+            toggleImage.setImage(eyeClosedImage);
             toggleImage.setCursor(Cursor.HAND);
         }
+
+        // Đồng bộ text giữa hai trường
+        textPasswordField.textProperty().bindBidirectional(passwordField.textProperty());
+
+        // Listener cho phím Enter
+        passwordField.setOnAction(this::handleLoginButtonAction);
+        textPasswordField.setOnAction(this::handleLoginButtonAction);
     }
 
-    /**
-     * Xử lý sự kiện khi nút Login được nhấn. (Cần thêm
-     * onAction="#handleLoginButtonAction" vào Button trong FXML)
-     */
     @FXML
     private void handleLoginButtonAction(ActionEvent event) {
         String username = usernameField.getText().trim();
-        // Lấy mật khẩu từ trường đang hiển thị (PasswordField hoặc TextField)
         String password = passwordVisible ? textPasswordField.getText() : passwordField.getText();
 
         clearError();
@@ -109,111 +103,101 @@ public class LoginController {
             return;
         }
 
-        // showProgress(); // Bỏ comment nếu dùng progress
+        showProgress();
         setFormDisabled(true);
 
-        // Thực hiện xác thực trên luồng nền
+        // Thực hiện xác thực trên luồng nền để không làm đơ UI
         Thread authenticationThread = new Thread(() -> {
             try {
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
                 log.debug("Attempting authentication for user: {}", username);
-                Authentication authentication = authenticationManager.authenticate(token);
+
+                Authentication authentication = authenticationManager.authenticate(token); // Điểm xác thực chính
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.info("User '{}' logged in successfully. Authorities: {}", username, authentication.getAuthorities());
 
-                // Cập nhật thông tin login cuối
-                try {
-                    userAccountService.updateUserLoginInfo(username, "local_login");
-                } catch (Exception e) {
-                    log.error("Failed to update user login info for {}", username, e);
-                }
+                // Cập nhật thông tin đăng nhập cuối (IP có thể lấy phức tạp hơn trong Desktop)
+                userAccountService.updateUserLoginInfo(username, "DesktopLogin"); // Thay "DesktopLogin" bằng thông tin phù hợp
 
-                // Chuyển màn hình (chạy trên luồng UI)
                 Platform.runLater(() -> {
-                    // hideProgress();
-                    uiManager.switchToMainScreen();
+                    hideProgress();
+                    uiManager.switchToMainDashboard(); // Chuyển sang màn hình chính
                 });
 
-            } catch (UsernameNotFoundException | BadCredentialsException e) {
-                log.warn("Login failed: Invalid credentials for username '{}'.", username);
-                Platform.runLater(() -> {
-                    // hideProgress();
-                    setFormDisabled(false);
-                    showError("Invalid username or password.");
-                });
-                try {
-                    userAccountService.handleFailedLoginAttempt(username);
-                } catch (Exception ex) {
-                    log.error("Failed to handle failed login attempt for {}", username, ex);
-                }
+            } catch (UsernameNotFoundException e) {
+                handleAuthenticationFailure("Invalid username or password.", username, false);
+            } catch (BadCredentialsException e) {
+                handleAuthenticationFailure("Invalid username or password.", username, true);
             } catch (LockedException e) {
-                log.warn("Login failed: Account locked for username '{}'.", username);
-                Platform.runLater(() -> {
-                    // hideProgress();
-                    setFormDisabled(false);
-                    showError("Account is locked. Please contact administrator.");
-                });
-            } catch (AuthenticationException e) {
+                handleAuthenticationFailure("Account is locked. Please contact administrator.", username, false);
+            } catch (DisabledException e) {
+                handleAuthenticationFailure("Account is disabled. Please contact administrator.", username, false);
+            } catch (AuthenticationException e) { // Bắt các lỗi AuthenticationException khác
                 log.warn("Login failed for username '{}': {}", username, e.getMessage());
-                Platform.runLater(() -> {
-                    // hideProgress();
-                    setFormDisabled(false);
-                    showError("Login failed: " + e.getMessage());
-                });
-                try {
-                    userAccountService.handleFailedLoginAttempt(username);
-                } catch (Exception ex) {
-                    log.error("Failed to handle failed login attempt for {}", username, ex);
-                }
-            } catch (Exception e) {
+                handleAuthenticationFailure("Login failed: " + e.getMessage(), username, true);
+            } catch (Exception e) { // Bắt các lỗi không mong muốn khác
                 log.error("An unexpected error occurred during login for user '{}'", username, e);
                 Platform.runLater(() -> {
-                    // hideProgress();
+                    hideProgress();
                     setFormDisabled(false);
-                    showError("An unexpected error occurred during login.");
+                    showError("An unexpected error occurred. Please try again.");
                 });
             }
         });
-        authenticationThread.setDaemon(true);
+        authenticationThread.setDaemon(true); // Luồng phụ sẽ tự kết thúc khi luồng chính kết thúc
         authenticationThread.start();
     }
 
-    /**
-     * Xử lý sự kiện khi nhấn vào icon mắt để ẩn/hiện mật khẩu. (Cần thêm
-     * onMouseClicked="#togglePasswordVisibility" vào ImageView toggleImage
-     * trong FXML)
-     */
+    // Phương thức xử lý chung cho các lỗi xác thực
+    private void handleAuthenticationFailure(String errorMessage, String username, boolean countFailedAttempt) {
+        log.warn("Authentication failure for '{}': {}", username, errorMessage);
+        Platform.runLater(() -> {
+            hideProgress();
+            setFormDisabled(false);
+            showError(errorMessage);
+        });
+        if (countFailedAttempt) {
+            try {
+                userAccountService.handleFailedLoginAttempt(username);
+            } catch (Exception ex) {
+                log.error("Failed to handle failed login attempt for {}: {}", username, ex.getMessage());
+            }
+        }
+    }
+
     @FXML
     private void togglePasswordVisibility(MouseEvent event) {
         passwordVisible = !passwordVisible;
-
         if (passwordVisible) {
-            // Hiện TextField, ẩn PasswordField
             textPasswordField.setManaged(true);
             textPasswordField.setVisible(true);
             passwordField.setManaged(false);
             passwordField.setVisible(false);
-            toggleImage.setImage(eyeOpenImage); // Đổi thành mắt mở
-            textPasswordField.requestFocus(); // Focus vào text field
-            textPasswordField.positionCaret(textPasswordField.getText().length()); // Di chuyển con trỏ về cuối
+            if (toggleImage != null) {
+                toggleImage.setImage(eyeOpenImage);
+            }
+            textPasswordField.requestFocus();
+            textPasswordField.positionCaret(textPasswordField.getText().length());
         } else {
-            // Hiện PasswordField, ẩn TextField
             passwordField.setManaged(true);
             passwordField.setVisible(true);
             textPasswordField.setManaged(false);
             textPasswordField.setVisible(false);
-            toggleImage.setImage(eyeClosedImage); // Đổi thành mắt đóng
-            passwordField.requestFocus(); // Focus vào password field
-            passwordField.positionCaret(passwordField.getText().length()); // Di chuyển con trỏ về cuối
+            if (toggleImage != null) {
+                toggleImage.setImage(eyeClosedImage);
+            }
+            passwordField.requestFocus();
+            passwordField.positionCaret(passwordField.getText().length());
         }
     }
 
-    // --- Các phương thức tiện ích cho UI ---
+    // Các phương thức tiện ích cho UI
     private void showError(String message) {
         if (errorLabel != null) {
             errorLabel.setText(message);
             errorLabel.setVisible(true);
-            errorLabel.setStyle("-fx-text-fill: red;"); // Thêm style cho lỗi
+            errorLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
         } else {
             DialogUtil.showErrorAlert("Login Error", message);
         }
@@ -226,7 +210,6 @@ public class LoginController {
         }
     }
 
-    /* // Bỏ comment nếu dùng ProgressIndicator
     private void showProgress() {
         if (progressIndicator != null) {
             progressIndicator.setVisible(true);
@@ -234,21 +217,23 @@ public class LoginController {
     }
 
     private void hideProgress() {
-         if (progressIndicator != null) {
+        if (progressIndicator != null) {
             progressIndicator.setVisible(false);
         }
     }
-     */
+
     private void setFormDisabled(boolean disabled) {
-        // Vô hiệu hóa VBox chứa các control hoặc từng control riêng lẻ
-        if (loginFormContainer != null) { // Giả sử VBox cha có fx:id="loginFormContainer"
+        if (loginFormContainer != null) {
             loginFormContainer.setDisable(disabled);
         } else {
+            // Fallback nếu không có VBox cha
             usernameField.setDisable(disabled);
             passwordField.setDisable(disabled);
-            textPasswordField.setDisable(disabled); // Cả trường text cũng disable
+            textPasswordField.setDisable(disabled);
             loginButton.setDisable(disabled);
-            toggleImage.setDisable(disabled); // Có thể disable cả icon mắt
+            if (toggleImage != null) {
+                toggleImage.setDisable(disabled);
+            }
         }
     }
 }

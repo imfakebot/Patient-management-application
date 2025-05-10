@@ -10,8 +10,8 @@ module com.pma {
 
     // === JavaFX UI Framework ===
     requires transitive javafx.graphics; // transitive nếu module khác cần truy cập
-    requires javafx.controls;
-    requires javafx.fxml;
+    requires transitive javafx.controls;
+    requires transitive javafx.fxml;
 
     // === Spring Framework Modules (Chủ yếu là các Starters và API cần thiết) ===
     requires spring.boot;

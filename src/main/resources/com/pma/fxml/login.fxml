@@ -7,6 +7,7 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressIndicator?><!-- Thêm nếu dùng -->
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -18,19 +19,26 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<StackPane stylesheets="@../css/inte.css"
+<!-- Thay đổi Controller cho phù hợp -->
+<StackPane stylesheets="@../css/style.css"
    xmlns="http://javafx.com/javafx/23.0.1"
-   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PasswordToggleController">
+   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.LoginController">
    <children>
+      <!-- Background Image -->
       <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
          <image>
+            <!-- Đảm bảo đường dẫn ảnh đúng từ thư mục resources -->
             <Image url="@../img/background.jpg" />
          </image>
       </ImageView>
+
+      <!-- Login Form Box -->
       <StackPane maxHeight="500.0" maxWidth="500.0" prefHeight="500.0" prefWidth="500.0" style="-fx-effect: dropshadow(gaussian, #a142f5, 15, 0.8, 0, 0);">
          <children>
-            <VBox maxHeight="500.0" maxWidth="500.0" styleClass="glass-box">
+            <!-- Thêm fx:id cho VBox chính để disable/enable -->
+            <VBox fx:id="loginFormContainer" alignment="TOP_CENTER" maxHeight="500.0" maxWidth="500.0" styleClass="glass-box">
                <children>
+                  <!-- Login Title -->
                   <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="53.0" prefWidth="1147.0" text="Login" textAlignment="CENTER" textFill="WHITE">
                      <font>
                         <Font name="System Bold" size="36.0" />
@@ -39,14 +47,18 @@
                         <Insets top="25.0" />
                      </VBox.margin>
                   </Label>
+
+                  <!-- Input Fields Container -->
                   <VBox>
                      <VBox.margin>
                         <Insets left="50.0" right="50.0" top="30.0" />
                      </VBox.margin>
                      <children>
+                        <!-- Username Field -->
                         <StackPane prefHeight="44.0" prefWidth="200.0">
                            <children>
-                              <TextField prefHeight="44.0" prefWidth="600.0" promptText="Username" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
+                              <!-- Thêm fx:id cho TextField Username -->
+                              <TextField fx:id="usernameField" prefHeight="44.0" prefWidth="600.0" promptText="Username" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -57,6 +69,7 @@
                               <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
                                  <image>
                                     <Image url="@../img/hi.png" />
+                                    <!-- Icon user -->
                                  </image>
                                  <StackPane.margin>
                                     <Insets right="10.0" />
@@ -64,58 +77,99 @@
                               </ImageView>
                            </children>
                         </StackPane>
+
+                        <!-- Password Fields (Password và Text) -->
                         <StackPane prefHeight="44.0" prefWidth="200.0">
                            <VBox.margin>
                               <Insets top="25.0" />
                            </VBox.margin>
                            <children>
+                              <!-- PasswordField (ẩn) -->
                               <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
                               </PasswordField>
-                              <TextField fx:id="textPasswordField" prefHeight="44.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8 12; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;" />
-                              <ImageView fx:id="toggleImage" fitHeight="25.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT">
+                              <!-- TextField (hiện) -->
+                              <TextField fx:id="textPasswordField" prefHeight="44.0" promptText="Password" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8 12; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;" visible="false" managed="false">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                              </TextField>
+                              <!-- Toggle Visibility Icon -->
+                              <ImageView fx:id="toggleImage" fitHeight="25.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT" style="-fx-cursor: hand;">                                 <!-- Thêm cursor: hand -->
                                  <StackPane.margin>
                                     <Insets right="10.0" />
                                  </StackPane.margin>
+                                 <!-- Image sẽ được set trong Controller -->
                               </ImageView>
                            </children>
                         </StackPane>
-                        <HBox prefHeight="50.0" prefWidth="200.0">
+
+                        <!-- Remember Me / Forgot Password -->
+                        <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="200.0">
                            <children>
                               <CheckBox alignment="CENTER" mnemonicParsing="false" text="Remember me" textFill="#f2f2f2">
                                  <HBox.margin>
-                                    <Insets left="2.0" top="13.0" />
+                                    <Insets left="2.0" />
                                  </HBox.margin>
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </CheckBox>
-                              <Region blendMode="LIGHTEN" maxHeight="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                              <Region HBox.hgrow="ALWAYS" />
                               <Hyperlink alignment="CENTER_RIGHT" text="Forgot password?" textFill="WHITE">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
-                                 <HBox.margin>
-                                    <Insets top="11.0" />
-                                 </HBox.margin>
                               </Hyperlink>
                            </children>
+                           <VBox.margin>
+                              <Insets top="5.0" bottom="-5.0" />
+                              <!-- Điều chỉnh khoảng cách nếu cần -->
+                           </VBox.margin>
                         </HBox>
                      </children>
                   </VBox>
-                  <Button alignment="CENTER" mnemonicParsing="false" prefHeight="44.0" prefWidth="1000.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 25;" text="Login">
+
+                  <!-- Error Label (Thêm vào đây) -->
+                  <Label fx:id="errorLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="Infinity" minHeight="-Infinity" style="-fx-text-fill: red;" textAlignment="CENTER" wrapText="true">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets left="50.0" right="50.0" top="5.0" />
+                        <!-- Khoảng cách trên -->
+                     </VBox.margin>
+                  </Label>
+
+                  <!-- Progress Indicator (Thêm nếu dùng) -->
+                  <!--
+                  <ProgressIndicator fx:id="progressIndicator" maxHeight="30.0" maxWidth="30.0" visible="false">
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin>
+                  </ProgressIndicator>
+                   -->
+
+                  <!-- Login Button (Thêm fx:id và onAction) -->
+                  <Button fx:id="loginButton" onAction="#handleLoginButtonAction" alignment="CENTER" mnemonicParsing="false" prefHeight="44.0" prefWidth="1000.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 25;" text="Login">
                      <font>
                         <Font size="14.0" />
                      </font>
                      <VBox.margin>
-                        <Insets left="50.0" right="50.0" />
+                        <!-- Tăng khoảng cách trên nếu không dùng progress -->
+                        <Insets left="50.0" right="50.0" top="15.0"/>
                      </VBox.margin>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
                   </Button>
+
+                  <!-- Register Link -->
                   <TextFlow prefHeight="50.0" prefWidth="200.0" textAlignment="CENTER">
                      <VBox.margin>
-                        <Insets top="10.0" />
+                        <Insets top="15.0" bottom="25.0"/>
                      </VBox.margin>
                      <children>
                         <Text fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="Don't have an account? " />
