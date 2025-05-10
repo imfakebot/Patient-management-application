@@ -4,28 +4,35 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
+import java.time.Duration;
+import java.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails; // Interface quyền
-import org.springframework.security.core.userdetails.UserDetailsService; // Implement quyền đơn giản
-import org.springframework.security.core.userdetails.UsernameNotFoundException; // Lớp User của Spring Security
-import org.springframework.security.crypto.password.PasswordEncoder; // Interface UserDetails
-import org.springframework.stereotype.Service; // Interface cần implement
-import org.springframework.transaction.annotation.Isolation; // Exception chuẩn
-import org.springframework.transaction.annotation.Propagation; // Để mã hóa mật khẩu
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pma.model.entity.Doctor;
 import com.pma.model.entity.Patient;
 import com.pma.model.entity.UserAccount;
 import com.pma.repository.DoctorRepository;
-import com.pma.repository.PatientRepository; // Để tạo danh sách quyền đơn giản
+import com.pma.repository.PatientRepository;
 import com.pma.repository.UserAccountRepository;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -35,39 +42,34 @@ import jakarta.persistence.EntityNotFoundException;
  * thực.
  */
 @Service
-public class UserAccountService implements UserDetailsService { // Implement UserDetailsService
+public class UserAccountService implements UserDetailsService {
 
     private static final Logger log = LoggerFactory.getLogger(UserAccountService.class);
 
     private final UserAccountRepository userAccountRepository;
-    private final PatientRepository patientRepository; // Cần để liên kết khi tạo tk Patient
-    private final DoctorRepository doctorRepository; // Cần để liên kết khi tạo tk Doctor
-    private final PasswordEncoder passwordEncoder; // Bean để mã hóa mật khẩu
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    private static final Duration EMAIL_OTP_VALIDITY_DURATION = Duration.ofMinutes(5);
+    private static final int EMAIL_OTP_LENGTH = 6;
 
     @Autowired
     public UserAccountService(UserAccountRepository userAccountRepository,
             PatientRepository patientRepository,
             DoctorRepository doctorRepository,
-            PasswordEncoder passwordEncoder) { // Inject PasswordEncoder
+            @Lazy PasswordEncoder passwordEncoder,
+            @Lazy EmailService emailService) {
         this.userAccountRepository = userAccountRepository;
         this.patientRepository = patientRepository;
         this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
-    /**
-     * Phương thức cốt lõi của UserDetailsService. Được Spring Security gọi tự
-     * động khi người dùng cố gắng đăng nhập. Nhiệm vụ: Tìm UserAccount theo
-     * username, nếu thấy thì tạo và trả về đối tượng UserDetails.
-     *
-     * @param username Tên đăng nhập do người dùng nhập.
-     * @return Đối tượng UserDetails chứa thông tin user (username, password
-     * hash, roles/authorities).
-     * @throws UsernameNotFoundException nếu không tìm thấy user với username
-     * cung cấp.
-     */
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS) // Chỉ đọc
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.debug("Attempting to load user by username: {}", username);
 
@@ -79,36 +81,21 @@ public class UserAccountService implements UserDetailsService { // Implement Use
 
         log.info("User found: {}. Loading details...", username);
 
-        // Tạo danh sách quyền (authorities) từ vai trò (role) của UserAccount
-        // Spring Security thường yêu cầu tiền tố "ROLE_" cho vai trò
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userAccount.getRole().name()); // Lấy tên Enum
-        // làm vai trò
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userAccount.getRole().name());
 
-        // Tạo đối tượng UserDetails chuẩn của Spring Security
-        // User(username, passwordHash, enabled, accountNonExpired,
-        // credentialsNonExpired, accountNonLocked, authorities)
         return new User(userAccount.getUsername(),
                 userAccount.getPasswordHash(),
-                userAccount.isActive(), // enabled
-                true, // accountNonExpired (có thể thêm logic kiểm tra sau)
-                true, // credentialsNonExpired (có thể thêm logic kiểm tra sau)
-                userAccount.getLockoutUntil() == null || userAccount.getLockoutUntil().isBefore(LocalDateTime.now()), // accountNonLocked
-                Collections.singletonList(authority)); // Danh sách quyền
+                userAccount.isActive(),
+                true,
+                true,
+                userAccount.getLockoutUntil() == null || userAccount.getLockoutUntil().isBefore(LocalDateTime.now()),
+                Collections.singletonList(authority));
     }
 
-    /**
-     * Tạo một tài khoản người dùng mới. Mật khẩu sẽ được mã hóa trước khi lưu.
-     *
-     * @param userAccount Đối tượng UserAccount với thông tin cơ bản (username,
-     * password thô, role).
-     * @return UserAccount đã được lưu với mật khẩu đã mã hóa.
-     * @throws IllegalArgumentException nếu username đã tồn tại.
-     */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public UserAccount createUserAccount(UserAccount userAccount) {
         log.info("Attempting to create user account for username: {}", userAccount.getUsername());
 
-        // --- Validation ---
         if (userAccountRepository.findByUsername(userAccount.getUsername()).isPresent()) {
             log.warn("User creation failed. Username already exists: {}", userAccount.getUsername());
             throw new IllegalArgumentException("Username '" + userAccount.getUsername() + "' already exists.");
@@ -120,31 +107,16 @@ public class UserAccountService implements UserDetailsService { // Implement Use
             throw new IllegalArgumentException("User role must be specified.");
         }
 
-        // --- Xử lý ---
-        userAccount.setUserId(null); // Đảm bảo tạo mới
-        // Quan trọng: Mã hóa mật khẩu thô trước khi lưu
+        userAccount.setUserId(null);
         userAccount.setPasswordHash(passwordEncoder.encode(userAccount.getPasswordHash()));
-        userAccount.setActive(true); // Kích hoạt tài khoản mặc định
-        // Các trường khác có thể set giá trị mặc định nếu cần
+        userAccount.setActive(true);
 
-        // --- Data Access ---
         UserAccount savedUser = userAccountRepository.save(userAccount);
         log.info("Successfully created user account with id: {} for username: {}", savedUser.getUserId(),
                 savedUser.getUsername());
         return savedUser;
     }
 
-    /**
-     * Liên kết một UserAccount với một Patient. Chỉ thực hiện nếu cả hai chưa
-     * được liên kết.
-     *
-     * @param userId ID của UserAccount.
-     * @param patientId ID của Patient.
-     * @throws EntityNotFoundException nếu UserAccount hoặc Patient không tồn
-     * tại.
-     * @throws IllegalStateException nếu UserAccount hoặc Patient đã được liên
-     * kết.
-     */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public void linkPatientToUserAccount(UUID userId, UUID patientId) {
         log.info("Attempting to link user account {} to patient {}", userId, patientId);
@@ -153,7 +125,6 @@ public class UserAccountService implements UserDetailsService { // Implement Use
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
 
-        // --- Validation liên kết 1-1 ---
         if (userAccount.getPatient() != null || userAccount.getDoctor() != null) {
             throw new IllegalStateException("UserAccount " + userId + " is already linked to a patient or doctor.");
         }
@@ -162,24 +133,10 @@ public class UserAccountService implements UserDetailsService { // Implement Use
                     + patient.getUserAccount().getUserId());
         }
 
-        // --- Thực hiện liên kết (dùng helper method) ---
-        userAccount.setPatient(patient); // Helper này sẽ gọi lại patient.setUserAccountInternal
-        // Không cần gọi userAccountRepository.save() vì entity được quản lý trong
-        // transaction
+        userAccount.setPatient(patient);
         log.info("Successfully linked user account {} to patient {}", userId, patientId);
     }
 
-    /**
-     * Liên kết một UserAccount với một Doctor. Chỉ thực hiện nếu cả hai chưa
-     * được liên kết.
-     *
-     * @param userId ID của UserAccount.
-     * @param doctorId ID của Doctor.
-     * @throws EntityNotFoundException nếu UserAccount hoặc Doctor không tồn
-     * tại.
-     * @throws IllegalStateException nếu UserAccount hoặc Doctor đã được liên
-     * kết.
-     */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public void linkDoctorToUserAccount(UUID userId, UUID doctorId) {
         log.info("Attempting to link user account {} to doctor {}", userId, doctorId);
@@ -188,7 +145,6 @@ public class UserAccountService implements UserDetailsService { // Implement Use
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + doctorId));
 
-        // --- Validation liên kết 1-1 ---
         if (userAccount.getPatient() != null || userAccount.getDoctor() != null) {
             throw new IllegalStateException("UserAccount " + userId + " is already linked to a patient or doctor.");
         }
@@ -197,44 +153,29 @@ public class UserAccountService implements UserDetailsService { // Implement Use
                     "Doctor " + doctorId + " is already linked to UserAccount " + doctor.getUserAccount().getUserId());
         }
 
-        // --- Thực hiện liên kết (dùng helper method) ---
-        userAccount.setDoctor(doctor); // Helper này sẽ gọi lại doctor.setUserAccountInternal
+        userAccount.setDoctor(doctor);
         log.info("Successfully linked user account {} to doctor {}", userId, doctorId);
     }
 
-    /**
-     * Cập nhật thông tin đăng nhập cuối cùng. Thường được gọi sau khi xác thực
-     * thành công.
-     *
-     * @param username Tên đăng nhập.
-     * @param ipAddress Địa chỉ IP đăng nhập.
-     */
-    @Transactional(propagation = Propagation.REQUIRED) // Cần transaction để cập nhật
+    @Transactional(propagation = Propagation.REQUIRED)
     public void updateUserLoginInfo(String username, String ipAddress) {
         log.debug("Updating last login info for user: {}", username);
         userAccountRepository.findByUsername(username).ifPresent(user -> {
             user.setLastLogin(LocalDateTime.now());
             user.setLastLoginIp(ipAddress);
-            user.setFailedLoginAttempts(0); // Reset số lần đăng nhập sai
-            user.setLockoutUntil(null); // Mở khóa nếu đang bị khóa
-            userAccountRepository.save(user); // Lưu thay đổi
+            user.setFailedLoginAttempts(0);
+            user.setLockoutUntil(null);
+            userAccountRepository.save(user);
             log.info("Updated last login info for user: {}", username);
         });
-        // Không ném lỗi nếu không tìm thấy user ở đây vì có thể xảy ra race condition
     }
 
-    /**
-     * Xử lý khi đăng nhập thất bại. Tăng bộ đếm và có thể khóa tài khoản.
-     *
-     * @param username Tên đăng nhập đã cố gắng.
-     */
     @Transactional(propagation = Propagation.REQUIRED)
     public void handleFailedLoginAttempt(String username) {
         log.warn("Handling failed login attempt for username: {}", username);
         userAccountRepository.findByUsername(username).ifPresent(user -> {
             int attempts = user.getFailedLoginAttempts() + 1;
             user.setFailedLoginAttempts(attempts);
-            // Logic khóa tài khoản đơn giản: khóa 15 phút sau 5 lần sai
             int maxAttempts = 5;
             long lockoutMinutes = 15;
             if (attempts >= maxAttempts) {
@@ -245,13 +186,109 @@ public class UserAccountService implements UserDetailsService { // Implement Use
         });
     }
 
-    // --- Các phương thức khác ---
-    // getById, getAll (có phân trang), updateRole, changePassword, verifyEmail,
-    // generatePasswordResetToken, etc.
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Optional<UserAccount> findByUsername(String username) {
         return userAccountRepository.findByUsername(username);
     }
 
-    // ... (Thêm các phương thức cần thiết khác) ...
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public String enableTotpTwoFactor(UUID userId) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId));
+
+        GoogleAuthenticator gAuth = new GoogleAuthenticator();
+        final GoogleAuthenticatorKey key = gAuth.createCredentials();
+        String secret = key.getKey();
+
+        user.setTwoFactorSecret(secret);
+        user.setTwoFactorEnabled(true);
+        userAccountRepository.save(user);
+
+        log.info("TOTP 2FA enabled for user: {}", user.getUsername());
+        return GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("PMA", user.getUsername(), key);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public void disableTwoFactor(UUID userId) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId));
+
+        user.setTwoFactorEnabled(false);
+        user.setTwoFactorSecret(null);
+        user.setEmailOtpCode(null);
+        user.setEmailOtpExpiresAt(null);
+        userAccountRepository.save(user);
+
+        log.info("2FA disabled for user: {}", user.getUsername());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public void generateAndSendEmailOtp(UUID userId) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId));
+
+        if (user.getPatient() == null || user.getPatient().getEmail() == null) {
+            throw new IllegalStateException("User does not have an email address configured for 2FA.");
+        }
+
+        String otp = RandomStringUtils.randomNumeric(EMAIL_OTP_LENGTH);
+        String hashedOtp = passwordEncoder.encode(otp);
+
+        user.setEmailOtpCode(hashedOtp);
+        user.setEmailOtpExpiresAt(LocalDateTime.now().plus(EMAIL_OTP_VALIDITY_DURATION));
+        userAccountRepository.save(user);
+
+        String recipientEmail = user.getPatient().getEmail();
+        emailService.sendOtpEmail(recipientEmail, user.getUsername(), otp);
+
+        log.info("Email OTP sent to user: {}", user.getUsername());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public boolean verifyTwoFactorCode(UUID userId, String code) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId));
+
+        if (!user.isTwoFactorEnabled()) {
+            log.warn("2FA is not enabled for user: {}", user.getUsername());
+            return false;
+        }
+
+        if (user.getTwoFactorSecret() != null) {
+            try {
+                GoogleAuthenticator gAuth = new GoogleAuthenticator();
+                boolean isValid = gAuth.authorize(user.getTwoFactorSecret(), Integer.parseInt(code));
+                if (isValid) {
+                    log.info("TOTP verification successful for user: {}", user.getUsername());
+                    clearEmailOtp(user);
+                    return true;
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Invalid TOTP format: {}", code);
+            }
+        }
+
+        if (user.getEmailOtpCode() != null && user.getEmailOtpExpiresAt() != null) {
+            if (LocalDateTime.now().isAfter(user.getEmailOtpExpiresAt())) {
+                log.warn("Email OTP expired for user: {}", user.getUsername());
+                clearEmailOtp(user);
+                return false;
+            }
+
+            if (passwordEncoder.matches(code, user.getEmailOtpCode())) {
+                log.info("Email OTP verification successful for user: {}", user.getUsername());
+                clearEmailOtp(user);
+                return true;
+            }
+        }
+
+        log.warn("2FA verification failed for user: {}", user.getUsername());
+        return false;
+    }
+
+    private void clearEmailOtp(UserAccount user) {
+        user.setEmailOtpCode(null);
+        user.setEmailOtpExpiresAt(null);
+        userAccountRepository.save(user);
+    }
 }

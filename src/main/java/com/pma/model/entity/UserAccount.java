@@ -138,6 +138,12 @@ public class UserAccount {
     @Column(name = "two_factor_secret", length = 255)
     private String twoFactorSecret; // Lưu secret key cho TOTP
 
+    @Column(name = "email_otp_code", length = 128)
+    private String emailOtpCode;
+
+    @Column(name = "email_otp_expires_at")
+    private LocalDateTime emailOtpExpiresAt;
+
     @Column(name = "password_reset_token", length = 255)
     private String passwordResetToken;
 

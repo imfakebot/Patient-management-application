@@ -31,7 +31,8 @@ module com.pma {
 
     // === Third-Party Libraries (Automatic Modules / Explicit Modules) ===
     requires com.google.zxing; // Automatic module
-    requires googleauth; // Automatic module
+    requires googleauth; // Automatic module for Google Authenticator
+    requires org.apache.commons.lang3; // For RandomStringUtils
     requires org.hibernate.orm.core; // Module của Hibernate 6+
 
     // --- Dependencies cho Email ---

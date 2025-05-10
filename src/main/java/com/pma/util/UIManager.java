@@ -14,7 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import com.pma.controller.TwoFactorAuthController;
 
 import java.io.IOException;
 import java.net.URL;
@@ -175,6 +177,55 @@ public class UIManager {
         } catch (NullPointerException e) {
             log.error("FXML file not found at path: {}", fxmlPath, e);
             DialogUtil.showErrorAlert("Configuration Error", "Cannot find FXML: " + fxmlPath);
+        }
+    }
+
+    /**
+     * Chuyển đến màn hình xác thực hai yếu tố (2FA).
+     *
+     * @param username Tên người dùng đang xác thực
+     * @param preAuthToken Token xác thực đã qua bước 1 (username/password)
+     */
+    public void switchToTwoFactorAuthScreen(String username, Authentication preAuthToken) {
+        log.info("Switching to Two-Factor Authentication Screen for user: {}", username);
+        try {
+            URL fxmlUrl = Objects.requireNonNull(App.class.getResource("/com/pma/view/TwoFactorAuthView.fxml"),
+                    "FXML file not found: /pma/view/TwoFactorAuthView.fxml");
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            loader.setControllerFactory(springContext::getBean);
+
+            Parent rootNode = loader.load();
+
+            // Lấy controller và truyền dữ liệu
+            TwoFactorAuthController controller = loader.getController();
+            controller.initData(username, preAuthToken);
+
+            if (mainScene == null) {
+                mainScene = new Scene(rootNode, 400, 300);
+                primaryStage.setScene(mainScene);
+            } else {
+                mainScene.setRoot(rootNode);
+                primaryStage.setWidth(400);
+                primaryStage.setHeight(300);
+            }
+
+            primaryStage.setTitle("PMA - Two-Factor Authentication");
+            primaryStage.setResizable(false);
+
+            if (!primaryStage.isShowing()) {
+                primaryStage.show();
+            }
+            primaryStage.centerOnScreen();
+            log.info("Scene switched to 2FA screen for user: {}", username);
+
+        } catch (IOException e) {
+            log.error("Failed to load 2FA FXML scene", e);
+            DialogUtil.showExceptionDialog("UI Load Error",
+                    "Could not load the 2FA screen.",
+                    "FXML: /pma/view/TwoFactorAuthView.fxml", e);
+        } catch (NullPointerException e) {
+            log.error("2FA FXML file not found", e);
+            DialogUtil.showErrorAlert("Configuration Error", "Cannot find 2FA FXML.");
         }
     }
 

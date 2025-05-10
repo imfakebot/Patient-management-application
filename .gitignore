@@ -36,3 +36,5 @@ application-prod.properties
 *.secret
 
 ./src/main/resources/application.properties
+
+./src/test/java

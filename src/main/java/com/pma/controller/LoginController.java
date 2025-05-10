@@ -3,6 +3,7 @@ package com.pma.controller;
 import com.pma.service.UserAccountService;
 import com.pma.util.DialogUtil; // Hoặc cách hiển thị lỗi của bạn
 import com.pma.util.UIManager;   // Lớp quản lý UI của bạn
+import com.pma.model.entity.UserAccount;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -106,37 +107,66 @@ public class LoginController {
         showProgress();
         setFormDisabled(true);
 
-        // Thực hiện xác thực trên luồng nền để không làm đơ UI
         Thread authenticationThread = new Thread(() -> {
             try {
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
-                log.debug("Attempting authentication for user: {}", username);
+                Authentication authentication = authenticationManager.authenticate(token);
 
-                Authentication authentication = authenticationManager.authenticate(token); // Điểm xác thực chính
+                // Lấy UserAccount để kiểm tra 2FA
+                UserAccount userAccount = userAccountService.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException(
+                        "User account details not found post-authentication for: " + username));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("User '{}' logged in successfully. Authorities: {}", username, authentication.getAuthorities());
+                if (userAccount.isTwoFactorEnabled()) {
+                    // --- YÊU CẦU 2FA ---
+                    log.info("User '{}' authenticated (step 1), proceeding to 2FA.", username);
 
-                // Cập nhật thông tin đăng nhập cuối (IP có thể lấy phức tạp hơn trong Desktop)
-                userAccountService.updateUserLoginInfo(username, "DesktopLogin"); // Thay "DesktopLogin" bằng thông tin phù hợp
+                    // Gửi Email OTP nếu không có TOTP secret
+                    if (userAccount.getTwoFactorSecret() == null || userAccount.getTwoFactorSecret().isBlank()) {
+                        try {
+                            userAccountService.generateAndSendEmailOtp(userAccount.getUserId());
+                            log.info("Email OTP sent for 2FA for user: {}", username);
+                        } catch (Exception e) {
+                            log.error("Failed to send Email OTP for user {}: {}", username, e.getMessage());
+                            Platform.runLater(() -> {
+                                hideProgress();
+                                setFormDisabled(false);
+                                showError("Could not send 2FA code. Please try again or contact support.");
+                            });
+                            return;
+                        }
+                    }
 
-                Platform.runLater(() -> {
-                    hideProgress();
-                    uiManager.switchToMainDashboard(); // Chuyển sang màn hình chính
-                });
+                    final Authentication preAuthFor2FA = authentication;
 
-            } catch (UsernameNotFoundException e) {
-                handleAuthenticationFailure("Invalid username or password.", username, false);
-            } catch (BadCredentialsException e) {
+                    Platform.runLater(() -> {
+                        hideProgress();
+                        uiManager.switchToTwoFactorAuthScreen(userAccount.getUsername(), preAuthFor2FA);
+                    });
+
+                } else {
+                    // --- ĐĂNG NHẬP THÀNH CÔNG (KHÔNG CÓ 2FA) ---
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info("User '{}' logged in successfully (2FA not enabled). Authorities: {}",
+                            username, authentication.getAuthorities());
+                    userAccountService.updateUserLoginInfo(username, "DesktopLogin_No2FA");
+
+                    Platform.runLater(() -> {
+                        hideProgress();
+                        uiManager.switchToMainDashboard();
+                    });
+                }
+
+            } catch (UsernameNotFoundException | BadCredentialsException e) {
                 handleAuthenticationFailure("Invalid username or password.", username, true);
             } catch (LockedException e) {
                 handleAuthenticationFailure("Account is locked. Please contact administrator.", username, false);
             } catch (DisabledException e) {
                 handleAuthenticationFailure("Account is disabled. Please contact administrator.", username, false);
-            } catch (AuthenticationException e) { // Bắt các lỗi AuthenticationException khác
+            } catch (AuthenticationException e) {
                 log.warn("Login failed for username '{}': {}", username, e.getMessage());
                 handleAuthenticationFailure("Login failed: " + e.getMessage(), username, true);
-            } catch (Exception e) { // Bắt các lỗi không mong muốn khác
+            } catch (Exception e) {
                 log.error("An unexpected error occurred during login for user '{}'", username, e);
                 Platform.runLater(() -> {
                     hideProgress();
@@ -145,7 +175,7 @@ public class LoginController {
                 });
             }
         });
-        authenticationThread.setDaemon(true); // Luồng phụ sẽ tự kết thúc khi luồng chính kết thúc
+        authenticationThread.setDaemon(true);
         authenticationThread.start();
     }
 
