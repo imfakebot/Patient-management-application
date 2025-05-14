@@ -1,11 +1,11 @@
 package com.pma.service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
-import java.time.Duration;
-import java.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,6 @@ import com.pma.repository.UserAccountRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -215,8 +214,8 @@ public class UserAccountService implements UserDetailsService {
 
         user.setTwoFactorEnabled(false);
         user.setTwoFactorSecret(null);
-        user.setEmailOtpCode(null);
-        user.setEmailOtpExpiresAt(null);
+        user.setEmailOtpHash(null); // Sử dụng tên trường mới
+        user.setEmailOtpExpiresAt(null); // Sử dụng tên trường mới
         userAccountRepository.save(user);
 
         log.info("2FA disabled for user: {}", user.getUsername());
@@ -231,11 +230,14 @@ public class UserAccountService implements UserDetailsService {
             throw new IllegalStateException("User does not have an email address configured for 2FA.");
         }
 
-        String otp = RandomStringUtils.randomNumeric(EMAIL_OTP_LENGTH);
-        String hashedOtp = passwordEncoder.encode(otp);
+        String otp = new Random().ints(0, 10)
+                .limit(EMAIL_OTP_LENGTH)
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .toString();
+        String hashedOtp = passwordEncoder.encode(otp); // Băm mã OTP
 
-        user.setEmailOtpCode(hashedOtp);
-        user.setEmailOtpExpiresAt(LocalDateTime.now().plus(EMAIL_OTP_VALIDITY_DURATION));
+        user.setEmailOtpHash(hashedOtp); // Lưu mã OTP đã băm
+        user.setEmailOtpExpiresAt(LocalDateTime.now().plus(EMAIL_OTP_VALIDITY_DURATION)); // Lưu thời gian hết hạn
         userAccountRepository.save(user);
 
         String recipientEmail = user.getPatient().getEmail();
@@ -248,7 +250,6 @@ public class UserAccountService implements UserDetailsService {
     public boolean verifyTwoFactorCode(UUID userId, String code) {
         UserAccount user = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId));
-
         if (!user.isTwoFactorEnabled()) {
             log.warn("2FA is not enabled for user: {}", user.getUsername());
             return false;
@@ -268,15 +269,15 @@ public class UserAccountService implements UserDetailsService {
             }
         }
 
-        if (user.getEmailOtpCode() != null && user.getEmailOtpExpiresAt() != null) {
+        if (user.getEmailOtpHash() != null && user.getEmailOtpExpiresAt() != null) { // Kiểm tra hash và thời gian hết hạn
             if (LocalDateTime.now().isAfter(user.getEmailOtpExpiresAt())) {
                 log.warn("Email OTP expired for user: {}", user.getUsername());
                 clearEmailOtp(user);
                 return false;
             }
-
-            if (passwordEncoder.matches(code, user.getEmailOtpCode())) {
-                log.info("Email OTP verification successful for user: {}", user.getUsername());
+            // Xác minh mã người dùng nhập (code) với mã đã băm (user.getEmailOtpHash())
+            if (passwordEncoder.matches(code, user.getEmailOtpHash())) {
+                log.info("Email OTP (hashed) verification successful for user: {}", user.getUsername());
                 clearEmailOtp(user);
                 return true;
             }
@@ -287,8 +288,8 @@ public class UserAccountService implements UserDetailsService {
     }
 
     private void clearEmailOtp(UserAccount user) {
-        user.setEmailOtpCode(null);
-        user.setEmailOtpExpiresAt(null);
+        user.setEmailOtpHash(null); // Sử dụng tên trường mới
+        user.setEmailOtpExpiresAt(null); // Sử dụng tên trường mới
         userAccountRepository.save(user);
     }
 }

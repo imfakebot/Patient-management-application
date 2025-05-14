@@ -167,19 +167,14 @@
                   </Button>
 
                   <!-- Register Link -->
-                  <TextFlow prefHeight="50.0" prefWidth="200.0" textAlignment="CENTER">
+                  <Hyperlink fx:id="registerLink" onAction="#handleRegisterLinkAction" text="Don't have an account? Register here" textFill="#eeeeee">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
                      <VBox.margin>
                         <Insets top="15.0" bottom="25.0"/>
                      </VBox.margin>
-                     <children>
-                        <Text fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="Don't have an account? " />
-                        <Hyperlink text="Register" textFill="#eeeeee">
-                           <font>
-                              <Font name="System Bold" size="12.0" />
-                           </font>
-                        </Hyperlink>
-                     </children>
-                  </TextFlow>
+                  </Hyperlink>
                </children>
             </VBox>
          </children>

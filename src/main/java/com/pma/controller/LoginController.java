@@ -266,4 +266,17 @@ public class LoginController {
             }
         }
     }
+
+    @FXML
+    private void handleRegisterLinkAction(ActionEvent event) {
+        log.info("Register link clicked. Switching to registration screen.");
+        // Gọi UIManager để chuyển sang màn hình đăng ký
+        // Đảm bảo bạn đã tạo phương thức switchToRegisterScreen() trong UIManager
+        if (uiManager != null) {
+            uiManager.switchToRegisterScreen();
+        } else {
+            log.error("UIManager is null, cannot switch to registration screen.");
+            showError("Error: UI Manager not available.");
+        }
+    }
 }

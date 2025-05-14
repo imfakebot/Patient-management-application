@@ -1,6 +1,7 @@
 package com.pma.service;
 
 import java.time.Duration;
+import java.time.format.DateTimeFormatter;
 
 import com.pma.model.entity.Appointment;
 
@@ -11,34 +12,49 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async; // Quan trọng
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+/**
+ * Service xử lý gửi email trong hệ thống. Cung cấp các phương thức gửi email
+ * thông báo và xác thực.
+ */
 @Service
 public class EmailService {
 
-    private static final Duration EMAIL_OTP_VALIDITY_DURATION = Duration.ofMinutes(5); // Define the duration
+    /**
+     * Thời gian hiệu lực của mã OTP gửi qua email (5 phút)
+     */
+    private static final Duration EMAIL_OTP_VALIDITY_DURATION = Duration.ofMinutes(5);
+
+    /**
+     * Định dạng ngày giờ cho nội dung email
+     */
+    private static final DateTimeFormatter EMAIL_DATE_TIME_FORMATTER
+            = DateTimeFormatter.ofPattern("HH:mm 'ngày' dd/MM/yyyy");
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
-    private JavaMailSender mailSender; // Bean được Spring Boot tự cấu hình
+    private JavaMailSender mailSender;
 
-    // Lấy địa chỉ email người gửi từ application.properties (tùy chọn)
-    @Value("${spring.mail.username}") // Hoặc mail.from.address nếu bạn định nghĩa riêng
+    /**
+     * Email gửi đi của hệ thống, được cấu hình trong application.properties
+     */
+    @Value("${spring.mail.username}")
     private String fromEmailAddress;
 
     /**
-     * Gửi email xác nhận đặt lịch hẹn thành công. Chạy bất đồng bộ (@Async).
+     * Gửi email xác nhận đặt lịch hẹn thành công.
      *
-     * @param appointment Đối tượng Appointment đã được lưu.
+     * @param appointment Thông tin lịch hẹn cần gửi xác nhận
      */
-    @Async // Chạy phương thức này trên một luồng khác
-    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true) // Mở transaction mới để đọc entity nếu cần
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     public void sendSchedulingConfirmation(Appointment appointment) {
         if (appointment == null || appointment.getPatient() == null || appointment.getPatient().getEmail() == null) {
             log.warn(
@@ -48,15 +64,6 @@ public class EmailService {
         }
 
         try {
-            // --- QUAN TRỌNG: Xử lý Lazy Loading ---
-            // Do chạy Async, session gốc có thể đã đóng.
-            // Cách 1: Truy cập các trường cần thiết TRƯỚC KHI gọi hàm này từ
-            // AppointmentService.
-            // Cách 2 (An toàn hơn): Lấy lại thông tin cần thiết bên trong hàm này.
-            // (Ví dụ dưới đây giả sử appointment được truyền vào vẫn có thể truy cập được
-            // do được gọi ngay sau save và transaction chưa commit hoàn toàn,
-            // nhưng cách an toàn nhất là truyền ID và fetch lại.)
-
             String patientEmail = appointment.getPatient().getEmail();
             String patientName = appointment.getPatient().getFullName();
             String doctorName = (appointment.getDoctor() != null) ? appointment.getDoctor().getFullName() : "N/A";
@@ -68,18 +75,21 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmailAddress);
             message.setTo(patientEmail);
-            // message.setCc(doctorEmail); // Có thể CC cho bác sĩ nếu cần và có email
-            message.setSubject("Xác nhận Lịch hẹn tại PMA");
+            message.setSubject("Appointment Confirmation - PMA System");
             message.setText(String.format(
-                    "Chào %s,\n\nLịch hẹn của bạn đã được đặt thành công.\n\nThông tin chi tiết:\n"
-                    + "- Mã lịch hẹn: %s\n"
-                    + "- Bác sĩ: %s\n"
-                    + "- Thời gian: %s\n\n"
-                    + "Vui lòng đến đúng giờ. Xin cảm ơn!\n\nPMA System",
+                    "Dear %s,\n\n"
+                    + "Your appointment has been successfully scheduled.\n\n"
+                    + "Appointment Details:\n"
+                    + "- Appointment ID: %s\n"
+                    + "- Doctor: %s\n"
+                    + "- Date & Time: %s\n\n"
+                    + "Please arrive on time.\n\n"
+                    + "Best regards,\n"
+                    + "PMA System",
                     patientName,
                     appointment.getAppointmentId(),
                     doctorName,
-                    dateTime.toString() // Định dạng lại nếu cần
+                    dateTime.format(EMAIL_DATE_TIME_FORMATTER)
             ));
 
             mailSender.send(message);
@@ -89,19 +99,17 @@ public class EmailService {
         } catch (MailException e) {
             log.error("Error sending scheduling confirmation email for appointment id: {}",
                     appointment.getAppointmentId(), e);
-            // Có thể thêm logic retry hoặc thông báo lỗi vào hệ thống
         } catch (Exception e) {
-            // Bắt các lỗi khác, ví dụ LazyInitializationException nếu xảy ra
             log.error("Unexpected error sending scheduling confirmation email for appointment id: {}",
                     appointment.getAppointmentId(), e);
         }
     }
 
     /**
-     * Gửi email thông báo hủy lịch hẹn. Chạy bất đồng bộ (@Async).
+     * Gửi email thông báo hủy lịch hẹn.
      *
-     * @param appointment Đối tượng Appointment đã bị hủy.
-     * @param reason Lý do hủy (lấy từ updateNote trong AppointmentService).
+     * @param appointment Thông tin lịch hẹn bị hủy
+     * @param reason Lý do hủy lịch hẹn (có thể null)
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
@@ -111,14 +119,19 @@ public class EmailService {
                     "Cannot send cancellation notification. Invalid appointment or patient email is null for appointment id: {}",
                     appointment != null ? appointment.getAppointmentId() : "null");
             return;
+
         }
 
         try {
-            // Tương tự như trên, cần đảm bảo truy cập được dữ liệu
+
             String patientEmail = appointment.getPatient().getEmail();
+
             String patientName = appointment.getPatient().getFullName();
+
             String doctorName = (appointment.getDoctor() != null) ? appointment.getDoctor().getFullName() : "N/A";
+
             LocalDateTime dateTime = appointment.getAppointmentDatetime();
+
             String cancellationReason = (reason != null && !reason.isBlank()) ? reason : "Không có lý do cụ thể.";
 
             log.info("Preparing cancellation notification email for appointment id: {} to {}",
@@ -127,24 +140,33 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmailAddress);
             message.setTo(patientEmail);
-            // message.setCc(doctorEmail); // Thông báo cho bác sĩ?
-            message.setSubject("Thông báo Hủy Lịch hẹn tại PMA");
+
+            message.setSubject("Appointment Cancellation Notice - PMA System");
+
             message.setText(String.format(
-                    "Chào %s,\n\nChúng tôi rất tiếc phải thông báo lịch hẹn của bạn đã bị hủy.\n\nThông tin chi tiết:\n"
-                    + "- Mã lịch hẹn: %s\n"
-                    + "- Bác sĩ: %s\n"
-                    + "- Thời gian đã đặt: %s\n"
-                    + "- Lý do hủy: %s\n\n"
-                    + "Vui lòng liên hệ với chúng tôi nếu bạn muốn đặt lại lịch hẹn khác. Xin cảm ơn!\n\nPMA System",
+                    "Dear %s,\n\n"
+                    + "We regret to inform you that your appointment has been cancelled.\n\n"
+                    + "Appointment Details:\n"
+                    + "- Appointment ID: %s\n"
+                    + "- Doctor: %s\n"
+                    + "- Scheduled Time: %s\n"
+                    + "- Cancellation Reason: %s\n\n"
+                    + "Please contact us if you would like to reschedule.\n\n"
+                    + "Best regards,\n"
+                    + "PMA System",
                     patientName,
                     appointment.getAppointmentId(),
                     doctorName,
-                    dateTime.toString(), // Định dạng lại nếu cần
-                    cancellationReason));
+                    dateTime
+                            .format(EMAIL_DATE_TIME_FORMATTER),
+                    cancellationReason
+            ));
 
             mailSender.send(message);
+
             log.info("Successfully sent cancellation notification email for appointment id: {}",
-                    appointment.getAppointmentId());
+                    appointment.getAppointmentId()
+            );
 
         } catch (MailException e) {
             log.error("Error sending cancellation notification email for appointment id: {}",
@@ -155,9 +177,19 @@ public class EmailService {
         }
     }
 
+    /**
+     * Gửi mã OTP qua email cho xác thực hai yếu tố. Email chứa mã OTP và cảnh
+     * báo bảo mật.
+     *
+     * @param recipientEmail Email người nhận
+     * @param username Tên người dùng để hiển thị trong email
+     * @param otp Mã OTP cần gửi
+     */
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW) // Keep transaction management
-    public void sendOtpEmail(String recipientEmail, String username, String otp) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void sendOtpEmail(String recipientEmail, String username,
+            String otp
+    ) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             log.warn("Cannot send OTP email. Invalid recipient email for user: {}", username);
             return;
@@ -169,18 +201,23 @@ public class EmailService {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmailAddress);
             message.setTo(recipientEmail);
-            message.setSubject("Mã xác thực hai yếu tố - PMA System");
-            message.setText(String.format(
-                    "Chào %s,\n\n"
-                    + "Mã xác thực của bạn là:\n\n"
-                    + "%s\n\n"
-                    + "Mã này sẽ hết hạn sau %d phút.\n\n"
-                    + "⚠️ Lưu ý an toàn:\n"
-                    + "- Không chia sẻ mã này với bất kỳ ai\n"
-                    + "- PMA không bao giờ yêu cầu mã này qua điện thoại hoặc email\n"
-                    + "- Nếu bạn không yêu cầu mã này, vui lòng bỏ qua và bảo mật tài khoản ngay\n\n"
-                    + "Trân trọng,\n"
-                    + "PMA System",
+            message.setSubject("Two-Factor Authentication Code - PMA System");
+            message.setText(String.format("""
+                                          Dear %s,
+                                          
+                                          Your authentication code is:
+                                          
+                                          %s
+                                          
+                                          This code will expire in %d minutes.
+                                          
+                                          \u26a0\ufe0f Security Notice:
+                                          - Never share this code with anyone
+                                          - PMA will never ask for this code via phone or email
+                                          - If you didn't request this code, please secure your account immediately
+                                          
+                                          Best regards,
+                                          PMA System""",
                     username,
                     otp,
                     EMAIL_OTP_VALIDITY_DURATION.toMinutes()
