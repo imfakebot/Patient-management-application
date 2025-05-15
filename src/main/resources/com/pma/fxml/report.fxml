@@ -1,86 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-    <?import javafx.scene.chart.*?>
-    <?import javafx.scene.control.*?>
-    <?import javafx.scene.layout.*?>
-    
-    <BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/modern-style.css">
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
         <top>
-            <HBox styleClass="card" alignment="CENTER" spacing="20" style="-fx-background-radius: 0 0 12 12;">
+            <HBox alignment="CENTER" spacing="20" style="-fx-background-radius: 0 0 12 12;" styleClass="card">
                 <padding>
-                    <Insets top="15" right="25" bottom="15" left="25"/>
+                    <Insets bottom="15" left="25" right="25" top="15" />
                 </padding>
-                <Label text="THỐNG KÊ &amp; BÁO CÁO" style="-fx-font-size: 20px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="backButton" text="Quay lại" style="-fx-background-color: #757575; -fx-text-fill: white;"/>
+                <Label style="-fx-font-size: 20px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;" text="THỐNG KÊ &amp; BÁO CÁO" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="backButton" style="-fx-background-color: #757575; -fx-text-fill: white;" text="Quay lại" />
             </HBox>
         </top>
         
         <left>
-            <VBox styleClass="sidebar" spacing="10" prefWidth="250">
+            <VBox prefWidth="250" spacing="10" styleClass="sidebar">
                 <padding>
-                    <Insets top="30" right="15" bottom="30" left="15"/>
+                    <Insets bottom="30" left="15" right="15" top="30" />
                 </padding>
-                <Button text="Dashboard" styleClass="sidebar-button" onAction="#goToDashboard" />
-                <Button text="Quản lý bệnh nhân" styleClass="sidebar-button" onAction="#goToPatientManagement" />
-                <Button text="Quản lý bác sĩ" styleClass="sidebar-button" onAction="#goToDoctorManagement" />
-                <Button text="Quản lý lịch hẹn" styleClass="sidebar-button" onAction="#goToAppointmentManagement" />
-                <Button text="Quản lý đơn thuốc" styleClass="sidebar-button" onAction="#goToPrescriptionManagement" />
-                <Button text="Quản lý hóa đơn" styleClass="sidebar-button" onAction="#goToBillManagement" />
-                <Button text="Quản lý phiếu khám" styleClass="sidebar-button,selected" onAction="#goToMedicalReport" />
-                <Button text="Quản lý tài khoản" styleClass="sidebar-button" onAction="#goToAccountManagement" />
-                <Button text="Báo cáo" styleClass="sidebar-button" onAction="#goToReport" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
-                <Button text="Hồ sơ" styleClass="sidebar-button" onAction="#goToProfile" />
+                <Button fx:id="dashboardButton" styleClass="sidebar-button" text="Bảng điều khiển" />
+                <Button fx:id="patientButton" styleClass="sidebar-button" text="Quản lý Bệnh nhân" />
+                <Button fx:id="appointmentButton" styleClass="sidebar-button" text="Quản lý Cuộc hẹn" />
+                <Button fx:id="profileButton" styleClass="sidebar-button" text="Hồ sơ cá nhân" />
+                <Button fx:id="accountButton" styleClass="sidebar-button" text="Quản lý Tài khoản" />
+                <Button fx:id="reportButton" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;" styleClass="sidebar-button" text="Thống kê &amp; Báo cáo" />
             </VBox>
         </left>
         
         <center>
             <VBox spacing="25" style="-fx-padding: 30;">
                 <!-- Filter Section -->
-                <HBox styleClass="card" spacing="15" alignment="CENTER_LEFT">
+                <HBox alignment="CENTER_LEFT" spacing="15" styleClass="card">
                     <padding>
-                        <Insets top="15" right="20" bottom="15" left="20"/>
+                        <Insets bottom="15" left="20" right="20" top="15" />
                     </padding>
-                    <Label text="Khoảng thời gian:" style="-fx-font-weight: bold;"/>
-                    <DatePicker fx:id="fromDatePicker" promptText="Từ ngày"/>
-                    <DatePicker fx:id="toDatePicker" promptText="Đến ngày"/>
-                    <ComboBox fx:id="reportTypeComboBox" promptText="Loại báo cáo"/>
-                    <Button fx:id="generateButton" text="Tạo báo cáo" styleClass="button"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="exportPdfButton" text="Xuất PDF" styleClass="button"/>
-                    <Button fx:id="exportExcelButton" text="Xuất Excel" styleClass="button"/>
+                    <Label style="-fx-font-weight: bold;" text="Khoảng thời gian:" />
+                    <DatePicker fx:id="fromDatePicker" promptText="Từ ngày" />
+                    <DatePicker fx:id="toDatePicker" promptText="Đến ngày" />
+                    <ComboBox fx:id="reportTypeComboBox" promptText="Loại báo cáo" />
+                    <Button fx:id="generateButton" styleClass="button" text="Tạo báo cáo" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="exportPdfButton" styleClass="button" text="Xuất PDF" />
+                    <Button fx:id="exportExcelButton" styleClass="button" text="Xuất Excel" />
                 </HBox>
                 
                 <!-- Charts Section -->
-                <HBox spacing="25" alignment="TOP_CENTER">
-                    <VBox styleClass="card" spacing="15" prefWidth="450">
-                        <Label text="THỐNG KÊ BỆNH NHÂN" style="-fx-font-size: 16px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
-                        <PieChart fx:id="patientPieChart"/>
+                <HBox alignment="TOP_CENTER" spacing="25">
+                    <VBox prefWidth="450" spacing="15" styleClass="card">
+                        <Label style="-fx-font-size: 16px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;" text="THỐNG KÊ BỆNH NHÂN" />
+                        <PieChart fx:id="patientPieChart" />
                     </VBox>
                     
-                    <VBox styleClass="card" spacing="15" prefWidth="450">
-                        <Label text="DOANH THU THEO THÁNG" style="-fx-font-size: 16px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                    <VBox prefWidth="450" spacing="15" styleClass="card">
+                        <Label style="-fx-font-size: 16px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;" text="DOANH THU THEO THÁNG" />
                         <BarChart fx:id="revenueBarChart">
                             <xAxis>
-                                <CategoryAxis fx:id="monthAxis" label="Tháng"/>
+                                <CategoryAxis fx:id="monthAxis" label="Tháng" />
                             </xAxis>
                             <yAxis>
-                                <NumberAxis fx:id="revenueAxis" label="Doanh thu (VND)"/>
+                                <NumberAxis fx:id="revenueAxis" label="Doanh thu (VND)" />
                             </yAxis>
                         </BarChart>
                     </VBox>
                 </HBox>
                 
                 <!-- Report Table -->
-                <VBox styleClass="card" spacing="15">
-                    <Label text="DỮ LIỆU THỐNG KÊ" style="-fx-font-size: 16px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                <VBox spacing="15" styleClass="card">
+                    <Label style="-fx-font-size: 16px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;" text="DỮ LIỆU THỐNG KÊ" />
                     <TableView fx:id="reportTable">
                         <columns>
-                            <TableColumn fx:id="dateColumn" text="NGÀY" prefWidth="100"/>
-                            <TableColumn fx:id="patientCountColumn" text="SỐ BỆNH NHÂN" prefWidth="120"/>
-                            <TableColumn fx:id="appointmentCountColumn" text="SỐ CUỘC HẸN" prefWidth="120"/>
-                            <TableColumn fx:id="revenueColumn" text="DOANH THU" prefWidth="120"/>
+                            <TableColumn fx:id="dateColumn" maxWidth="1.7976931348623157E308" minWidth="250.0" prefWidth="0.0" text="NGÀY" />
+                            <TableColumn fx:id="patientCountColumn" minWidth="250.0" prefWidth="120" text="SỐ BỆNH NHÂN" />
+                            <TableColumn fx:id="appointmentCountColumn" minWidth="250.0" prefWidth="120" text="SỐ CUỘC HẸN" />
+                            <TableColumn fx:id="revenueColumn" minWidth="250.0" prefWidth="120" text="DOANH THU" />
                         </columns>
                     </TableView>
                 </VBox>
