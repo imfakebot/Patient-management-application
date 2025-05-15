@@ -62,7 +62,7 @@ public class UIManager {
      */
     public void switchToLoginScreen() {
         log.info("Switching to Login Screen");
-        loadAndSetScene("/com/pma/view/LoginView.fxml", "PMA - Login", 600, 450, false); // Ví dụ kích thước
+        loadAndSetScene("/com/pma/fxml/login.fxml", "PMA - Login", 600, 450, false);
     }
 
     /**
@@ -130,14 +130,20 @@ public class UIManager {
      * @param preferredWidth Chiều rộng mong muốn.
      * @param preferredHeight Chiều cao mong muốn.
      * @param resizable Cho phép thay đổi kích thước cửa sổ hay không.
+     *
      */
     public void loadAndSetScene(String fxmlPath, String title, double preferredWidth, double preferredHeight, boolean resizable) {
+
         if (primaryStage == null) {
+
             log.error("Primary stage is not initialized in UIManager.");
+
             throw new IllegalStateException("Primary stage must be initialized before switching scenes.");
+
         }
 
         try {
+
             URL fxmlUrl = Objects.requireNonNull(App.class.getResource(fxmlPath), "FXML file not found: " + fxmlPath);
             log.debug("Loading FXML from: {}", fxmlUrl);
 
@@ -151,22 +157,29 @@ public class UIManager {
             // applyFadeTransition(rootNode);
             if (mainScene == null) {
                 mainScene = new Scene(rootNode, preferredWidth, preferredHeight);
+
                 // Có thể thêm CSS chung cho ứng dụng ở đây
                 // mainScene.getStylesheets().add(App.class.getResource("/com/pma/css/global_style.css").toExternalForm());
                 primaryStage.setScene(mainScene);
+
             } else {
+
                 mainScene.setRoot(rootNode); // Thay đổi root của scene hiện tại
                 // Điều chỉnh kích thước cửa sổ cho scene mới
                 primaryStage.setWidth(preferredWidth);
-                primaryStage.setHeight(preferredHeight);
+                primaryStage
+                        .setHeight(preferredHeight);
             }
 
             primaryStage.setTitle(title);
+
             primaryStage.setResizable(resizable);
 
             if (!primaryStage.isShowing()) {
+
                 primaryStage.show();
             }
+
             primaryStage.centerOnScreen(); // Căn giữa sau khi đặt kích thước
 
             log.info("Scene switched to: {} with title: {}", fxmlPath, title);
@@ -175,20 +188,28 @@ public class UIManager {
             log.error("Failed to load FXML scene: " + fxmlPath, e);
             DialogUtil.showExceptionDialog("UI Load Error", "Could not load the screen.", "FXML: " + fxmlPath, e);
         } catch (NullPointerException e) {
+
             log.error("FXML file not found at path: {}", fxmlPath, e);
+
             DialogUtil.showErrorAlert("Configuration Error", "Cannot find FXML: " + fxmlPath);
+
         }
+
     }
 
     /**
+     *
      * Chuyển đến màn hình xác thực hai yếu tố (2FA).
      *
      * @param username Tên người dùng đang xác thực
+     *
      * @param preAuthToken Token xác thực đã qua bước 1 (username/password)
      */
     public void switchToTwoFactorAuthScreen(String username, Authentication preAuthToken) {
         log.info("Switching to Two-Factor Authentication Screen for user: {}", username);
+
         try {
+
             URL fxmlUrl = Objects.requireNonNull(App.class.getResource("/com/pma/view/TwoFactorAuthView.fxml"),
                     "FXML file not found: /pma/view/TwoFactorAuthView.fxml");
             FXMLLoader loader = new FXMLLoader(fxmlUrl);
@@ -227,6 +248,14 @@ public class UIManager {
             log.error("2FA FXML file not found", e);
             DialogUtil.showErrorAlert("Configuration Error", "Cannot find 2FA FXML.");
         }
+    }
+
+    /**
+     * Chuyển đến màn hình Register.
+     */
+    public void switchToRegisterScreen() {
+        log.info("Switching to Register Screen");
+        loadAndSetScene("/com/pma/fxml/register.fxml", "PMA - Register Account", 700, 650, false);
     }
 
     /**

@@ -5,15 +5,17 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import org.springframework.stereotype.Component;
 
 /**
  * Controller class for managing password visibility toggling in a registration
  * form.
- * 
+ *
  * This class provides functionality to toggle the visibility of password fields
  * (show/hide passwords) for both the main password field and the re-enter
  * password field.
  */
+@Component // Add this annotation
 public class RegisterPasswordToggleController {
 
     @FXML
@@ -39,12 +41,11 @@ public class RegisterPasswordToggleController {
     /**
      * Initializes the controller and sets up the initial state of the password
      * fields and toggle icons.
-     * 
-     * - Sets the initial toggle icons to the "hidden" state.
-     * - Links the content of the PasswordField and TextField for both the main
-     * password
-     * and re-enter password fields using bidirectional binding.
-     * - Hides the TextField by default.
+     *
+     * - Sets the initial toggle icons to the "hidden" state. - Links the
+     * content of the PasswordField and TextField for both the main password and
+     * re-enter password fields using bidirectional binding. - Hides the
+     * TextField by default.
      */
     @FXML
     private void initialize() {
@@ -64,10 +65,10 @@ public class RegisterPasswordToggleController {
 
     /**
      * Toggles the visibility of the main password field.
-     * 
-     * - If the password is currently hidden, it will be shown in plain text.
-     * - If the password is currently visible, it will be hidden.
-     * - Updates the toggle icon accordingly.
+     *
+     * - If the password is currently hidden, it will be shown in plain text. -
+     * If the password is currently visible, it will be hidden. - Updates the
+     * toggle icon accordingly.
      */
     @FXML
     private void togglePasswordVisibility() {
@@ -90,11 +91,10 @@ public class RegisterPasswordToggleController {
 
     /**
      * Toggles the visibility of the re-enter password field.
-     * 
-     * - If the re-entered password is currently hidden, it will be shown in plain
-     * text.
-     * - If the re-entered password is currently visible, it will be hidden.
-     * - Updates the toggle icon accordingly.
+     *
+     * - If the re-entered password is currently hidden, it will be shown in
+     * plain text. - If the re-entered password is currently visible, it will be
+     * hidden. - Updates the toggle icon accordingly.
      */
     @FXML
     private void toggleReEnterPasswordVisibility() {

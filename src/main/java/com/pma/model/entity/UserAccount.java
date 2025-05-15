@@ -138,8 +138,8 @@ public class UserAccount {
     @Column(name = "two_factor_secret", length = 255)
     private String twoFactorSecret; // Lưu secret key cho TOTP
 
-    @Column(name = "email_otp_code", length = 128)
-    private String emailOtpCode;
+    @Column(name = "email_otp_hash", length = 255) // Đổi tên cột và tăng độ dài cho hash
+    private String emailOtpHash;
 
     @Column(name = "email_otp_expires_at")
     private LocalDateTime emailOtpExpiresAt;
@@ -251,6 +251,34 @@ public class UserAccount {
      */
     void setDoctorInternal(Doctor doctor) {
         this.doctor = doctor;
+    }
+
+    /**
+     * Lấy mã OTP email đã được mã hóa.
+     */
+    public String getEmailOtpHash() {
+        return emailOtpHash;
+    }
+
+    /**
+     * Cập nhật mã OTP email đã được mã hóa.
+     */
+    public void setEmailOtpHash(String emailOtpHash) {
+        this.emailOtpHash = emailOtpHash;
+    }
+
+    /**
+     * Lấy thời điểm hết hạn của mã OTP.
+     */
+    public LocalDateTime getEmailOtpExpiresAt() {
+        return emailOtpExpiresAt;
+    }
+
+    /**
+     * Cập nhật thời điểm hết hạn của mã OTP.
+     */
+    public void setEmailOtpExpiresAt(LocalDateTime emailOtpExpiresAt) {
+        this.emailOtpExpiresAt = emailOtpExpiresAt;
     }
 
     // --- equals() và hashCode() chuẩn ---
