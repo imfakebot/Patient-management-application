@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/modern-style.css">
+<!-- Top Header -->
+        <top>
+            <HBox styleClass="card" alignment="CENTER" spacing="20" style="-fx-background-radius: 0 0 12 12;">
+                <padding>
+                    <Insets top="15" right="25" bottom="15" left="25"/>
+                </padding>
+                <Label text="HỆ THỐNG QUẢN LÝ" style="-fx-font-size: 20px; -fx-text-fill: -primary-dark; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="logoutButton" text="Đăng xuất" style="-fx-background-color: #EF5350; -fx-text-fill: white;"/>
+            </HBox>
+        </top>
+
+<!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="200" spacing="10" alignment="TOP_CENTER">
+            <children>
+                <Button text="Dashboard" styleClass="sidebar-button" onAction="#goToDashboard" />
+                <Button text="Quản lý bệnh nhân" styleClass="sidebar-button" onAction="#goToPatientManagement" />
+                <Button text="Quản lý bác sĩ" styleClass="sidebar-button" onAction="#goToDoctorManagement" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
+                <Button text="Quản lý lịch hẹn" styleClass="sidebar-button" onAction="#goToAppointmentManagement" />
+                <Button text="Quản lý đơn thuốc" styleClass="sidebar-button" onAction="#goToPrescriptionManagement" />
+                <Button text="Quản lý hóa đơn" styleClass="sidebar-button" onAction="#goToBillManagement" />
+                <Button text="Quản lý phiếu khám" styleClass="sidebar-button,selected" onAction="#goToMedicalReport" />
+                <Button text="Quản lý tài khoản" styleClass="sidebar-button" onAction="#goToAccountManagement" />
+                <Button text="Báo cáo" styleClass="sidebar-button" onAction="#goToReport" />
+                <Button text="Hồ sơ" styleClass="sidebar-button" onAction="#goToProfile" />
+            </children>
+        </VBox>
+    </left>
+
+    <!-- Main Content -->
+    <center>
+        <VBox spacing="20" alignment="TOP_CENTER" style="-fx-padding: 20;">
+            <children>
+                <!-- Header -->
+                <HBox alignment="CENTER">
+                    <Label text="Quản lý bác sĩ" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: -text-color;" />
+                </HBox>
+
+                <!-- Doctor List -->
+                <TableView fx:id="doctorTable" styleClass="table-view">
+                    <columns>
+                        <TableColumn text="ID" prefWidth="80" />
+                        <TableColumn text="Tên bác sĩ" prefWidth="150" />
+                        <TableColumn text="Chuyên khoa" prefWidth="150" />
+                        <TableColumn text="Số điện thoại" prefWidth="120" />
+                        <TableColumn text="Email" prefWidth="200" />
+                        <TableColumn text="Hành động" prefWidth="100" />
+                    </columns>
+                </TableView>
+
+                <!-- Input Form -->
+                <HBox styleClass="card" spacing="15" alignment="CENTER">
+                    <VBox spacing="10" alignment="TOP_LEFT">
+                        <Label text="Tên bác sĩ" />
+                        <TextField fx:id="nameField" styleClass="text-field" promptText="Nhập tên bác sĩ" />
+                        <Label text="Chuyên khoa" />
+                        <TextField fx:id="specialtyField" styleClass="text-field" promptText="Nhập chuyên khoa" />
+                    </VBox>
+                    <VBox spacing="10" alignment="TOP_LEFT">
+                        <Label text="Số điện thoại" />
+                        <TextField fx:id="phoneField" styleClass="text-field" promptText="Nhập số điện thoại" />
+                        <Label text="Email" />
+                        <TextField fx:id="emailField" styleClass="text-field" promptText="Nhập email" />
+                    </VBox>
+                    <VBox spacing="10" alignment="CENTER">
+                        <Button fx:id="addButton" text="Thêm" styleClass="button" onAction="#addDoctor" />
+                        <Button fx:id="updateButton" text="Sửa" styleClass="button" onAction="#updateDoctor" />
+                        <Button fx:id="deleteButton" text="Xóa" styleClass="button" onAction="#deleteDoctor" />
+                    </VBox>
+                </HBox>
+
+                <!-- Search -->
+                <HBox spacing="10" alignment="CENTER">
+                    <TextField fx:id="searchField" styleClass="text-field" promptText="Tìm kiếm bác sĩ..." />
+                    <Button text="Tìm kiếm" styleClass="button" onAction="#searchDoctor" />
+                </HBox>
+            </children>
+        </VBox>
+    </center>
+</BorderPane>

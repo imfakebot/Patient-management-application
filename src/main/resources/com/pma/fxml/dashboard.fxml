@@ -19,18 +19,20 @@
         
         <!-- Sidebar Navigation -->
         <left>
-            <VBox styleClass="sidebar" spacing="10" prefWidth="250">
+            <VBox styleClass="sidebar" spacing="10" prefWidth="250" alignment="TOP_CENTER">
                 <padding>
                     <Insets top="30" right="15" bottom="30" left="15"/>
                 </padding>
-                <Button fx:id="dashboardButton" text="Bảng điều khiển" styleClass="sidebar-button" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
-                <Button fx:id="patientButton" text="Quản lý Bệnh nhân" styleClass="sidebar-button"/>
-                <Button fx:id="appointmentButton" text="Quản lý Cuộc hẹn" styleClass="sidebar-button"/>
-                <Button fx:id="profileButton" text="Hồ sơ cá nhân" styleClass="sidebar-button"/>
-                <Button fx:id="accountButton" text="Quản lý Tài khoản" styleClass="sidebar-button"/>
-                <Button fx:id="reportButton" text="Thống kê &amp; Báo cáo" styleClass="sidebar-button"/>
-                <Region VBox.vgrow="ALWAYS"/>
-                <Label text="Phiên bản 2.0.0" style="-fx-text-fill: #757575; -fx-font-size: 12px;"/>
+                <Button text="Dashboard" styleClass="sidebar-button" onAction="#goToDashboard" style="-fx-background-color: -primary-color; -fx-text-fill: -light-text;"/>
+                <Button text="Quản lý bệnh nhân" styleClass="sidebar-button" onAction="#goToPatientManagement" />
+                <Button text="Quản lý bác sĩ" styleClass="sidebar-button" onAction="#goToDoctorManagement" />
+                <Button text="Quản lý lịch hẹn" styleClass="sidebar-button" onAction="#goToAppointmentManagement" />
+                <Button text="Quản lý đơn thuốc" styleClass="sidebar-button" onAction="#goToPrescriptionManagement" />
+                <Button text="Quản lý hóa đơn" styleClass="sidebar-button" onAction="#goToBillManagement" />
+                <Button text="Quản lý phiếu khám" styleClass="sidebar-button,selected" onAction="#goToMedicalReport" />
+                <Button text="Quản lý tài khoản" styleClass="sidebar-button" onAction="#goToAccountManagement" />
+                <Button text="Báo cáo" styleClass="sidebar-button" onAction="#goToReport" />
+                <Button text="Hồ sơ" styleClass="sidebar-button" onAction="#goToProfile" />
             </VBox>
         </left>
         
