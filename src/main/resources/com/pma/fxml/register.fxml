@@ -27,7 +27,7 @@
             <Image url="@../img/background.jpg" />
          </image>
       </ImageView>
-      <StackPane maxWidth="800.0" style="-fx-background-color: transparent;">
+      <StackPane maxWidth="800.0" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: transparent;">
          <children>
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="1080.0" prefWidth="800.0" style="-fx-background-color: transparent;" styleClass="viewport" vbarPolicy="NEVER" StackPane.alignment="CENTER">
                <content>
