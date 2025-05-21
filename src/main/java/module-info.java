@@ -12,6 +12,7 @@ module com.pma {
     requires transitive javafx.graphics;
     requires transitive javafx.controls;
     requires transitive javafx.fxml;
+    requires javafx.swing; // THÊM DÒNG NÀY để sử dụng SwingFXUtils
 
     // === Spring Framework Modules ===
     requires spring.boot;
@@ -31,7 +32,8 @@ module com.pma {
     requires spring.security.crypto;
 
     // === Third-Party Libraries ===
-    requires com.google.zxing;
+    requires com.google.zxing; // Cho các lớp core của ZXing như QRCodeWriter
+    requires com.google.zxing.javase; // THÊM DÒNG NÀY để sử dụng MatrixToImageWriter
     requires googleauth;
     requires org.apache.commons.lang3;
     requires org.hibernate.orm.core;

@@ -1,11 +1,11 @@
 package com.pma.model.enums;
 
 public enum UserRole {
-    Patient, Doctor, Admin, Receptionist, Nurse, Lab_Staff("Lab Staff"); // Cần value nếu có khoảng trắng/ký tự đặc biệt
+    Patient, Doctor, Admin;
 
     private final String value;
 
-    UserRole(String value) {
+    UserRole(final String value) {
         this.value = value;
     }
 

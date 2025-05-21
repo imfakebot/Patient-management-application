@@ -312,6 +312,11 @@ public class UserAccount {
                 : this.getClass()).hashCode();
     }
 
+    public Object userIdProperty() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'userIdProperty'");
+    }
+
     // --- Lưu ý về Helper Methods và Unique Constraints ---
     // Helper methods cho OneToOne cần kiểm tra ràng buộc 1-1 logic trong Java.
     // Ràng buộc 1 User / 1 Patient (khác null) cần được đảm bảo ở DB bằng Filtered

@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
@@ -19,7 +20,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<StackPane stylesheets="@../css/register.css, @../css/inte.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.RegisterPasswordToggleController">
+<StackPane stylesheets="@../css/register.css, @../css/inte.css"
+   xmlns="http://javafx.com/javafx/23.0.1"
+   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.RegisterController">
    <children>
       <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -70,7 +73,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="fullNameField" prefHeight="44.0" prefWidth="685.0" promptText="Enter full name" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -88,7 +91,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="usernameField" prefHeight="44.0" prefWidth="685.0" promptText="Enter username" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -180,7 +183,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="insuranceNumberField" prefHeight="44.0" prefWidth="685.0" promptText="Enter insurance number" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -198,7 +201,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="identityNumberField" prefHeight="44.0" prefWidth="685.0" promptText="Enter identity number" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -225,7 +228,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="emailField" prefHeight="44.0" prefWidth="685.0" promptText="Enter email address" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -243,7 +246,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="phoneNumberField" prefHeight="44.0" prefWidth="685.0" promptText="Enter phone number" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -270,7 +273,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <DatePicker editable="false" prefHeight="44.0" prefWidth="350.0" style="-fx-background-radius: 6px; -fx-text-fill: white; -fx-control-inner-background: rgba(255,255,255,0.2); -fx-background-color: black; -fx-border-radius: 6px; -fx-border-color: white;" />
+                                                <DatePicker fx:id="dateOfBirthPicker" editable="false" prefHeight="44.0" prefWidth="350.0" promptText="Select date of birth" style="-fx-background-radius: 6px; -fx-text-fill: white; -fx-control-inner-background: rgba(255,255,255,0.2); -fx-background-color: black; -fx-border-radius: 6px; -fx-border-color: white;" />
                                              </children>
                                           </VBox>
                                           <Region prefHeight="200.0" prefWidth="27.0" HBox.hgrow="ALWAYS" />
@@ -283,14 +286,14 @@
                                                 </Label>
                                                 <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
                                                    <children>
-                                                      <RadioButton mnemonicParsing="false" text="Male" textFill="WHITE">
+                                                      <RadioButton fx:id="maleRadioButton" mnemonicParsing="false" text="Male" textFill="WHITE">
                                                          <font>
                                                             <Font size="14.0" />
                                                          </font>
                                                          <padding>
                                                             <Insets right="40.0" />
                                                          </padding>
-                                                         <toggleGroup>
+                                                         <toggleGroup>                                                            <!-- fx:id cho ToggleGroup đã có ở dưới -->
                                                             <ToggleGroup fx:id="genderGroup" />
                                                          </toggleGroup>
                                                       </RadioButton>
@@ -320,7 +323,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="753.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="addressField1" prefHeight="44.0" prefWidth="753.0" promptText="Address line 1" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -342,9 +345,10 @@
                                                 <Label text="Address" textFill="WHITE">
                                                    <font>
                                                       <Font size="14.0" />
+                                                      <!-- Có vẻ đây là dòng địa chỉ thứ 2, có thể đặt tên khác -->
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="753.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="addressField2" prefHeight="44.0" prefWidth="753.0" promptText="Address line 2 (Optional)" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -368,7 +372,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="emergencyContactNameField" prefHeight="44.0" prefWidth="685.0" promptText="Enter emergency contact name" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -386,7 +390,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="emergencyContactPhoneField" prefHeight="44.0" prefWidth="685.0" promptText="Enter emergency contact phone" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -413,7 +417,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="relationshipField" prefHeight="44.0" prefWidth="685.0" promptText="Enter relationship" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -446,7 +450,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="bloodTypeField" prefHeight="44.0" prefWidth="685.0" promptText="Enter blood type" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -464,7 +468,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextField prefHeight="44.0" prefWidth="685.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
+                                                <TextField fx:id="allergiesField" prefHeight="44.0" prefWidth="685.0" promptText="List any allergies" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 6px; -fx-border-color: white; -fx-border-radius: 6px; -fx-text-fill: white;">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -491,7 +495,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextArea prefHeight="150.0" prefWidth="350.0" style="-fx-control-inner-background: rgba(255,255,255,0.2);">
+                                                <TextArea fx:id="pastMedicalHistoryArea" prefHeight="150.0" prefWidth="350.0" promptText="Describe past medical history" style="-fx-control-inner-background: rgba(255,255,255,0.2); -fx-text-fill: white;" wrapText="true">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -506,7 +510,7 @@
                                                       <Font size="14.0" />
                                                    </font>
                                                 </Label>
-                                                <TextArea prefHeight="150.0" prefWidth="200.0" style="-fx-control-inner-background: rgba(255,255,255,0.2);">
+                                                <TextArea fx:id="chronicDiseasesArea" prefHeight="150.0" prefWidth="200.0" promptText="List any chronic diseases" style="-fx-control-inner-background: rgba(255,255,255,0.2); -fx-text-fill: white;" wrapText="true">
                                                    <font>
                                                       <Font size="14.0" />
                                                    </font>
@@ -521,7 +525,23 @@
                                           <Insets left="25.0" right="25.0" top="20.0" />
                                        </VBox.margin>
                                     </HBox>
-                                    <Button mnemonicParsing="false" prefHeight="44.0" prefWidth="687.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 10px;" text="Submit &amp; Register">
+                                    <!-- Thêm CheckBox cho 2FA vào đây -->
+                                    <HBox alignment="CENTER_LEFT" prefHeight="40.0" prefWidth="200.0">
+                                       <children>
+                                          <CheckBox fx:id="enable2FACheckBox" mnemonicParsing="false" text="Enable Two-Factor Authentication (2FA)" textFill="WHITE">
+                                             <font>
+                                                <Font size="14.0" />
+                                             </font>
+                                             <cursor>
+                                                <Cursor fx:constant="HAND" />
+                                             </cursor>
+                                          </CheckBox>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets left="25.0" right="25.0" top="25.0" />
+                                       </VBox.margin>
+                                    </HBox>
+                                    <Button fx:id="submitButton" mnemonicParsing="false" onAction="#handleSubmitAndRegisterAction" prefHeight="44.0" prefWidth="687.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 10px;" text="Submit &amp; Register">
                                        <font>
                                           <Font size="14.0" />
                                        </font>

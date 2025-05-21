@@ -17,12 +17,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import com.pma.controller.TwoFactorAuthController;
+import com.pma.controller.TwoFactorSetupController;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Quản lý việc tải và chuyển đổi giữa các màn hình (Scenes) trong ứng dụng
@@ -277,5 +279,51 @@ public class UIManager {
      */
     public Stage getPrimaryStage() {
         return primaryStage;
+    }
+
+    public boolean show2FASetupDialog(UUID userId) {
+        String fxmlPath = "/com/pma/view/TwoFactorSetupView.fxml"; // Đường dẫn đến FXML của bạn
+        String title = "Set Up Two-Factor Authentication";
+        log.info("Opening 2FA Setup dialog for user ID: {}", userId);
+
+        try {
+            URL fxmlUrl = Objects.requireNonNull(App.class.getResource(fxmlPath), "FXML file not found: " + fxmlPath);
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            loader.setControllerFactory(springContext::getBean); // Sử dụng Spring để tạo controller
+
+            Parent dialogRoot = loader.load();
+            TwoFactorSetupController controller = loader.getController(); // Lấy controller
+
+            if (controller == null) {
+                log.error("Failed to get controller for FXML: {}", fxmlPath);
+                DialogUtil.showErrorAlert("UI Error", "Could not initialize 2FA setup screen controller.");
+                return false;
+            }
+
+            controller.initData(userId); // Truyền userId cho controller
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(title);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(this.primaryStage);
+            dialogStage.initStyle(StageStyle.UTILITY);
+
+            Scene dialogScene = new Scene(dialogRoot);
+            // Bạn có thể thêm CSS cho dialog nếu cần
+            // dialogScene.getStylesheets().add(App.class.getResource("/com/pma/css/dialog_style.css").toExternalForm());
+            dialogStage.setScene(dialogScene);
+
+            if (primaryStage != null && !primaryStage.getIcons().isEmpty()) {
+                dialogStage.getIcons().add(primaryStage.getIcons().get(0));
+            }
+
+            dialogStage.showAndWait(); // Hiển thị và chờ
+
+            return controller.isSetupSuccessful(); // Lấy kết quả từ controller
+        } catch (IOException | NullPointerException e) {
+            log.error("Failed to load 2FA Setup dialog FXML: " + fxmlPath, e);
+            DialogUtil.showExceptionDialog("UI Load Error", "Could not load 2FA setup screen.", "FXML: " + fxmlPath, e);
+            return false;
+        }
     }
 }

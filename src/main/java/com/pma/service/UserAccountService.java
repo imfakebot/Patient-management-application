@@ -292,4 +292,84 @@ public class UserAccountService implements UserDetailsService {
         user.setEmailOtpExpiresAt(null); // Sử dụng tên trường mới
         userAccountRepository.save(user);
     }
+
+    /**
+     * Lớp lồng nhau tĩnh (static nested class) để chứa secret key và dữ liệu
+     * URL cho mã QR khi thiết lập 2FA.
+     */
+    public static class TwoFactorSecretAndQrData {
+
+        private final String secret;
+        private final String qrCodeData;
+
+        /**
+         * Khởi tạo đối tượng chứa secret và dữ liệu QR.
+         *
+         * @param secret Secret key được tạo cho TOTP.
+         * @param qrCodeData Chuỗi URL (thường là otpauth://...) để tạo mã QR.
+         */
+        public TwoFactorSecretAndQrData(String secret, String qrCodeData) {
+            this.secret = secret;
+            this.qrCodeData = qrCodeData;
+        }
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public String getQrCodeData() {
+            return qrCodeData;
+        }
+    }
+
+    @Transactional(readOnly = true) // Chỉ đọc user, chưa lưu secret
+    public TwoFactorSecretAndQrData generateNewTwoFactorSecretAndQrData(UUID userId) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId + " for 2FA setup."));
+
+        GoogleAuthenticator gAuth = new GoogleAuthenticator();
+        // Tạo một secret key mới và các mã scratch (mã dự phòng)
+        // Bạn có thể chọn lưu các mã scratch này nếu muốn cung cấp cho người dùng
+        final GoogleAuthenticatorKey key = gAuth.createCredentials();
+        String secret = key.getKey();
+
+        // Tạo URL cho QR code
+        // "PMA_System" là tên nhà phát hành (issuer), user.getUsername() là tên tài khoản
+        // Bạn có thể tùy chỉnh tên nhà phát hành
+        String qrCodeUrl = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("PMA_System", user.getUsername(), key);
+
+        // Quan trọng: KHÔNG lưu secret vào UserAccount ở bước này.
+        // Secret chỉ nên được lưu sau khi người dùng xác nhận thành công mã OTP đầu tiên
+        // trong quá trình thiết lập (thông qua phương thức verifyAndEnableTwoFactor).
+        log.info("Generated new 2FA secret and QR data for user: {}", user.getUsername());
+        return new TwoFactorSecretAndQrData(secret, qrCodeUrl);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public boolean verifyAndEnableTwoFactor(UUID userId, String secretToVerifyAndSave, String otpCode) {
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId + " for 2FA verification."));
+
+        GoogleAuthenticator gAuth = new GoogleAuthenticator();
+        try {
+            // Chuyển đổi OTP từ String sang int
+            int otp = Integer.parseInt(otpCode);
+            boolean isValid = gAuth.authorize(secretToVerifyAndSave, otp);
+
+            if (isValid) {
+                user.setTwoFactorSecret(secretToVerifyAndSave); // Lưu secret key
+                user.setTwoFactorEnabled(true);          // Kích hoạt 2FA
+                userAccountRepository.save(user);
+                log.info("TOTP 2FA successfully verified and enabled for user: {}", user.getUsername());
+                clearEmailOtp(user); // Xóa thông tin OTP email cũ nếu có
+                return true;
+            } else {
+                log.warn("Invalid TOTP code during setup for user: {}", user.getUsername());
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            log.warn("Invalid OTP format: {} for user: {}. OTP must be a number.", otpCode, user.getUsername());
+            return false;
+        }
+    }
 }

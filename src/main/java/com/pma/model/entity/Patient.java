@@ -74,7 +74,7 @@ public class Patient {
     @Column(name = "gender", nullable = false, length = 10)
     private Gender gender; // Sử dụng enum Gender đã import
 
-    @Column(name = "phone", nullable = false, length = 15) // unique đã xử lý ở @Table
+    @Column(name = "phone", nullable = false, length = 30) // unique đã xử lý ở @Table
     private String phone;
 
     @Column(name = "email", length = 255) // nullable = true, unique đã xử lý ở @Table
