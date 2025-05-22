@@ -23,18 +23,20 @@
 hs_err_pid*
 replay_pid*
 
-# Ignore  project files
+# Bỏ qua hầu hết các file .properties theo mặc định, vì chúng có thể chứa thông tin bí mật hoặc cấu hình cục bộ.
 *.properties
+# Tuy nhiên, THEO DÕI file application.properties chính nếu nó chỉ chứa các placeholder.
+!src/main/resources/application.properties
 
 # Ignore Maven target directory
 /target/
 
 # Properties files containing secrets or local overrides
+# Những file này được bỏ qua một cách rõ ràng. Đây là thực hành tốt cho các file cấu hình môi trường cụ thể.
 application-local.properties
 application-prod.properties
 /secrets/
 *.secret
 
-./src/main/resources/application.properties
-
-./src/test/java
+# Đảm bảo file .env, chứa các giá trị bí mật thực tế, luôn được bỏ qua.
+.env

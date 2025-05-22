@@ -372,4 +372,39 @@ public class UserAccountService implements UserDetailsService {
             return false;
         }
     }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public boolean verifyEmailOtp(UUID userId, String otp) {
+        log.info("Attempting to verify email OTP for user ID: {}", userId);
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("UserAccount not found with id: {} during email OTP verification.", userId);
+                    return new EntityNotFoundException("UserAccount not found with id: " + userId);
+                });
+
+        if (user.isEmailVerified()) {
+            log.info("Email already verified for user: {}", user.getUsername());
+            return true; // Email đã được xác minh trước đó
+        }
+
+        if (user.getEmailOtpHash() == null || user.getEmailOtpExpiresAt() == null) {
+            log.warn("No email OTP found or expiration time is null for user: {}", user.getUsername());
+            return false;
+        }
+
+        if (LocalDateTime.now().isAfter(user.getEmailOtpExpiresAt())) {
+            log.warn("Email OTP expired for user: {}", user.getUsername());
+            clearEmailOtp(user); // Xóa OTP hết hạn
+            return false;
+        }
+
+        if (passwordEncoder.matches(otp, user.getEmailOtpHash())) {
+            user.setEmailVerified(true);
+            clearEmailOtp(user); // Xóa OTP sau khi xác minh thành công
+            log.info("Email OTP verification successful for user: {}", user.getUsername());
+            return true;
+        }
+        log.warn("Invalid email OTP provided for user: {}", user.getUsername());
+        return false;
+    }
 }

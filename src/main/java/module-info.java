@@ -3,6 +3,7 @@ module com.pma {
     requires java.sql;
     requires jakarta.persistence;
     requires static lombok; // Chỉ cần lúc biên dịch
+    requires jakarta.validation; // THÊM DÒNG NÀY ĐỂ SỬ DỤNG VALIDATION ANNOTATIONS
 
     // === Logging Facade ===
     requires org.slf4j;

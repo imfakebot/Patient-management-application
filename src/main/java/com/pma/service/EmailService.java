@@ -229,6 +229,9 @@ public class EmailService {
         } catch (MailException e) {
             log.error("Failed to send OTP email to user: {} at {}: {}",
                     username, recipientEmail, e.getMessage());
+            // Cân nhắc ném một exception tùy chỉnh ở đây để báo hiệu lỗi gửi email
+            // Ví dụ: throw new EmailSendingException("Failed to send OTP email to " + recipientEmail, e);
+            // Điều này sẽ giúp RegisterController biết và hiển thị lỗi cụ thể hơn.
         }
     }
 }

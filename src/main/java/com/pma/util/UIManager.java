@@ -1,30 +1,30 @@
 package com.pma.util; // Hoặc package của bạn
 
-import com.pma.App; // Lớp Application chính của bạn
-import javafx.animation.FadeTransition;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.image.Image; // Để đặt icon cho cửa sổ
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.util.Duration;
+import java.io.IOException; // Lớp Application chính của bạn
+import java.net.URL;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory; // Để đặt icon cho cửa sổ
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+
+import com.pma.App;
 import com.pma.controller.TwoFactorAuthController;
 import com.pma.controller.TwoFactorSetupController;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import javafx.animation.FadeTransition;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 /**
  * Quản lý việc tải và chuyển đổi giữa các màn hình (Scenes) trong ứng dụng

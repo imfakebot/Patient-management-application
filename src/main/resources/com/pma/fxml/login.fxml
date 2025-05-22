@@ -20,7 +20,7 @@
 <?import javafx.scene.text.TextFlow?>
 
 <!-- Thay đổi Controller cho phù hợp -->
-<StackPane stylesheets="@../css/style.css"
+<StackPane stylesheets="@../css/inte.css"
    xmlns="http://javafx.com/javafx/23.0.1"
    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.LoginController">
    <children>
