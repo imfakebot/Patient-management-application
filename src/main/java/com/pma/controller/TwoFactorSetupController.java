@@ -75,6 +75,25 @@ public class TwoFactorSetupController {
     }
 
     /**
+     * Helper method to handle UI updates when QR code generation fails.
+     * @param errorMessage The error message to display to the user.
+     */
+    private void handleQrGenerationError(String errorMessage) {
+        hideProgress(); // Hide indicator
+        showError(errorMessage);
+        // Disable OTP field and verify button as QR generation failed, but keep cancel active
+        if (otpCodeField != null) {
+            otpCodeField.setDisable(true);
+        }
+        if (verifyAndEnableButton != null) {
+            verifyAndEnableButton.setDisable(true);
+        }
+        if (cancelButton != null) {
+            cancelButton.setDisable(false); // Ensure cancel is usable
+        }
+    }
+
+    /**
      * Generates a new 2FA secret and QR code for the user and displays them.
      * This operation is performed on a background thread to avoid blocking the
      * UI.
@@ -100,36 +119,13 @@ public class TwoFactorSetupController {
                 });
             } catch (WriterException e) { // Specific exception for QR code generation issues
                 log.error("Error generating QR code for user {}: {}", userId, e.getMessage());
-                Platform.runLater(() -> {
-                    hideProgress(); // Hide indicator
-                    showError("Could not generate QR Code. Please try again.");
-                    // Disable OTP field and verify button as QR generation failed, but keep cancel active
-                    if (otpCodeField != null) {
-                        otpCodeField.setDisable(true);
-                    }
-                    if (verifyAndEnableButton != null) {
-                        verifyAndEnableButton.setDisable(true);
-                    }
-                    if (cancelButton != null) {
-                        cancelButton.setDisable(false); // Ensure cancel is usable
-
-                                    }});
+                Platform.runLater(() -> handleQrGenerationError("Could not generate QR Code. Please try again."));
             } catch (Exception e) { // Catch other potential errors from service or logic
                 log.error("Unexpected error generating 2FA data for user {}: {}", userId, e.getMessage(), e);
-                Platform.runLater(() -> {
-                    hideProgress(); // Hide indicator
-                    showError("An unexpected error occurred while generating QR data. Please try again or contact support.");
-                    // Disable OTP field and verify button, but keep cancel active
-                    if (otpCodeField != null) {
-                        otpCodeField.setDisable(true);
-                    }
-                    if (verifyAndEnableButton != null) {
-                        verifyAndEnableButton.setDisable(true);
-                    }
-                    if (cancelButton != null) {
-                        cancelButton.setDisable(false); // Ensure cancel is usable
-
-                                    }});
+                Platform.runLater(() -> handleQrGenerationError(
+                        "An unexpected error occurred while generating QR data. " +
+                        "Please try again or contact support."
+                ));
             }
         });
         qrGenerationThread.setDaemon(true); // Ensure thread doesn't prevent app shutdown
