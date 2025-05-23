@@ -7,7 +7,6 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.ProgressIndicator?><!-- Thêm nếu dùng -->
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -16,13 +15,11 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
 
+<!-- Thêm nếu dùng -->
 <!-- Thay đổi Controller cho phù hợp -->
-<StackPane stylesheets="@../css/inte.css"
-   xmlns="http://javafx.com/javafx/23.0.1"
-   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.LoginController">
+
+<StackPane stylesheets="@../css/inte.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.LoginController">
    <children>
       <!-- Background Image -->
       <ImageView fitHeight="1080.0" fitWidth="1920.0" pickOnBounds="true" preserveRatio="true">
@@ -39,7 +36,7 @@
             <VBox fx:id="loginFormContainer" alignment="TOP_CENTER" maxHeight="500.0" maxWidth="500.0" styleClass="glass-box">
                <children>
                   <!-- Login Title -->
-                  <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="53.0" prefWidth="1147.0" text="Login" textAlignment="CENTER" textFill="WHITE">
+                  <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="53.0" prefWidth="1147.0" text="Đăng nhập" textAlignment="CENTER" textFill="WHITE">
                      <font>
                         <Font name="System Bold" size="36.0" />
                      </font>
@@ -58,7 +55,7 @@
                         <StackPane prefHeight="44.0" prefWidth="200.0">
                            <children>
                               <!-- Thêm fx:id cho TextField Username -->
-                              <TextField fx:id="usernameField" prefHeight="44.0" prefWidth="600.0" promptText="Username" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
+                              <TextField fx:id="usernameField" prefHeight="44.0" prefWidth="600.0" promptText="Tên Đăng Nhập" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -85,19 +82,19 @@
                            </VBox.margin>
                            <children>
                               <!-- PasswordField (ẩn) -->
-                              <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="300.0" promptText="Password" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
+                              <PasswordField fx:id="passwordField" prefHeight="44.0" prefWidth="300.0" promptText="Mật Khẩu" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8px 12px; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
                               </PasswordField>
                               <!-- TextField (hiện) -->
-                              <TextField fx:id="textPasswordField" prefHeight="44.0" promptText="Password" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8 12; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;" visible="false" managed="false">
+                              <TextField fx:id="textPasswordField" managed="false" prefHeight="44.0" promptText="Password" style="-fx-background-color: rgba(255,255,255,0.2); -fx-padding: 8 12; -fx-background-radius: 25; -fx-border-color: white; -fx-border-radius: 25;" visible="false">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
                               </TextField>
                               <!-- Toggle Visibility Icon -->
-                              <ImageView fx:id="toggleImage" fitHeight="25.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" StackPane.alignment="CENTER_RIGHT" style="-fx-cursor: hand;">                                 <!-- Thêm cursor: hand -->
+                              <ImageView fx:id="toggleImage" fitHeight="25.0" fitWidth="25.0" onMouseClicked="#togglePasswordVisibility" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;" StackPane.alignment="CENTER_RIGHT">                                 <!-- Thêm cursor: hand -->
                                  <StackPane.margin>
                                     <Insets right="10.0" />
                                  </StackPane.margin>
@@ -109,7 +106,7 @@
                         <!-- Remember Me / Forgot Password -->
                         <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="200.0">
                            <children>
-                              <CheckBox alignment="CENTER" mnemonicParsing="false" text="Remember me" textFill="#f2f2f2">
+                              <CheckBox alignment="CENTER" mnemonicParsing="false" text="Nhớ mật khẩu" textFill="#f2f2f2">
                                  <HBox.margin>
                                     <Insets left="2.0" />
                                  </HBox.margin>
@@ -118,14 +115,14 @@
                                  </font>
                               </CheckBox>
                               <Region HBox.hgrow="ALWAYS" />
-                              <Hyperlink alignment="CENTER_RIGHT" text="Forgot password?" textFill="WHITE">
+                              <Hyperlink alignment="CENTER_RIGHT" text="Quên mật khẩu?" textFill="WHITE">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Hyperlink>
                            </children>
                            <VBox.margin>
-                              <Insets top="5.0" bottom="-5.0" />
+                              <Insets bottom="-5.0" top="5.0" />
                               <!-- Điều chỉnh khoảng cách nếu cần -->
                            </VBox.margin>
                         </HBox>
@@ -153,13 +150,13 @@
                    -->
 
                   <!-- Login Button (Thêm fx:id và onAction) -->
-                  <Button fx:id="loginButton" onAction="#handleLoginButtonAction" alignment="CENTER" mnemonicParsing="false" prefHeight="44.0" prefWidth="1000.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 25;" text="Login">
+                  <Button fx:id="loginButton" alignment="CENTER" mnemonicParsing="false" onAction="#handleLoginButtonAction" prefHeight="44.0" prefWidth="1000.0" style="-fx-background-color: white; -fx-font-weight: bold; -fx-background-radius: 25;" text="Đăng nhập">
                      <font>
                         <Font size="14.0" />
                      </font>
                      <VBox.margin>
                         <!-- Tăng khoảng cách trên nếu không dùng progress -->
-                        <Insets left="50.0" right="50.0" top="15.0"/>
+                        <Insets left="50.0" right="50.0" top="15.0" />
                      </VBox.margin>
                      <cursor>
                         <Cursor fx:constant="HAND" />
@@ -167,12 +164,12 @@
                   </Button>
 
                   <!-- Register Link -->
-                  <Hyperlink fx:id="registerLink" onAction="#handleRegisterLinkAction" text="Don't have an account? Register here" textFill="#eeeeee">
+                  <Hyperlink fx:id="registerLink" onAction="#handleRegisterLinkAction" text="Không có tài khoản? đăng ký" textFill="#eeeeee">
                      <font>
                         <Font name="System Bold" size="12.0" />
                      </font>
                      <VBox.margin>
-                        <Insets top="15.0" bottom="25.0"/>
+                        <Insets bottom="25.0" top="15.0" />
                      </VBox.margin>
                   </Hyperlink>
                </children>
