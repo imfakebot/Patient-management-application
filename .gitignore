@@ -22,7 +22,6 @@ replay_pid*
 
 # Properties and secrets
 *.properties
-src/main/resources/application.properties
 /secrets/
 *.secret
 .env
