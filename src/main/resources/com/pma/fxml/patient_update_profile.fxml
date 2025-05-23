@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <left>
+        <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
+            <padding>
+                <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+            </padding>
+            <Label style="-fx-font-weight: bold; -fx-text-fill: -primary-color;" styleClass="title-label" text="Bệnh nhân" textFill="#923b9e">
+                <font>
+                    <Font name="System Bold" size="24.0" />
+                </font>
+            </Label>
+            <Button fx:id="patientBookAppointmentButton" onAction="#loadPatientBookAppointment" styleClass="sidebar-button" text="Đặt Lịch hẹn" />
+            <Button fx:id="patientViewPrescriptionsButton" onAction="#loadPatientViewPrescriptions" styleClass="sidebar-button" text="Xem Đơn thuốc" />
+            <Button fx:id="patientMedicalHistoryButton" onAction="#loadPatientMedicalHistory" styleClass="sidebar-button" text="Lịch sử Y tế" />
+            <Button fx:id="patientUpdateProfileButton" onAction="#loadPatientUpdateProfile" style="-fx-background-color: -accent-color;" styleClass="sidebar-button" text="Cập nhật Hồ sơ" />
+            <Button fx:id="patientReviewButton" onAction="#loadPatientReview" styleClass="sidebar-button" text="Gửi Đánh giá" />
+            <Button fx:id="patientViewBillsButton" onAction="#loadPatientViewBills" styleClass="sidebar-button" text="Xem Hóa đơn" />
+        </VBox>
+    </left>
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="10.0" styleClass="card">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <Label styleClass="title-label" text="Cập nhật Hồ sơ" />
+            <VBox alignment="TOP_CENTER" spacing="20.0">
+                <GridPane alignment="TOP_CENTER" hgap="30.0" vgap="10.0">
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    </padding>
+                    <Label text="Họ và Tên:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <TextField fx:id="fullNameField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <Label text="Ngày sinh:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <DatePicker fx:id="dateOfBirthPicker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <Label text="Giới tính:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <ComboBox fx:id="genderCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="Male" />
+                                <String fx:value="Female" />
+                                <String fx:value="Other" />
+                            </FXCollections>
+                        </items>
+                    </ComboBox>
+                    <Label text="Số điện thoại:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                    <TextField fx:id="phoneField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                    <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                    <TextField fx:id="emailField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                    <Label text="Địa chỉ 1:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+               <TextArea fx:id="addressLine1Field" prefHeight="150.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                    <Label text="Địa chỉ 2:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+               <TextArea fx:id="addressLine2Field" prefHeight="150.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                    <Label text="Thành phố/Tỉnh:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                    <TextField fx:id="cityField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                    <Label text="Mã bưu điện:" GridPane.columnIndex="2" />
+                    <TextField fx:id="postalCodeField" GridPane.columnIndex="3" />
+                    <Label text="Quốc gia:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                    <TextField fx:id="countryField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                    <Label text="Nhóm máu:" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                    <ComboBox fx:id="bloodTypeCombo" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                        <items>
+                            <FXCollections fx:factory="observableArrayList">
+                                <String fx:value="A+" />
+                                <String fx:value="A-" />
+                                <String fx:value="B+" />
+                                <String fx:value="B-" />
+                                <String fx:value="O+" />
+                                <String fx:value="O-" />
+                                <String fx:value="AB+" />
+                                <String fx:value="AB-" />
+                            </FXCollections>
+                        </items>
+                    </ComboBox>
+                    <Label text="Dị ứng:" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                    <TextArea fx:id="allergiesField" maxWidth="400.0" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                    <Label text="Tiền sử bệnh:" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+                    <TextArea fx:id="medicalHistoryField" maxWidth="400.0" prefWidth="400.0" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+                    <Label text="Số bảo hiểm:" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                    <TextField fx:id="insuranceNumberField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+                    <Label text="Liên hệ khẩn cấp:" GridPane.rowIndex="7" />
+                    <TextField fx:id="emergencyContactNameField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                    <Label text="SĐT liên hệ khẩn cấp:" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                    <TextField fx:id="emergencyContactPhoneField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="7" />
+                    <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                        <padding>
+                            <Insets top="10.0" />
+                        </padding>
+                        <Button fx:id="updateButton" onAction="#updateProfile" text="Cập nhật Hồ sơ" />
+                        <Button fx:id="clearButton" onAction="#clearForm" text="Xóa Form" />
+                    </HBox>
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="0.0" />
+                        <ColumnConstraints percentWidth="0.0" />
+                  <ColumnConstraints percentWidth="0.0" />
+                  <ColumnConstraints percentWidth="0.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+            <BorderPane.margin>
+                <Insets left="-15.0" />
+            </BorderPane.margin>
+        </VBox>
+    </center>
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+    </padding>
+</BorderPane>
