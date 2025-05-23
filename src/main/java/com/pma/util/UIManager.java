@@ -282,7 +282,7 @@ public class UIManager {
     }
 
     public boolean show2FASetupDialog(UUID userId) {
-        String fxmlPath = "/com/pma/view/TwoFactorSetupView.fxml"; // Đường dẫn đến FXML của bạn
+        String fxmlPath = "/com/pma/fxml/TwoFactorSetupView.fxml"; // Đường dẫn đến FXML của bạn
         String title = "Set Up Two-Factor Authentication";
         log.info("Opening 2FA Setup dialog for user ID: {}", userId);
 

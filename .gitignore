@@ -1,16 +1,10 @@
-# Ignore compiled class files
+# Ignore compiled files and logs
 *.class
-
-# Ignore log files
 *.log
-
-# Ignore BlueJ files
 *.ctxt
-
-# Ignore Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Ignore package files
+# Package files
 *.jar
 *.war
 *.nar
@@ -19,26 +13,19 @@
 *.tar.gz
 *.rar
 
-# Ignore virtual machine crash logs
+# Virtual machine crash logs
 hs_err_pid*
 replay_pid*
 
-# Bỏ qua hầu hết các file .properties theo mặc định, vì chúng có thể chứa thông tin bí mật hoặc cấu hình cục bộ.
-*.properties
-# Tuy nhiên, THEO DÕI file application.properties chính nếu nó chỉ chứa các placeholder.
-!src/main/resources/application.properties
-
-# Ignore Maven target directory
+# Maven
 /target/
 
-# Properties files containing secrets or local overrides
-# Những file này được bỏ qua một cách rõ ràng. Đây là thực hành tốt cho các file cấu hình môi trường cụ thể.
-application-local.properties
-application-prod.properties
+# Properties and secrets
+*.properties
+!src/main/resources/application.properties
 /secrets/
 *.secret
-
-.properties
-
-# Đảm bảo file .env, chứa các giá trị bí mật thực tế, luôn được bỏ qua.
 .env
+
+# Environment specific configs 
+application-*.properties

@@ -1,5 +1,7 @@
 package com.pma.service;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 
@@ -186,13 +188,12 @@ public class EmailService {
      * @param otp Mã OTP cần gửi
      */
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendOtpEmail(String recipientEmail, String username,
+    public Future<Void> sendOtpEmail(String recipientEmail, String username,
             String otp
     ) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             log.warn("Cannot send OTP email. Invalid recipient email for user: {}", username);
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
         try {
@@ -225,13 +226,15 @@ public class EmailService {
 
             mailSender.send(message);
             log.info("Successfully sent OTP email to user: {}", username);
-
+            return CompletableFuture.completedFuture(null);
         } catch (MailException e) {
             log.error("Failed to send OTP email to user: {} at {}: {}",
                     username, recipientEmail, e.getMessage());
-            // Cân nhắc ném một exception tùy chỉnh ở đây để báo hiệu lỗi gửi email
-            // Ví dụ: throw new EmailSendingException("Failed to send OTP email to " + recipientEmail, e);
-            // Điều này sẽ giúp RegisterController biết và hiển thị lỗi cụ thể hơn.
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            future.completeExceptionally(
+                    new RuntimeException("Failed to send OTP email to " + recipientEmail
+                            + ". Please check mail server configuration or network.", e));
+            return future;
         }
     }
 }

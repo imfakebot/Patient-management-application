@@ -1,19 +1,26 @@
 package com.pma.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.pma.model.entity.Patient;
 import com.pma.model.entity.UserAccount;
 import com.pma.model.enums.Gender;
 import com.pma.model.enums.UserRole;
+import com.pma.service.EmailService;
 import com.pma.service.PatientService;
 import com.pma.service.UserAccountService;
-import com.pma.util.DialogUtil;
+import com.pma.util.DialogUtil; // Import EmailService
 import com.pma.util.UIManager;
 
 import javafx.application.Platform;
@@ -50,8 +57,11 @@ public class RegisterController {
     @Autowired
     private UIManager uiManager;
 
-    // @Autowired
-    // private PasswordEncoder passwordEncoder; // Bỏ comment nếu bạn tự băm PW ở đây
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService; // Inject EmailService
     @FXML
     private VBox registerFormContainer; // VBox cha chứa các trường đăng ký chính
 
@@ -139,7 +149,12 @@ public class RegisterController {
 
     private Image eyeOpenImage;
     private Image eyeClosedImage;
-    private UserAccount pendingUserAccount; // Lưu UserAccount đang chờ xác minh OTP
+
+    // Store pending data until OTP verification
+    private UserAccount pendingUserAccountData;
+    private Patient pendingPatientData;
+    private String pendingOtpHash;
+    private LocalDateTime pendingOtpExpiry;
 
     private Image loadImage(String path) {
         try {
@@ -251,71 +266,81 @@ public class RegisterController {
         showProgress();
         setFormDisabled(true);
 
-        Thread registrationThread;
+        // Create in-memory entities first
+        UserAccount tempUserAccount = new UserAccount();
+        tempUserAccount.setUsername(username);
+        tempUserAccount.setPasswordHash(password); // Raw password, service will hash
+        tempUserAccount.setRole(UserRole.Patient);
+        tempUserAccount.setEmailVerified(false); // Will be true after OTP
+        tempUserAccount.setTwoFactorEnabled(false); // Can be enabled later
+        tempUserAccount.setActive(true); // Activate immediately, email verification is separate
 
-        registrationThread = new Thread(() -> {
+        Patient tempPatient = new Patient();
+        tempPatient.setFullName(patientFullName);
+        tempPatient.setDateOfBirth(patientDob);
+        String genderValue = selectedGenderRadio.getText();
+        tempPatient.setGender(genderValue.equalsIgnoreCase("Male") ? Gender.MALE
+                : (genderValue.equalsIgnoreCase("FEMALE") ? Gender.FEMALE : Gender.OTHER));
+        tempPatient.setPhone(patientPhoneNumber);
+        tempPatient.setEmail(email); // Use the validated email
+        tempPatient.setAddressLine1(patientAddress1);
+        if (patientAddress2 != null && !patientAddress2.isEmpty()) {
+            tempPatient.setAddressLine2(patientAddress2);
+        }
+        tempPatient.setCity(patientCity.isEmpty() ? null : patientCity);
+        tempPatient.setStateProvince(patientStateProvince.isEmpty() ? null : patientStateProvince);
+        tempPatient.setPostalCode(patientPostalCode.isEmpty() ? null : patientPostalCode);
+        tempPatient.setCountry(patientCountry.isEmpty() ? null : patientCountry);
+        tempPatient.setInsuranceNumber(patientInsuranceNumber);
+        tempPatient.setEmergencyContactName(patientEmergencyContactName);
+        tempPatient.setEmergencyContactPhone(patientEmergencyContactPhone);
+        tempPatient.setBloodType(patientBloodType.isEmpty() ? null : patientBloodType);
+        tempPatient.setAllergies(patientAllergies);
+        String combinedMedicalHistory = patientPastMedicalHistory;
+        if (patientChronicDiseases != null && !patientChronicDiseases.isEmpty()) {
+            combinedMedicalHistory += (combinedMedicalHistory.isEmpty() ? "" : "\n") + "Chronic Diseases: "
+                    + patientChronicDiseases;
+        }
+        tempPatient.setMedicalHistory(combinedMedicalHistory);
+
+        // Generate OTP
+        String rawOtp = userAccountService.generateOtpString();
+        String hashedOtp = passwordEncoder.encode(rawOtp);
+        LocalDateTime otpExpiry = LocalDateTime.now().plus(UserAccountService.EMAIL_OTP_VALIDITY_DURATION);
+
+        // Attempt to send OTP in a background thread, but wait for its result
+        Thread otpSendingThread = new Thread(() -> {
             try {
-                UserAccount newUserAccount = new UserAccount();
-                newUserAccount.setUsername(username);
-                newUserAccount.setPasswordHash(password); // Truyền mật khẩu thô
-                newUserAccount.setRole(UserRole.Patient);
-                newUserAccount.setEmailVerified(false);
-                newUserAccount.setTwoFactorEnabled(false);
-                newUserAccount.setActive(true);
+                Future<Void> emailFuture = emailService.sendOtpEmail(email, username, rawOtp);
+                emailFuture.get(20, TimeUnit.SECONDS); // Wait for email sending, with timeout
 
-                UserAccount createdUserAccount = userAccountService.createUserAccount(newUserAccount); // Service băm password
-                pendingUserAccount = createdUserAccount;
-                log.info("UserAccount created for {} with ID: {}", username, pendingUserAccount.getUserId());
+                // Email sent successfully (or at least no immediate error)
+                // Store pending data
+                this.pendingUserAccountData = tempUserAccount;
+                this.pendingPatientData = tempPatient;
+                this.pendingOtpHash = hashedOtp;
+                this.pendingOtpExpiry = otpExpiry;
 
-                Patient newPatient = new Patient();
-                newPatient.setFullName(patientFullName);
-                newPatient.setDateOfBirth(patientDob);
-                String genderValue = selectedGenderRadio.getText();
-                newPatient.setGender(genderValue.equalsIgnoreCase("Male") ? Gender.MALE : (genderValue.equalsIgnoreCase("FEMALE") ? Gender.FEMALE : Gender.OTHER));
-                newPatient.setPhone(patientPhoneNumber);
-                newPatient.setEmail(email);
-                newPatient.setAddressLine1(patientAddress1);
-                if (patientAddress2 != null && !patientAddress2.isEmpty()) {
-                    newPatient.setAddressLine2(patientAddress2);
-                }
-                newPatient.setCity(patientCity.isEmpty() ? null : patientCity);
-                newPatient.setStateProvince(patientStateProvince.isEmpty() ? null : patientStateProvince);
-                newPatient.setPostalCode(patientPostalCode.isEmpty() ? null : patientPostalCode);
-                newPatient.setCountry(patientCountry.isEmpty() ? null : patientCountry);
-                newPatient.setInsuranceNumber(patientInsuranceNumber);
-                newPatient.setEmergencyContactName(patientEmergencyContactName);
-                newPatient.setEmergencyContactPhone(patientEmergencyContactPhone);
-                newPatient.setBloodType(patientBloodType.isEmpty() ? null : patientBloodType);
-                newPatient.setAllergies(patientAllergies);
-                String combinedMedicalHistory = patientPastMedicalHistory;
-                if (patientChronicDiseases != null && !patientChronicDiseases.isEmpty()) {
-                    combinedMedicalHistory += (combinedMedicalHistory.isEmpty() ? "" : "\n") + "Chronic Diseases: " + patientChronicDiseases;
-                }
-                newPatient.setMedicalHistory(combinedMedicalHistory);
-
-                Patient registeredPatient = patientService.registerPatient(newPatient);
-                log.info("Patient profile created for {} with ID: {}", patientFullName, registeredPatient.getPatientId());
-
-                userAccountService.linkPatientToUserAccount(pendingUserAccount.getUserId(), registeredPatient.getPatientId());
-                log.info("UserAccount {} linked with Patient {}", pendingUserAccount.getUserId(), registeredPatient.getPatientId());
-
-                userAccountService.generateAndSendEmailOtp(pendingUserAccount.getUserId());
-                log.info("OTP sent to email: {}", email);
-
+                log.info("OTP send request successful for email: {}", email);
                 Platform.runLater(() -> {
                     hideProgress();
-                    setFormDisabled(false);
+                    // Keep form disabled as we are moving to OTP screen
+                    // setFormDisabled(false);
                     DialogUtil.showInfoAlert("Registration Pending",
-                            "Account created for " + username + ". An OTP has been sent to " + email
+                            "An OTP has been sent to " + email
                             + ". Please verify your email to complete registration.");
                     switchToOtpVerificationView();
                 });
-            } catch (IllegalArgumentException e) {
-                log.warn("Registration failed for username '{}': {}", username, e.getMessage());
+
+            } catch (InterruptedException | ExecutionException | TimeoutException emailEx) {
+                Throwable cause = (emailEx instanceof ExecutionException) ? emailEx.getCause() : emailEx;
+                log.error("Failed to send OTP email during registration for user '{}': {}", username,
+                        cause.getMessage());
                 Platform.runLater(() -> {
                     hideProgress();
                     setFormDisabled(false);
-                    showError(e.getMessage());
+                    showError("Could not send verification OTP: " + cause.getMessage()
+                            + ". Please check your email or try again.");
                 });
             } catch (Exception e) {
                 log.error("An unexpected error occurred during registration for user '{}'", username, e);
@@ -326,8 +351,8 @@ public class RegisterController {
                 });
             }
         });
-        registrationThread.setDaemon(true);
-        registrationThread.start();
+        otpSendingThread.setDaemon(true);
+        otpSendingThread.start();
     }
 
     private void switchToOtpVerificationView() {
@@ -356,8 +381,16 @@ public class RegisterController {
             showOtpError("Please enter the OTP code from your email.");
             return;
         }
-        if (pendingUserAccount == null || pendingUserAccount.getUserId() == null) {
-            showOtpError("No pending registration found. Please try registering again.");
+        if (pendingUserAccountData == null || pendingPatientData == null || pendingOtpHash == null) {
+            showOtpError("Registration session expired or data missing. Please start over.");
+            // Optionally switch back to registration form
+            // Platform.runLater(this::switchToRegistrationFormView); // You'd need to implement this
+            return;
+        }
+
+        if (LocalDateTime.now().isAfter(pendingOtpExpiry)) {
+            showOtpError("OTP has expired. Please resend OTP.");
+            this.pendingOtpHash = null; // Invalidate old OTP
             return;
         }
 
@@ -365,20 +398,37 @@ public class RegisterController {
         setOtpFormDisabled(true);
 
         Thread otpVerificationThread = new Thread(() -> {
-            try {
-                boolean isOtpValid = userAccountService.verifyEmailOtp(pendingUserAccount.getUserId(), otp);
+            if (passwordEncoder.matches(otp, this.pendingOtpHash)) {
+                // OTP is valid, proceed to save data
+                try {
+                    // Finalize user account details
+                    this.pendingUserAccountData.setEmailVerified(true);
+                    // OTP hash is not saved to DB for this flow, it was for verification only
 
-                Platform.runLater(() -> {
-                    hideOtpProgress();
-                    setOtpFormDisabled(false);
-                    if (isOtpValid) {
-                        log.info("Email successfully verified for user: {}", pendingUserAccount.getUsername());
+                    UserAccount createdUserAccount = userAccountService.createUserAccount(this.pendingUserAccountData);
+                    log.info("UserAccount created for {} with ID: {}", createdUserAccount.getUsername(), createdUserAccount.getUserId());
+
+                    Patient registeredPatient = patientService.registerPatient(this.pendingPatientData);
+                    log.info("Patient profile created for {} with ID: {}", registeredPatient.getFullName(), registeredPatient.getPatientId());
+
+                    userAccountService.linkPatientToUserAccount(createdUserAccount.getUserId(), registeredPatient.getPatientId());
+                    log.info("UserAccount {} linked with Patient {}", createdUserAccount.getUserId(), registeredPatient.getPatientId());
+
+                    // Clear pending data as it's now saved
+                    this.pendingUserAccountData = null;
+                    this.pendingPatientData = null;
+                    this.pendingOtpHash = null;
+                    this.pendingOtpExpiry = null;
+
+                    Platform.runLater(() -> {
+                        hideOtpProgress();
+                        // setOtpFormDisabled(false); // Form will be closed
                         DialogUtil.showSuccessAlert("Email Verified", "Your email has been successfully verified.");
 
                         boolean is2FASelected = enable2FACheckBox.isSelected();
                         if (is2FASelected) {
-                            log.info("2FA was selected for user {}. Opening 2FA setup dialog.", pendingUserAccount.getUsername());
-                            boolean twoFaSuccessfullySetup = uiManager.show2FASetupDialog(pendingUserAccount.getUserId());
+                            log.info("2FA was selected for user {}. Opening 2FA setup dialog.", createdUserAccount.getUsername());
+                            boolean twoFaSuccessfullySetup = uiManager.show2FASetupDialog(createdUserAccount.getUserId());
                             if (twoFaSuccessfullySetup) {
                                 DialogUtil.showInfoAlert("2FA Setup Successful", "Two-Factor Authentication has been enabled for your account.");
                             } else {
@@ -391,17 +441,33 @@ public class RegisterController {
                         if (uiManager != null) {
                             uiManager.switchToLoginScreen();
                         }
-                    } else {
-                        log.warn("Invalid or expired OTP for user: {}", pendingUserAccount.getUsername());
-                        showOtpError("Invalid or expired OTP. Please try again or resend.");
-                    }
-                });
-            } catch (Exception e) {
-                log.error("Error during OTP verification for user '{}'", pendingUserAccount.getUsername(), e);
+                    });
+
+                } catch (IllegalArgumentException dbEx) { // Catch specific errors from service layers
+                    log.error("Error saving registration data after OTP verification for {}: {}",
+                            (this.pendingUserAccountData != null ? this.pendingUserAccountData.getUsername() : "N/A"), dbEx.getMessage());
+                    Platform.runLater(() -> {
+                        hideOtpProgress();
+                        setOtpFormDisabled(false);
+                        showOtpError("Error completing registration: " + dbEx.getMessage() + ". Please try again or contact support.");
+                    });
+                } catch (Exception e) { // Catch all other unexpected errors during DB operations
+                    log.error("Unexpected error during saving data post-OTP verification for user '{}'",
+                            (this.pendingUserAccountData != null ? this.pendingUserAccountData.getUsername() : "N/A"), e);
+                    Platform.runLater(() -> {
+                        hideOtpProgress();
+                        setOtpFormDisabled(false);
+                        showOtpError("An unexpected error occurred while saving your data. Please try again.");
+                    });
+                }
+            } else {
+                // Invalid OTP
+                log.warn("Invalid OTP entered for user: {}",
+                        (this.pendingUserAccountData != null ? this.pendingUserAccountData.getUsername() : "unknown"));
                 Platform.runLater(() -> {
                     hideOtpProgress();
                     setOtpFormDisabled(false);
-                    showOtpError("An error occurred during OTP verification. Please try again.");
+                    showOtpError("Invalid or expired OTP. Please try again or resend.");
                 });
             }
         });
@@ -411,23 +477,45 @@ public class RegisterController {
 
     @FXML
     private void handleResendOtpAction(ActionEvent event) {
-        if (pendingUserAccount == null || pendingUserAccount.getUserId() == null) {
+        if (pendingUserAccountData == null || pendingPatientData == null || pendingPatientData.getEmail() == null) {
             showOtpError("No pending registration to resend OTP for.");
             return;
         }
         clearOtpError();
         showOtpProgress();
-        new Thread(() -> {
+        setOtpFormDisabled(true);
+
+        // Generate new OTP
+        String newRawOtp = userAccountService.generateOtpString();
+        String newHashedOtp = passwordEncoder.encode(newRawOtp);
+        LocalDateTime newOtpExpiry = LocalDateTime.now().plus(UserAccountService.EMAIL_OTP_VALIDITY_DURATION);
+
+        Thread resendOtpThread = new Thread(() -> {
             try {
-                userAccountService.generateAndSendEmailOtp(pendingUserAccount.getUserId());
-                Platform.runLater(() -> DialogUtil.showInfoAlert("OTP Resent", "A new OTP has been sent to your email."));
-            } catch (Exception e) {
-                log.error("Failed to resend OTP for user {}: {}", pendingUserAccount.getUsername(), e.getMessage(), e);
-                Platform.runLater(() -> showOtpError("Failed to resend OTP. Please try again later."));
+                Future<Void> emailFuture = emailService.sendOtpEmail(
+                        pendingPatientData.getEmail(), pendingUserAccountData.getUsername(), newRawOtp);
+                emailFuture.get(20, TimeUnit.SECONDS); // Wait for email sending
+
+                // Update pending OTP info
+                this.pendingOtpHash = newHashedOtp;
+                this.pendingOtpExpiry = newOtpExpiry;
+
+                Platform.runLater(() -> {
+                    DialogUtil.showInfoAlert("OTP Resent", "A new OTP has been sent to your email.");
+                });
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                Throwable cause = (e instanceof ExecutionException) ? e.getCause() : e;
+                log.error("Failed to resend OTP for user {}: {}", pendingUserAccountData.getUsername(), cause.getMessage(), cause);
+                Platform.runLater(() -> showOtpError("Failed to resend OTP: " + cause.getMessage() + ". Please try again later."));
             } finally {
-                Platform.runLater(this::hideOtpProgress);
+                Platform.runLater(() -> {
+                    hideOtpProgress();
+                    setOtpFormDisabled(false);
+                });
             }
-        }).start();
+        });
+        resendOtpThread.setDaemon(true);
+        resendOtpThread.start();
     }
 
     @FXML

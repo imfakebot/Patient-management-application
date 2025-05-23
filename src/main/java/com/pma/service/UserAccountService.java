@@ -51,8 +51,8 @@ public class UserAccountService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    private static final Duration EMAIL_OTP_VALIDITY_DURATION = Duration.ofMinutes(5);
-    private static final int EMAIL_OTP_LENGTH = 6;
+    public static final Duration EMAIL_OTP_VALIDITY_DURATION = Duration.ofMinutes(5); // Make public
+    public static final int EMAIL_OTP_LENGTH = 6; // Make public
 
     @Autowired
     public UserAccountService(UserAccountRepository userAccountRepository,
@@ -246,6 +246,16 @@ public class UserAccountService implements UserDetailsService {
         log.info("Email OTP sent to user: {}", user.getUsername());
     }
 
+    /**
+     * Generates a random OTP string.
+     * @return A string representing the OTP.
+     */
+    public String generateOtpString() {
+        return new Random().ints(0, 10)
+                .limit(EMAIL_OTP_LENGTH)
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .toString();
+    }
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public boolean verifyTwoFactorCode(UUID userId, String code) {
         UserAccount user = userAccountRepository.findById(userId)

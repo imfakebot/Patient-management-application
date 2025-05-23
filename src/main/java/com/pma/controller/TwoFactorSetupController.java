@@ -1,5 +1,13 @@
 package com.pma.controller;
 
+import java.awt.image.BufferedImage;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -7,6 +15,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.pma.service.UserAccountService;
 import com.pma.util.DialogUtil;
+
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -19,13 +28,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.awt.image.BufferedImage;
-import java.util.UUID;
 
 @Component
 public class TwoFactorSetupController {
@@ -35,14 +37,22 @@ public class TwoFactorSetupController {
     private static final int QR_CODE_WIDTH = 200;
     private static final int QR_CODE_HEIGHT = 200;
 
-    @FXML private VBox setupFormContainer;
-    @FXML private ImageView qrCodeImageView;
-    @FXML private Label secretKeyLabel;
-    @FXML private TextField otpCodeField;
-    @FXML private Button verifyAndEnableButton;
-    @FXML private Button cancelButton;
-    @FXML private Label errorLabelSetup;
-    @FXML private ProgressIndicator progressIndicatorSetup;
+    @FXML
+    private VBox setupFormContainer;
+    @FXML
+    private ImageView qrCodeImageView;
+    @FXML
+    private Label secretKeyLabel;
+    @FXML
+    private TextField otpCodeField;
+    @FXML
+    private Button verifyAndEnableButton;
+    @FXML
+    private Button cancelButton;
+    @FXML
+    private Label errorLabelSetup;
+    @FXML
+    private ProgressIndicator progressIndicatorSetup;
 
     @Autowired
     private UserAccountService userAccountService;
@@ -54,7 +64,8 @@ public class TwoFactorSetupController {
     @FXML
     public void initialize() {
         hideProgress();
-        clearError();
+        clearError(); // Initial state: no error, form is interactive
+        setFormInteractive(true);
         otpCodeField.setOnAction(this::handleVerifyAndEnableAction); // Allow submitting with Enter key
     }
 
@@ -65,13 +76,13 @@ public class TwoFactorSetupController {
 
     /**
      * Generates a new 2FA secret and QR code for the user and displays them.
-     * This operation is performed on a background thread to avoid blocking the UI.
+     * This operation is performed on a background thread to avoid blocking the
+     * UI.
      */
     private void generateAndDisplayQrCode() {
-        showProgress();
-        setFormDisabled(true);
+        showProgress(); // This will also call setFormInteractive(false)
 
-        new Thread(() -> {
+        Thread qrGenerationThread = new Thread(() -> {
             try {
                 UserAccountService.TwoFactorSecretAndQrData data = userAccountService.generateNewTwoFactorSecretAndQrData(userId);
                 TwoFactorSetupController.this.generatedSecret = data.getSecret();
@@ -84,19 +95,45 @@ public class TwoFactorSetupController {
                     qrCodeImageView.setImage(qrImage);
                     secretKeyLabel.setText(generatedSecret);
                     secretKeyLabel.setWrapText(true);
-                    hideProgress();
-                    setFormDisabled(false);
+                    hideProgress(); // Hide indicator
+                    setFormInteractive(true); // Re-enable form controls
                 });
-            }catch (WriterException e) { // Specific exception for QR code generation issues
+            } catch (WriterException e) { // Specific exception for QR code generation issues
                 log.error("Error generating QR code for user {}: {}", userId, e.getMessage());
                 Platform.runLater(() -> {
-                    hideProgress();
-                    setFormDisabled(false);
+                    hideProgress(); // Hide indicator
                     showError("Could not generate QR Code. Please try again.");
-                    if (verifyAndEnableButton != null) verifyAndEnableButton.setDisable(true);
-                });
+                    // Disable OTP field and verify button as QR generation failed, but keep cancel active
+                    if (otpCodeField != null) {
+                        otpCodeField.setDisable(true);
+                    }
+                    if (verifyAndEnableButton != null) {
+                        verifyAndEnableButton.setDisable(true);
+                    }
+                    if (cancelButton != null) {
+                        cancelButton.setDisable(false); // Ensure cancel is usable
+
+                                    }});
+            } catch (Exception e) { // Catch other potential errors from service or logic
+                log.error("Unexpected error generating 2FA data for user {}: {}", userId, e.getMessage(), e);
+                Platform.runLater(() -> {
+                    hideProgress(); // Hide indicator
+                    showError("An unexpected error occurred while generating QR data. Please try again or contact support.");
+                    // Disable OTP field and verify button, but keep cancel active
+                    if (otpCodeField != null) {
+                        otpCodeField.setDisable(true);
+                    }
+                    if (verifyAndEnableButton != null) {
+                        verifyAndEnableButton.setDisable(true);
+                    }
+                    if (cancelButton != null) {
+                        cancelButton.setDisable(false); // Ensure cancel is usable
+
+                                    }});
             }
-        }).start();
+        });
+        qrGenerationThread.setDaemon(true); // Ensure thread doesn't prevent app shutdown
+        qrGenerationThread.start();
     }
 
     @FXML
@@ -111,32 +148,33 @@ public class TwoFactorSetupController {
             return;
         }
         clearError();
-        showProgress();
-        setFormDisabled(true);
+        showProgress(); // This will also call setFormInteractive(false)
 
-        new Thread(() -> {
+        Thread verificationThread = new Thread(() -> {
             try {
                 boolean isValid = userAccountService.verifyAndEnableTwoFactor(userId, generatedSecret, otp);
                 Platform.runLater(() -> {
-                    hideProgress();
-                    setFormDisabled(false);
                     if (isValid) {
                         this.setupSuccessful = true;
                         DialogUtil.showInfoAlert("2FA Enabled", "Two-Factor Authentication has been successfully enabled for your account.");
-                        closeDialog();
+                        closeDialog(); // No need to hide progress or re-enable form if dialog closes
                     } else {
+                        hideProgress(); // Hide indicator
+                        setFormInteractive(true); // Re-enable form for another try
                         showError("Invalid OTP code. Please try again.");
                     } // Consider adding a mechanism to limit OTP verification attempts
                 });
             } catch (Exception e) {
-                log.error("Error verifying and enabling 2FA for user {}: {}", userId, e.getMessage());
+                log.error("Error verifying and enabling 2FA for user {}: {}", userId, e.getMessage(), e);
                 Platform.runLater(() -> {
-                    hideProgress();
-                    setFormDisabled(false);
+                    hideProgress(); // Hide indicator
+                    setFormInteractive(true); // Re-enable form
                     showError("An error occurred. " + e.getMessage());
                 });
             }
-        }).start();
+        });
+        verificationThread.setDaemon(true); // Ensure thread doesn't prevent app shutdown
+        verificationThread.start();
     }
 
     @FXML
@@ -174,28 +212,43 @@ public class TwoFactorSetupController {
     }
 
     private void showProgress() {
-        if (progressIndicatorSetup != null) progressIndicatorSetup.setVisible(true);
-        // Disable buttons when progress is shown
-        if (verifyAndEnableButton != null) verifyAndEnableButton.setDisable(true);
-        if (cancelButton != null) cancelButton.setDisable(true);
+        if (progressIndicatorSetup != null) {
+            progressIndicatorSetup.setVisible(true);
+        }
+        setFormInteractive(false); // Disable form controls when progress is shown
     }
 
     private void hideProgress() {
-        if (progressIndicatorSetup != null) progressIndicatorSetup.setVisible(false);
-        // Re-enable buttons when progress is hidden, unless form is meant to be disabled
-        boolean formShouldBeDisabled = (setupFormContainer != null && setupFormContainer.isDisabled());
-        if (verifyAndEnableButton != null) verifyAndEnableButton.setDisable(formShouldBeDisabled);
-        if (cancelButton != null) cancelButton.setDisable(formShouldBeDisabled);
+        if (progressIndicatorSetup != null) {
+            progressIndicatorSetup.setVisible(false);
+        }
+        // Note: Re-enabling form controls is now handled explicitly where needed
+        // by calling setFormInteractive(true) after hideProgress().
     }
 
-    private void setFormDisabled(boolean disabled) {
+    /**
+     * Enables or disables interactive elements of the form.
+     *
+     * @param interactive true to enable, false to disable.
+     */
+    private void setFormInteractive(boolean interactive) {
         if (setupFormContainer != null) {
-            setupFormContainer.setDisable(disabled);
-        } else { // Fallback if the main container is not available
-            if (otpCodeField != null) otpCodeField.setDisable(disabled);
-            // Ensure verifyAndEnableButton state considers progressIndicator visibility
-            if (verifyAndEnableButton != null) verifyAndEnableButton.setDisable(disabled || (progressIndicatorSetup != null && progressIndicatorSetup.isVisible()));
-            if (cancelButton != null) cancelButton.setDisable(disabled);
+            // Disabling the container might be too broad if it contains non-interactive elements
+            // that should remain visible/styled normally.
+            // setupFormContainer.setDisable(!interactive);
+        }
+
+        if (otpCodeField != null) {
+            otpCodeField.setDisable(!interactive);
+        }
+        if (verifyAndEnableButton != null) {
+            verifyAndEnableButton.setDisable(!interactive);
+        }
+        // Cancel button might have different logic, e.g., always enabled
+        // or only disabled when progress is very specifically blocking all actions.
+        // For now, group it with other interactive controls.
+        if (cancelButton != null) {
+            cancelButton.setDisable(!interactive);
         }
     }
 }
