@@ -1,28 +1,30 @@
 package com.pma.util; // Hoặc package của bạn
 
-import com.pma.App; // Lớp Application chính của bạn
-import javafx.animation.FadeTransition;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.image.Image; // Để đặt icon cho cửa sổ
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.util.Duration;
+import java.io.IOException; // Lớp Application chính của bạn
+import java.net.URL;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.LoggerFactory; // Để đặt icon cho cửa sổ
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import com.pma.controller.TwoFactorAuthController;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import com.pma.App;
+import com.pma.controller.TwoFactorAuthController;
+import com.pma.controller.TwoFactorSetupController;
+
+import javafx.animation.FadeTransition;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 /**
  * Quản lý việc tải và chuyển đổi giữa các màn hình (Scenes) trong ứng dụng
@@ -277,5 +279,51 @@ public class UIManager {
      */
     public Stage getPrimaryStage() {
         return primaryStage;
+    }
+
+    public boolean show2FASetupDialog(UUID userId) {
+        String fxmlPath = "/com/pma/fxml/TwoFactorSetupView.fxml"; // Đường dẫn đến FXML của bạn
+        String title = "Set Up Two-Factor Authentication";
+        log.info("Opening 2FA Setup dialog for user ID: {}", userId);
+
+        try {
+            URL fxmlUrl = Objects.requireNonNull(App.class.getResource(fxmlPath), "FXML file not found: " + fxmlPath);
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            loader.setControllerFactory(springContext::getBean); // Sử dụng Spring để tạo controller
+
+            Parent dialogRoot = loader.load();
+            TwoFactorSetupController controller = loader.getController(); // Lấy controller
+
+            if (controller == null) {
+                log.error("Failed to get controller for FXML: {}", fxmlPath);
+                DialogUtil.showErrorAlert("UI Error", "Could not initialize 2FA setup screen controller.");
+                return false;
+            }
+
+            controller.initData(userId); // Truyền userId cho controller
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(title);
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(this.primaryStage);
+            dialogStage.initStyle(StageStyle.UTILITY);
+
+            Scene dialogScene = new Scene(dialogRoot);
+            // Bạn có thể thêm CSS cho dialog nếu cần
+            // dialogScene.getStylesheets().add(App.class.getResource("/com/pma/css/dialog_style.css").toExternalForm());
+            dialogStage.setScene(dialogScene);
+
+            if (primaryStage != null && !primaryStage.getIcons().isEmpty()) {
+                dialogStage.getIcons().add(primaryStage.getIcons().get(0));
+            }
+
+            dialogStage.showAndWait(); // Hiển thị và chờ
+
+            return controller.isSetupSuccessful(); // Lấy kết quả từ controller
+        } catch (IOException | NullPointerException e) {
+            log.error("Failed to load 2FA Setup dialog FXML: " + fxmlPath, e);
+            DialogUtil.showExceptionDialog("UI Load Error", "Could not load 2FA setup screen.", "FXML: " + fxmlPath, e);
+            return false;
+        }
     }
 }

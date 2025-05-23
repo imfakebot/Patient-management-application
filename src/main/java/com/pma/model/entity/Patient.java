@@ -1,25 +1,33 @@
 package com.pma.model.entity; // <-- THAY ĐỔI PACKAGE NẾU CẦN
 
 import java.time.LocalDate;
-import java.time.LocalDateTime; // Cần cho Setter(AccessLevel)
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+// ---> IMPORT VALIDATION ANNOTATIONS <---
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size; // Import Size
+
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp; // Cần cho equals/hashCode chuẩn
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
 import com.pma.model.enums.Gender;
 
-import jakarta.persistence.CascadeType; // Cần cho getter view chỉ đọc
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,7 +42,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-// Cân nhắc tạo Enum BloodType nếu muốn chặt chẽ hơn
 
 /**
  * Entity đại diện cho bảng Patients trong cơ sở dữ liệu. Lưu trữ thông tin chi
@@ -65,61 +72,86 @@ public class Patient {
     private UUID patientId;
 
     @Column(name = "full_name", nullable = false, length = 255)
+    @NotBlank(message = "Full name cannot be blank")
+    @Size(max = 255, message = "Full name cannot exceed 255 characters")
     private String fullName;
 
     @Column(name = "date_of_birth", nullable = false)
+    @NotNull(message = "Date of birth cannot be null")
+    @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth; // DATE -> LocalDate
 
     @Enumerated(EnumType.STRING) // Lưu tên Enum
     @Column(name = "gender", nullable = false, length = 10)
+    @NotNull(message = "Gender cannot be null")
     private Gender gender; // Sử dụng enum Gender đã import
 
-    @Column(name = "phone", nullable = false, length = 15) // unique đã xử lý ở @Table
+    @Column(name = "phone", nullable = false, length = 30) // unique đã xử lý ở @Table
+    @NotBlank(message = "Phone number cannot be blank")
+    @Size(max = 30, message = "Phone number cannot exceed 30 characters")
+    @Pattern(regexp = "^\\+?[0-9\\s\\-\\(\\)]{7,30}$", message = "Invalid phone number format")
     private String phone;
 
     @Column(name = "email", length = 255) // nullable = true, unique đã xử lý ở @Table
+    @Email(message = "Invalid email format")
+    @Size(max = 255, message = "Email cannot exceed 255 characters")
     private String email;
 
     // --- Address Fields ---
     // Cân nhắc @Embeddable Address nếu cần tái sử dụng
     @Column(name = "address_line1", length = 255)
+    @Size(max = 255, message = "Address line 1 cannot exceed 255 characters")
     private String addressLine1;
 
     @Column(name = "address_line2", length = 255)
+    @Size(max = 255, message = "Address line 2 cannot exceed 255 characters")
     private String addressLine2;
 
     @Column(name = "city", length = 100)
+    @Size(max = 100, message = "City cannot exceed 100 characters")
     private String city;
 
     @Column(name = "state_province", length = 100)
+    @Size(max = 100, message = "State/Province cannot exceed 100 characters")
     private String stateProvince;
 
     @Column(name = "postal_code", length = 20)
+    @Size(max = 20, message = "Postal code cannot exceed 20 characters")
     private String postalCode;
 
     @Column(name = "country", length = 50)
+    @Size(max = 50, message = "Country cannot exceed 50 characters")
     private String country;
 
     // --- Medical Info ---
     @Column(name = "blood_type", length = 3) // CHECK constraint ở DB
-    private String bloodType; // Có thể dùng Enum BloodType nếu muốn
+    @Size(max = 3, message = "Blood type cannot exceed 3 characters")
+    // Cân nhắc dùng Enum BloodType nếu muốn chặt chẽ hơn
+    // Ví dụ: @Enumerated(EnumType.STRING) private BloodType bloodType;
+    private String bloodType;
 
     @Lob // Cho kiểu TEXT
     @Column(name = "allergies", columnDefinition = "TEXT")
+    // @Size(max = 65535) // Hoặc giới hạn khác tùy theo DB TEXT type
     private String allergies;
 
     @Lob // Cho kiểu TEXT
     @Column(name = "medical_history", columnDefinition = "TEXT")
+    // @Size(max = 65535)
     private String medicalHistory;
 
     // --- Other Info ---
     @Column(name = "insurance_number", length = 50)
+    @Size(max = 50, message = "Insurance number cannot exceed 50 characters")
     private String insuranceNumber;
 
     @Column(name = "emergency_contact_name", length = 255)
+    @Size(max = 255, message = "Emergency contact name cannot exceed 255 characters")
     private String emergencyContactName;
 
-    @Column(name = "emergency_contact_phone", length = 15)
+    @Column(name = "emergency_contact_phone", length = 30) // Tăng độ dài
+    @Size(max = 30, message = "Emergency contact phone cannot exceed 30 characters")
+    @Pattern(regexp = "^\\+?[0-9\\s\\-\\(\\)]{7,30}$", message = "Invalid emergency contact phone format")
     private String emergencyContactPhone;
 
     // --- Timestamps ---
@@ -133,43 +165,41 @@ public class Patient {
 
     // --- Mối quan hệ OneToMany (Phía không sở hữu) ---
     /**
-     * Danh sách các cuộc hẹn của bệnh nhân này. CascadeType.ALL: Xóa Patient sẽ
-     * xóa tất cả Appointments. THẬN TRỌNG! orphanRemoval=true: Xóa Appointment
-     * khỏi Set này cũng xóa nó khỏi DB. Fetch LAZY.
+     * Danh sách các cuộc hẹn của bệnh nhân này. Đổi sang PERSIST/MERGE và
+     * orphanRemoval=false nếu DB có ON DELETE SET NULL hoặc bạn quản lý xóa
+     * riêng.
      */
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, // Xem xét kỹ lưỡng việc dùng ALL
-            fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "patient", cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            fetch = FetchType.LAZY, orphanRemoval = false) // Đổi cascade và orphanRemoval
     @Setter(AccessLevel.PACKAGE)
     private Set<Appointment> appointments = new HashSet<>();
 
     /**
-     * Danh sách các bản ghi y tế của bệnh nhân này. CascadeType.ALL và
-     * orphanRemoval=true thường hợp lý.
+     * Danh sách các bản ghi y tế của bệnh nhân này.
      */
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "patient", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY, orphanRemoval = false)
     @Setter(AccessLevel.PACKAGE)
     private Set<MedicalRecord> medicalRecords = new HashSet<>();
 
     /**
-     * Danh sách các đơn thuốc của bệnh nhân này. CascadeType.ALL và
-     * orphanRemoval=true thường hợp lý.
+     * Danh sách các đơn thuốc của bệnh nhân này.
      */
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "patient", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY, orphanRemoval = false)
     @Setter(AccessLevel.PACKAGE)
     private Set<Prescription> prescriptions = new HashSet<>();
 
     /**
-     * Danh sách các hóa đơn của bệnh nhân này. CascadeType.ALL và
-     * orphanRemoval=true thường hợp lý.
+     * Danh sách các hóa đơn của bệnh nhân này.
      */
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "patient", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY, orphanRemoval = false)
     @Setter(AccessLevel.PACKAGE)
     private Set<Bill> bills = new HashSet<>();
 
     // --- Mối quan hệ OneToOne ---
     /**
      * Tài khoản người dùng liên kết (nếu có). Cascade ALL và orphanRemoval=true
-     * thường hợp lý. Fetch LAZY.
+     * thường hợp lý ở đây nếu UserAccount không thể tồn tại độc lập. Fetch
+     * LAZY.
      */
     @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, optional = true) // Patient
     // có

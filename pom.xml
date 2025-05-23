@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <!-- Sử dụng phiên bản ổn định gần đây (ví dụ: 3.3.10) -->
+        <!-- Sử dụng phiên bản ổn định gần đây. 3.4.5 có thể là snapshot. -->
         <version>3.4.5</version>
         <relativePath/>
     </parent>
@@ -89,6 +89,11 @@
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
 
         <!-- SQL Server JDBC Driver (Parent quản lý version) -->
         <dependency>
@@ -97,10 +102,17 @@
             <!-- Phiên bản được quản lý bởi parent -->
         </dependency>
 
-        <!-- ZXing Core (Cố ý ghi đè version) -->
+        <!-- ZXing for QR Code generation -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
+            <version>${zxing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <!--
+            MatrixToImageWriter is in com.google.zxing.client.j2se which is part of this artifact -->
             <version>${zxing.version}</version>
         </dependency>
 
@@ -117,6 +129,7 @@
             </exclusions>
         </dependency>
 
+        <!-- Đã có com.warrenstrange:googleauth, không cần dev.samstevens.totp:totp-core nữa -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -180,6 +193,12 @@
                         <configuration>
                             <!-- Đảm bảo mainClass đúng với cấu trúc ứng dụng của bạn -->
                             <mainClass>com.pma.App</mainClass>
+                            <modules>
+                                <module>javafx.controls</module>
+                                <module>javafx.fxml</module>
+                                <module>javafx.graphics</module>
+                                <module>javafx.swing</module>                                <!-- Thêm module swing vào đây -->
+                            </modules>
                         </configuration>
                     </execution>
                 </executions>

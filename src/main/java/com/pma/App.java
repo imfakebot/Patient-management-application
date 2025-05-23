@@ -1,10 +1,11 @@
 package com.pma;
 
-import com.pma.util.UIManager; // Import UIManager
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringApplication; // Import UIManager
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext; // Import ConfigurableApplicationContext
-import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.scheduling.annotation.EnableAsync; // Import ConfigurableApplicationContext
+
+import com.pma.util.UIManager;
 
 import javafx.application.Application;
 import javafx.application.Platform; // Import Platform

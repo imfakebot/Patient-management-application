@@ -148,4 +148,15 @@ public final class DialogUtil { // final class vì chỉ chứa static methods
         // alert.initOwner(owner);
         alert.showAndWait();
     }
+
+    /**
+     * Hiển thị một Success Alert (thực chất là Information Alert với mục đích
+     * cụ thể).
+     *
+     * @param title Tiêu đề của dialog.
+     * @param message Nội dung thông báo thành công.
+     */
+    public static void showSuccessAlert(String title, String message) {
+        showAlert(AlertType.INFORMATION, title, null, message);
+    }
 }

@@ -1,16 +1,10 @@
-# Ignore compiled class files
+# Ignore compiled files and logs
 *.class
-
-# Ignore log files
 *.log
-
-# Ignore BlueJ files
 *.ctxt
-
-# Ignore Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Ignore package files
+# Package files
 *.jar
 *.war
 *.nar
@@ -19,22 +13,18 @@
 *.tar.gz
 *.rar
 
-# Ignore virtual machine crash logs
+# Virtual machine crash logs
 hs_err_pid*
 replay_pid*
 
-# Ignore  project files
-*.properties
-
-# Ignore Maven target directory
+# Maven
 /target/
 
-# Properties files containing secrets or local overrides
-application-local.properties
-application-prod.properties
+# Properties and secrets
+*.properties
 /secrets/
 *.secret
+.env
 
-./src/main/resources/application.properties
-
-./src/test/java
+# Environment specific configs 
+application-*.properties
