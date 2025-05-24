@@ -35,6 +35,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -113,7 +114,7 @@ public class RegisterController {
     private TextField emergencyContactPhoneField;
     // @FXML private TextField relationshipField; // Bỏ comment nếu có
     @FXML
-    private TextField bloodTypeField;
+    private ComboBox<String> bloodTypeField; // Changed TextField to ComboBox
     @FXML
     private TextField allergiesField;
     @FXML
@@ -226,7 +227,8 @@ public class RegisterController {
         String patientInsuranceNumber = insuranceNumberField.getText().trim();
         String patientEmergencyContactName = emergencyContactNameField.getText().trim();
         String patientEmergencyContactPhone = emergencyContactPhoneField.getText().trim();
-        String patientBloodType = bloodTypeField.getText().trim();
+        // Get value from ComboBox
+        String patientBloodType = (bloodTypeField.getValue() != null) ? bloodTypeField.getValue().trim() : "";
         String patientAllergies = allergiesField.getText().trim();
         String patientPastMedicalHistory = pastMedicalHistoryArea.getText().trim();
         String patientChronicDiseases = chronicDiseasesArea.getText().trim();

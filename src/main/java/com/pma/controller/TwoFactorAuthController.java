@@ -57,13 +57,17 @@ public class TwoFactorAuthController {
 
     /**
      * Được gọi từ LoginController để truyền username và token xác thực bước 1.
+     *
+     * @param username Tên đăng nhập của người dùng.
+     * @param preAuth Token xác thực từ bước 1 (có thể null nếu OTP được yêu cầu
+     * do đăng nhập sai).
+     * @param infoMessage Thông báo hiển thị cho người dùng.
      */
-    public void initData(String username, Authentication preAuth) {
+    public void initData(String username, Authentication preAuth, String infoMessage) {
         this.usernameFor2FA = username;
         this.preAuthenticatedToken = preAuth;
-        infoLabel2FA.setText("A one-time code has been sent to your registered email or\n"
-                + "please use the code from your authenticator app.");
-        log.info("2FA screen initialized for user: {}", username);
+        infoLabel2FA.setText(infoMessage != null ? infoMessage : "Enter the OTP code.");
+        log.info("2FA/OTP screen initialized for user: {}. Info: {}", username, infoMessage);
     }
 
     @FXML
@@ -76,10 +80,8 @@ public class TwoFactorAuthController {
             return;
         }
         if (usernameFor2FA == null || preAuthenticatedToken == null) {
-            log.error("2FA verification attempted without prior authentication step for user.");
+            log.error("2FA/OTP verification attempted without username.");
             showError("An error occurred. Please try logging in again.");
-            // Có thể chuyển về màn hình login
-            // uiManager.switchToLoginScreen();
             return;
         }
 
@@ -96,16 +98,27 @@ public class TwoFactorAuthController {
                 boolean isValidOtp = userAccountService.verifyTwoFactorCode(userId, otpCode);
 
                 if (isValidOtp) {
-                    log.info("2FA verification successful for user: {}", usernameFor2FA);
-                    // Đăng nhập thành công hoàn toàn
-                    SecurityContextHolder.getContext().setAuthentication(preAuthenticatedToken);
-                    // Cập nhật thông tin đăng nhập cuối (đã làm ở LoginController, nhưng có thể làm lại nếu cần)
-                    // userAccountService.updateUserLoginInfo(usernameFor2FA, "DesktopLogin_2FA_Verified");
+                    log.info("2FA/OTP verification successful for user: {}", usernameFor2FA);
+                    // Quan trọng: Reset số lần đăng nhập sai và cờ yêu cầu OTP
+                    userAccountService.resetFailedLoginAttempts(userId);
 
-                    Platform.runLater(() -> {
-                        hideProgress();
-                        uiManager.switchToMainDashboard();
-                    });
+                    if (preAuthenticatedToken != null) {
+                        // Đây là luồng 2FA chuẩn sau khi đăng nhập bước 1 thành công
+                        SecurityContextHolder.getContext().setAuthentication(preAuthenticatedToken);
+                        userAccountService.updateUserLoginInfo(usernameFor2FA, "DesktopLogin_2FA_Verified");
+                        Platform.runLater(() -> {
+                            hideProgress();
+                            uiManager.switchToMainDashboard();
+                        });
+                    } else {
+                        // Đây là luồng OTP được yêu cầu do đăng nhập sai nhiều lần
+                        log.info("OTP for failed attempts verified for user: {}. User should re-attempt login.", usernameFor2FA);
+                        Platform.runLater(() -> {
+                            hideProgress();
+                            DialogUtil.showInfoAlert("OTP Verified", "OTP verification successful. Please log in with your credentials.");
+                            uiManager.switchToLoginScreen();
+                        });
+                    }
                 } else {
                     log.warn("Invalid 2FA code for user: {}", usernameFor2FA);
                     Platform.runLater(() -> {
@@ -113,7 +126,6 @@ public class TwoFactorAuthController {
                         setFormDisabled(false);
                         showError("Invalid or expired OTP code.");
                     });
-                    // Có thể ghi nhận cố gắng nhập sai OTP
                 }
             } catch (Exception e) {
                 log.error("Error during 2FA verification for user '{}'", usernameFor2FA, e);

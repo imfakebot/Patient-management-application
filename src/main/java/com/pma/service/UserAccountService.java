@@ -53,6 +53,7 @@ public class UserAccountService implements UserDetailsService {
 
     public static final Duration EMAIL_OTP_VALIDITY_DURATION = Duration.ofMinutes(5); // Make public
     public static final int EMAIL_OTP_LENGTH = 6; // Make public
+    public static final int MAX_FAILED_ATTEMPTS_BEFORE_OTP = 5; // Thêm hằng số này
 
     @Autowired
     public UserAccountService(UserAccountRepository userAccountRepository,
@@ -170,19 +171,25 @@ public class UserAccountService implements UserDetailsService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void handleFailedLoginAttempt(String username) {
+    public UserAccount handleFailedLoginAttempt(String username) {
         log.warn("Handling failed login attempt for username: {}", username);
-        userAccountRepository.findByUsername(username).ifPresent(user -> {
+        Optional<UserAccount> optionalUser = userAccountRepository.findByUsername(username);
+        if (optionalUser.isPresent()) {
+            UserAccount user = optionalUser.get();
             int attempts = user.getFailedLoginAttempts() + 1;
             user.setFailedLoginAttempts(attempts);
-            int maxAttempts = 5;
-            long lockoutMinutes = 15;
-            if (attempts >= maxAttempts) {
-                user.setLockoutUntil(LocalDateTime.now().plusMinutes(lockoutMinutes));
-                log.warn("User account locked for username: {} until {}", username, user.getLockoutUntil());
+
+            // Thay vì khóa, yêu cầu OTP
+            if (attempts >= MAX_FAILED_ATTEMPTS_BEFORE_OTP) {
+                user.setOtpRequiredForLogin(true);
+                log.warn("User account {} now requires OTP for login due to {} failed attempts.", username, attempts);
+            } else {
+                user.setOtpRequiredForLogin(false); // Đảm bảo cờ này false nếu chưa đạt ngưỡng
             }
             userAccountRepository.save(user);
-        });
+            return user;
+        }
+        return null;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -248,6 +255,7 @@ public class UserAccountService implements UserDetailsService {
 
     /**
      * Generates a random OTP string.
+     *
      * @return A string representing the OTP.
      */
     public String generateOtpString() {
@@ -256,6 +264,7 @@ public class UserAccountService implements UserDetailsService {
                 .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
                 .toString();
     }
+
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public boolean verifyTwoFactorCode(UUID userId, String code) {
         UserAccount user = userAccountRepository.findById(userId)
@@ -416,5 +425,20 @@ public class UserAccountService implements UserDetailsService {
         }
         log.warn("Invalid email OTP provided for user: {}", user.getUsername());
         return false;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public void resetFailedLoginAttempts(UUID userId) {
+        log.info("Resetting failed login attempts for user ID: {}", userId);
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("UserAccount not found with id: {} during reset failed attempts.", userId);
+                    return new EntityNotFoundException("UserAccount not found with id: " + userId);
+                });
+
+        user.setFailedLoginAttempts(0);
+        user.setOtpRequiredForLogin(false); // Quan trọng: reset cờ yêu cầu OTP
+        userAccountRepository.save(user);
+        log.info("Successfully reset failed login attempts and OTP requirement for user: {}", user.getUsername());
     }
 }

@@ -120,6 +120,12 @@ public class UserAccount {
     @Column(name = "failed_login_attempts", nullable = false)
     private int failedLoginAttempts = 0; // Giá trị mặc định
 
+    /**
+     * Cờ đánh dấu người dùng có cần nhập OTP do đăng nhập sai nhiều lần hay không.
+     */
+    @Column(name = "otp_required_for_login", nullable = false)
+    private boolean otpRequiredForLogin = false; // Mặc định là false
+
     @Column(name = "lockout_until")
     private LocalDateTime lockoutUntil;
 

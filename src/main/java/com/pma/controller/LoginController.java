@@ -13,6 +13,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import java.util.UUID;
 
 import com.pma.model.entity.UserAccount;
 import com.pma.service.UserAccountService;
@@ -125,60 +126,66 @@ public class LoginController {
 
         Thread authenticationThread = new Thread(() -> {
             try {
+                UserAccount userAccount = userAccountService.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+
+                // Kiểm tra nếu OTP đã được yêu cầu do đăng nhập sai nhiều lần trước đó
+                if (userAccount.isOtpRequiredForLogin()) {
+                    log.info("User '{}' requires OTP due to previous failed attempts. Proceeding to OTP screen.", username);
+                    sendOtpAndSwitchTo2FAScreen(userAccount, null,
+                            "An OTP has been sent to your email. Please enter it to continue.");
+                    return;
+                }
+
+                // Tiến hành xác thực bình thường
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
                 Authentication authentication = authenticationManager.authenticate(token);
 
-                UserAccount userAccount = userAccountService.findByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("User account details not found post-authentication: " + username));
+                // Nếu xác thực thành công, reset số lần đăng nhập sai
+                userAccountService.resetFailedLoginAttempts(userAccount.getUserId());
 
-                // --- XỬ LÝ 2FA CƠ BẢN ---
+                // Kiểm tra 2FA chuẩn
                 if (userAccount.isTwoFactorEnabled()) {
                     log.info("User '{}' authenticated (step 1), 2FA is enabled. Proceeding to 2FA screen.", username);
-                    // Logic gửi OTP (ví dụ: email) nếu là phương thức chính hoặc không có TOTP secret
-                    if (userAccount.getTwoFactorSecret() == null || userAccount.getTwoFactorSecret().isBlank()) {
-                        try {
-                            // Giả sử người dùng này sẽ dùng Email OTP nếu chưa setup TOTP
-                            userAccountService.generateAndSendEmailOtp(userAccount.getUserId());
-                            log.info("Email OTP sent for 2FA for user: {}", username);
-                        } catch (Exception e) {
-                            log.error("Failed to send Email OTP for user {}: {}", username, e.getMessage());
-                            Platform.runLater(() -> {
-                                hideProgress();
-                                setFormDisabled(false);
-                                showError("Could not send 2FA code. Please try again or contact support.");
-                            });
-                            return; // Dừng lại nếu lỗi gửi OTP
-                        }
-                    }
-                    // Chuyển sang màn hình 2FA, truyền thông tin xác thực bước 1
-                    final Authentication preAuthFor2FA = authentication; // Để dùng trong Platform.runLater
-                    Platform.runLater(() -> {
-                        hideProgress();
-                        // setFormDisabled(false); // Để người dùng có thể thử lại nếu màn hình 2FA có vấn đề
-                        uiManager.switchToTwoFactorAuthScreen(userAccount.getUsername(), preAuthFor2FA);
-                    });
+                    sendOtpAndSwitchTo2FAScreen(userAccount, authentication, "Enter your 2FA code.");
                 } else {
-                    // --- ĐĂNG NHẬP THÀNH CÔNG (KHÔNG CÓ 2FA HOẶC 2FA ĐÃ QUA) ---
+                    // Đăng nhập thành công, không có 2FA, không yêu cầu OTP do lỗi
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    log.info("User '{}' logged in successfully. Authorities: {}", username, authentication.getAuthorities());
-                    userAccountService.updateUserLoginInfo(username, "DesktopLogin"); // Ghi lại IP nếu có
-
+                    log.info("User '{}' logged in successfully. Authorities: {}", username,
+                            authentication.getAuthorities());
+                    userAccountService.updateUserLoginInfo(username, "DesktopLogin");
                     Platform.runLater(() -> {
                         hideProgress();
-                        uiManager.switchToMainDashboard(); // Chuyển sang màn hình chính
+                        uiManager.switchToMainDashboard();
                     });
                 }
             } catch (UsernameNotFoundException e) { // Lỗi này thường được ném bởi UserDetailsService
-                handleAuthenticationFailure("Invalid username or password.", username, false); // Không count failed attempt vì user không tồn tại
+                handleAuthenticationFailure("Invalid username or password.", username);
             } catch (BadCredentialsException e) { // Sai mật khẩu
-                handleAuthenticationFailure("Invalid username or password.", username, true);
+                UserAccount userAfterFail = userAccountService.handleFailedLoginAttempt(username);
+                if (userAfterFail != null && userAfterFail.isOtpRequiredForLogin()) {
+                    log.warn("User '{}' reached max failed attempts ({}). OTP now required.", username, userAfterFail.getFailedLoginAttempts());
+                    sendOtpAndSwitchTo2FAScreen(userAfterFail, null,
+                            "Too many failed login attempts. An OTP has been sent to your email to continue.");
+                } else {
+                    String attemptInfo = userAfterFail != null ? " (Attempt " + userAfterFail.getFailedLoginAttempts() + "/" + UserAccountService.MAX_FAILED_ATTEMPTS_BEFORE_OTP + ")" : "";
+                    handleAuthenticationFailure("Invalid username or password." + attemptInfo, username);
+                }
             } catch (LockedException e) { // Tài khoản bị khóa
-                handleAuthenticationFailure("Account is locked. Please contact administrator.", username, false);
+                handleAuthenticationFailure("Account is locked. Please contact administrator.", username);
             } catch (DisabledException e) { // Tài khoản bị vô hiệu hóa
-                handleAuthenticationFailure("Account is disabled. Please contact administrator.", username, false);
+                handleAuthenticationFailure("Account is disabled. Please contact administrator.", username);
             } catch (AuthenticationException e) { // Các lỗi xác thực khác
                 log.warn("Authentication failed for username '{}': {}", username, e.getMessage());
-                handleAuthenticationFailure("Authentication failed: " + e.getMessage(), username, true);
+                // Vẫn tính là một lần thử thất bại
+                UserAccount userAfterFail = userAccountService.handleFailedLoginAttempt(username);
+                if (userAfterFail != null && userAfterFail.isOtpRequiredForLogin()) {
+                    log.warn("User '{}' reached max failed attempts after generic auth error. OTP now required.", username);
+                    sendOtpAndSwitchTo2FAScreen(userAfterFail, null,
+                            "Authentication error. An OTP has been sent to your email to continue.");
+                } else {
+                    handleAuthenticationFailure("Authentication failed: " + e.getMessage(), username);
+                }
             } catch (Exception e) { // Lỗi không mong muốn khác
                 log.error("An unexpected error occurred during login for user '{}'", username, e);
                 Platform.runLater(() -> {
@@ -192,20 +199,33 @@ public class LoginController {
         authenticationThread.start();
     }
 
-    private void handleAuthenticationFailure(String errorMessage, String username, boolean countFailedAttempt) {
+    private void sendOtpAndSwitchTo2FAScreen(UserAccount userAccount, Authentication preAuth, String infoMessage) {
+        try {
+            // Gửi OTP qua email bất kể user có bật TOTP hay không, vì đây là flow khôi phục/bảo vệ
+            userAccountService.generateAndSendEmailOtp(userAccount.getUserId());
+            log.info("Email OTP sent for user: {} (Reason: {})", userAccount.getUsername(), infoMessage);
+
+            Platform.runLater(() -> {
+                hideProgress();
+                uiManager.switchToTwoFactorAuthScreen(userAccount.getUsername(), preAuth, infoMessage);
+            });
+        } catch (Exception e) {
+            log.error("Failed to send Email OTP for user {}: {}", userAccount.getUsername(), e.getMessage());
+            Platform.runLater(() -> {
+                hideProgress();
+                setFormDisabled(false);
+                showError("Could not send OTP code. Please try again or contact support.");
+            });
+        }
+    }
+
+    private void handleAuthenticationFailure(String errorMessage, String username) {
         log.warn("Authentication failure for '{}': {}", username, errorMessage);
         Platform.runLater(() -> {
             hideProgress();
             setFormDisabled(false);
             showError(errorMessage);
         });
-        if (countFailedAttempt) {
-            try {
-                userAccountService.handleFailedLoginAttempt(username);
-            } catch (Exception ex) {
-                log.error("Failed to handle failed login attempt for {}: {}", username, ex.getMessage());
-            }
-        }
     }
 
     @FXML

@@ -18,13 +18,20 @@ import javafx.scene.control.Alert;
 @Controller
 public class DashboardController {
 
-    @FXML private Label patientCountLabel;
-    @FXML private Label appointmentCountLabel;
-    @FXML private Label revenueLabel;
-    @FXML private Button patientButton;
-    @FXML private Button appointmentButton;
-    @FXML private Button billButton;
-    @FXML private Button reportButton;
+    @FXML
+    private Label patientCountLabel;
+    @FXML
+    private Label appointmentCountLabel;
+    @FXML
+    private Label revenueLabel;
+    @FXML
+    private Button patientButton;
+    @FXML
+    private Button appointmentButton;
+    @FXML
+    private Button billButton;
+    @FXML
+    private Button reportButton;
 
     @Autowired
     private PatientService patientService;
@@ -46,7 +53,9 @@ public class DashboardController {
         try {
             long patientCount = patientService.getAllPatients(null).getTotalElements();
             long appointmentCount = appointmentService.getAppointmentsBetweenDates(
-                LocalDateTime.now().minusDays(30), LocalDateTime.now(), null).getTotalElements();
+                    LocalDateTime.now().minusDays(30),
+                     LocalDateTime.now(),
+                     null).getTotalElements();
             patientCountLabel.setText(String.valueOf(patientCount));
             appointmentCountLabel.setText(String.valueOf(appointmentCount));
             revenueLabel.setText("N/A"); // Cần logic tính doanh thu từ BillService
