@@ -14,11 +14,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import java.util.UUID;
+import java.util.Optional;
 
 import com.pma.model.entity.UserAccount;
 import com.pma.service.UserAccountService;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
+import com.pma.service.UserAccountService.TwoFactorSecretAndQrData; // Assuming this might be used elsewhere or a typo
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -26,9 +28,12 @@ import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -140,6 +145,7 @@ public class LoginController {
                 // Tiến hành xác thực bình thường
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
                 Authentication authentication = authenticationManager.authenticate(token);
+                final Authentication finalAuth = authentication; // Khai báo finalAuth một lần ở đây
 
                 // Nếu xác thực thành công, reset số lần đăng nhập sai
                 userAccountService.resetFailedLoginAttempts(userAccount.getUserId());
@@ -147,17 +153,50 @@ public class LoginController {
                 // Kiểm tra 2FA chuẩn
                 if (userAccount.isTwoFactorEnabled()) {
                     log.info("User '{}' authenticated (step 1), 2FA is enabled. Proceeding to 2FA screen.", username);
-                    sendOtpAndSwitchTo2FAScreen(userAccount, authentication, "Enter your 2FA code.");
-                } else {
-                    // Đăng nhập thành công, không có 2FA, không yêu cầu OTP do lỗi
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    log.info("User '{}' logged in successfully. Authorities: {}", username,
-                            authentication.getAuthorities());
-                    userAccountService.updateUserLoginInfo(username, "DesktopLogin");
+                    // Chuyển sang màn hình 2FA để người dùng nhập mã TOTP.
+                    // finalAuth đã được khai báo ở trên.
                     Platform.runLater(() -> {
                         hideProgress();
-                        uiManager.switchToMainDashboard();
+                        uiManager.switchToTwoFactorAuthScreen(username, finalAuth, "Enter the code from your authenticator app.");
                     });
+                } else {
+                    // TOTP is NOT enabled - Offer choice for Email OTP
+                    Platform.runLater(() -> {
+                        Alert choiceDialog = new Alert(Alert.AlertType.CONFIRMATION);
+                        choiceDialog.setTitle("Xác thực OTP tùy chọn");
+                        choiceDialog.setHeaderText("Xác thực hai yếu tố (TOTP) chưa được kích hoạt cho tài khoản của bạn.");
+                        choiceDialog.setContentText("Bạn có muốn sử dụng mật khẩu một lần (OTP) được gửi đến email của bạn cho phiên đăng nhập này để tăng cường bảo mật không?");
+
+                        ButtonType buttonTypeYes = new ButtonType("Có, gửi OTP");
+                        ButtonType buttonTypeNo = new ButtonType("Không, đăng nhập trực tiếp");
+                        ButtonType buttonTypeCancel = new ButtonType("Hủy", ButtonData.CANCEL_CLOSE);
+
+                        choiceDialog.getButtonTypes().setAll(buttonTypeYes, buttonTypeNo, buttonTypeCancel);
+
+                        Optional<ButtonType> result = choiceDialog.showAndWait();
+
+                        if (result.isPresent() && result.get() == buttonTypeYes) {
+                            log.info("User '{}' (TOTP not enabled) opted for Email OTP for this session.", username);
+                            // Progress is already shown. sendOtpAndSwitchTo2FAScreen will handle UI updates.
+                            sendOtpAndSwitchTo2FAScreen(userAccount, finalAuth,
+                                    "Một mã OTP đã được gửi đến email của bạn. Vui lòng nhập mã để tiếp tục.");
+                        } else if (result.isPresent() && result.get() == buttonTypeNo) {
+                            // User chose to login directly without OTP
+                            log.info("User '{}' (TOTP not enabled) opted to login directly without Email OTP.", username);
+                            SecurityContextHolder.getContext().setAuthentication(finalAuth);
+                            userAccountService.updateUserLoginInfo(username, "DesktopLogin_NoOptionalOTP");
+                            hideProgress(); // Explicitly hide here
+                            // setFormDisabled(false); // Not strictly needed if navigating away immediately
+                            uiManager.navigateAfterLogin(finalAuth);
+                        } else { // Cancelled or closed
+                            log.info("User '{}' (TOTP not enabled) cancelled the Email OTP choice.", username);
+                            hideProgress();
+                            setFormDisabled(false); // Re-enable login form as user stays
+                            // No navigation, user stays on login screen
+                        }
+                    });
+                    // Phần comment "Old direct login" không còn thực sự cần thiết nếu logic mới đã bao gồm
+                    // hoặc có thể được cập nhật để phản ánh việc finalAuth đã được khai báo ở trên.
                 }
             } catch (UsernameNotFoundException e) { // Lỗi này thường được ném bởi UserDetailsService
                 handleAuthenticationFailure("Invalid username or password.", username);
@@ -200,23 +239,27 @@ public class LoginController {
     }
 
     private void sendOtpAndSwitchTo2FAScreen(UserAccount userAccount, Authentication preAuth, String infoMessage) {
-        try {
-            // Gửi OTP qua email bất kể user có bật TOTP hay không, vì đây là flow khôi phục/bảo vệ
-            userAccountService.generateAndSendEmailOtp(userAccount.getUserId());
-            log.info("Email OTP sent for user: {} (Reason: {})", userAccount.getUsername(), infoMessage);
-
-            Platform.runLater(() -> {
-                hideProgress();
-                uiManager.switchToTwoFactorAuthScreen(userAccount.getUsername(), preAuth, infoMessage);
-            });
-        } catch (Exception e) {
-            log.error("Failed to send Email OTP for user {}: {}", userAccount.getUsername(), e.getMessage());
-            Platform.runLater(() -> {
-                hideProgress();
-                setFormDisabled(false);
-                showError("Could not send OTP code. Please try again or contact support.");
-            });
+        // Chỉ gửi OTP email nếu 2FA (TOTP) CHƯA được bật HOẶC đây là luồng OTP do đăng nhập sai
+        if (!userAccount.isTwoFactorEnabled() || preAuth == null) { // preAuth == null khi OTP được yêu cầu do đăng nhập sai
+            try {
+                userAccountService.generateAndSendEmailOtp(userAccount.getUserId());
+                log.info("Email OTP sent for user: {} (Reason: {})", userAccount.getUsername(), infoMessage);
+            } catch (Exception e) {
+                log.error("Failed to send Email OTP for user {}: {}", userAccount.getUsername(), e.getMessage());
+                Platform.runLater(() -> {
+                    hideProgress();
+                    setFormDisabled(false);
+                    showError("Could not send OTP code. Please try again or contact support.");
+                });
+                return; // Không chuyển màn hình nếu gửi OTP lỗi
+            }
         }
+        // Luôn chuyển đến màn hình 2FA/OTP sau khi xử lý gửi OTP (nếu cần)
+        // Hoặc nếu 2FA (TOTP) đã bật thì không cần gửi email OTP ở bước này.
+        Platform.runLater(() -> {
+            hideProgress();
+            uiManager.switchToTwoFactorAuthScreen(userAccount.getUsername(), preAuth, infoMessage);
+        });
     }
 
     private void handleAuthenticationFailure(String errorMessage, String username) {

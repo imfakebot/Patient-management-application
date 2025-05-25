@@ -93,12 +93,26 @@ public class UIManager {
      */
     public <T> T openModalDialog(String fxmlPath, String title, Stage owner) {
         log.info("Opening modal dialog: {} with title: {}", fxmlPath, title);
+        if (springContext == null) {
+            log.error("Spring ApplicationContext is not initialized in UIManager. Cannot open modal dialog: {}", fxmlPath);
+            DialogUtil.showErrorAlert("Critical Error", "Application context not available. Cannot open dialog.");
+            return null;
+        }
+
+        URL fxmlUrl = null;
         try {
-            URL fxmlUrl = Objects.requireNonNull(App.class.getResource(fxmlPath), "FXML file not found: " + fxmlPath);
+            fxmlUrl = App.class.getResource(fxmlPath);
+            if (fxmlUrl == null) {
+                log.error("FXML file not found for modal dialog at path: {}", fxmlPath);
+                DialogUtil.showErrorAlert("Configuration Error", "Cannot find FXML for dialog: " + fxmlPath);
+                return null;
+            }
+
             FXMLLoader loader = new FXMLLoader(fxmlUrl);
             loader.setControllerFactory(springContext::getBean); // Sử dụng Spring để tạo controller
 
             Parent dialogRoot = loader.load();
+
             Stage dialogStage = new Stage();
             dialogStage.setTitle(title);
             dialogStage.initModality(Modality.WINDOW_MODAL); // Chặn tương tác với cửa sổ owner
@@ -115,11 +129,23 @@ public class UIManager {
                 dialogStage.getIcons().add(primaryStage.getIcons().get(0));
             }
 
+            T controller = loader.getController(); // Lấy controller sau khi load
+            if (controller == null && !fxmlPath.contains("some_controllerless_dialog.fxml")) { // Example condition
+                log.warn("Controller for modal dialog FXML {} was null after loading.", fxmlPath);
+                // Depending on whether a controller is always expected, this might be an error.
+            }
+
             dialogStage.showAndWait(); // Hiển thị và chờ cho đến khi dialog đóng
-            return loader.getController(); // Trả về controller của dialog
+            return controller; // Trả về controller của dialog
         } catch (IOException e) {
             log.error("Failed to load modal dialog FXML: " + fxmlPath, e);
             DialogUtil.showExceptionDialog("UI Load Error", "Could not load dialog.", "FXML: " + fxmlPath, e);
+            return null;
+        } catch (Exception e) { // Catch any other unexpected errors
+            log.error("Unexpected error opening modal dialog for FXML {}:", fxmlPath, e);
+            DialogUtil.showExceptionDialog("Unexpected UI Error",
+                    "An unexpected error occurred while opening the dialog.",
+                    "FXML: " + fxmlPath + ", Error: " + e.getMessage(), e);
             return null;
         }
     }
@@ -135,19 +161,25 @@ public class UIManager {
      *
      */
     public void loadAndSetScene(String fxmlPath, String title, double preferredWidth, double preferredHeight, boolean resizable) {
-
         if (primaryStage == null) {
-
             log.error("Primary stage is not initialized in UIManager.");
-
             throw new IllegalStateException("Primary stage must be initialized before switching scenes.");
-
+        }
+        if (springContext == null) {
+            log.error("Spring ApplicationContext is not initialized in UIManager. Cannot load FXML: {}", fxmlPath);
+            DialogUtil.showErrorAlert("Critical Error", "Application context not available. Cannot switch scenes.");
+            return;
         }
 
+        URL fxmlUrl = null;
         try {
-
-            URL fxmlUrl = Objects.requireNonNull(App.class.getResource(fxmlPath), "FXML file not found: " + fxmlPath);
-            log.info("Loading FXML from: {}", fxmlUrl); // Changed to info for better visibility during startup
+            fxmlUrl = App.class.getResource(fxmlPath);
+            if (fxmlUrl == null) {
+                log.error("FXML file not found at path: {}", fxmlPath);
+                DialogUtil.showErrorAlert("Configuration Error", "Cannot find FXML: " + fxmlPath);
+                return;
+            }
+            log.info("Loading FXML from: {}", fxmlUrl);
 
             FXMLLoader loader = new FXMLLoader(fxmlUrl);
             // QUAN TRỌNG: Để Spring quản lý việc tạo Controller (nếu Controller là Spring Bean)
@@ -184,14 +216,15 @@ public class UIManager {
 
             log.info("Scene switched to: {} with title: {}", fxmlPath, title);
 
-        } catch (IOException e) {
+        } catch (IOException e) { // Catches errors from loader.load()
             log.error("Failed to load FXML scene: " + fxmlPath, e);
             DialogUtil.showExceptionDialog("UI Load Error", "Could not load the screen.", "FXML: " + fxmlPath, e);
-        } catch (NullPointerException e) {
-            log.error("FXML file not found at path: {}", fxmlPath, e);
-            DialogUtil.showErrorAlert("Configuration Error", "Cannot find FXML: " + fxmlPath);
+        } catch (Exception e) { // Catch any other unexpected errors
+            log.error("Unexpected error loading scene for FXML {}:", fxmlPath, e);
+            DialogUtil.showExceptionDialog("Unexpected UI Error",
+                    "An unexpected error occurred while loading the screen.",
+                    "FXML: " + fxmlPath + ", Error: " + e.getMessage(), e);
         }
-
     }
 
     /**
@@ -204,18 +237,38 @@ public class UIManager {
      */
     public void switchToTwoFactorAuthScreen(String username, Authentication preAuthToken, String infoMessage) {
         log.info("Switching to Two-Factor Authentication Screen for user: {}", username);
+        if (primaryStage == null) {
+            log.error("Primary stage is not initialized in UIManager. Cannot switch to 2FA screen.");
+            DialogUtil.showErrorAlert("Critical Error", "UI Manager not properly initialized.");
+            return;
+        }
+        if (springContext == null) {
+            log.error("Spring ApplicationContext is not initialized in UIManager. Cannot load 2FA screen.");
+            DialogUtil.showErrorAlert("Critical Error", "Application context not available.");
+            return;
+        }
 
+        String fxmlPathForAuth = "/com/pma/fxml/TwoFactorAuthView.fxml"; // Correct FXML for OTP/2FA verification
+        URL fxmlUrl = null;
         try {
-            // Đảm bảo đường dẫn FXML nhất quán với các màn hình khác
-            String fxmlPath = "/com/pma/fxml/TwoFactorAuthView.fxml"; // Giả sử đây là đường dẫn đúng
-            URL fxmlUrl = Objects.requireNonNull(App.class.getResource(fxmlPath), "FXML file not found: " + fxmlPath);
+            fxmlUrl = App.class.getResource(fxmlPathForAuth);
+            if (fxmlUrl == null) {
+                log.error("2FA FXML file not found at path: {}", fxmlPathForAuth);
+                DialogUtil.showErrorAlert("Configuration Error", "Cannot find 2FA FXML: " + fxmlPathForAuth);
+                return;
+            }
+
             FXMLLoader loader = new FXMLLoader(fxmlUrl);
             loader.setControllerFactory(springContext::getBean);
 
             Parent rootNode = loader.load();
 
-            // Lấy controller và truyền dữ liệu
             TwoFactorAuthController controller = loader.getController();
+            if (controller == null) {
+                log.error("Failed to get controller for 2FA FXML: {}", fxmlPathForAuth);
+                DialogUtil.showErrorAlert("UI Load Error", "Could not initialize 2FA screen controller.");
+                return;
+            }
             controller.initData(username, preAuthToken, infoMessage);
 
             // Logic tương tự loadAndSetScene
@@ -238,14 +291,16 @@ public class UIManager {
             primaryStage.centerOnScreen();
             log.info("Scene switched to 2FA screen for user: {}", username);
 
-        } catch (IOException e) {
-            log.error("Failed to load 2FA FXML scene", e);
+        } catch (IOException e) { // Catches errors from loader.load()
+            log.error("Failed to load 2FA FXML scene: " + fxmlPathForAuth, e);
             DialogUtil.showExceptionDialog("UI Load Error",
                     "Could not load the 2FA screen.",
-                    "FXML: /com/pma/fxml/TwoFactorAuthView.fxml", e); // Cập nhật đường dẫn trong thông báo lỗi
-        } catch (NullPointerException e) {
-            log.error("2FA FXML file not found", e);
-            DialogUtil.showErrorAlert("Configuration Error", "Cannot find 2FA FXML: /com/pma/fxml/TwoFactorAuthView.fxml"); // Cập nhật đường dẫn
+                    "FXML: " + fxmlPathForAuth, e);
+        } catch (Exception e) { // Catch any other unexpected errors
+            log.error("Unexpected error switching to 2FA screen for FXML {}:", fxmlPathForAuth, e);
+            DialogUtil.showExceptionDialog("Unexpected UI Error",
+                    "An unexpected error occurred while trying to show the 2FA screen.",
+                    "Details: " + e.getMessage(), e);
         }
     }
 
@@ -285,14 +340,25 @@ public class UIManager {
         String title = "Set Up Two-Factor Authentication";
         log.info("Opening 2FA Setup dialog for user ID: {}", userId);
 
+        if (springContext == null) {
+            log.error("Spring ApplicationContext is not initialized in UIManager. Cannot open 2FA setup dialog.");
+            DialogUtil.showErrorAlert("Critical Error", "Application context not available.");
+            return false;
+        }
+
+        URL fxmlUrl = null;
         try {
-            URL fxmlUrl = Objects.requireNonNull(App.class.getResource(fxmlPath), "FXML file not found: " + fxmlPath);
+            fxmlUrl = App.class.getResource(fxmlPath);
+            if (fxmlUrl == null) {
+                log.error("FXML file not found for 2FA Setup dialog at path: {}", fxmlPath);
+                DialogUtil.showErrorAlert("Configuration Error", "Cannot find FXML for 2FA Setup: " + fxmlPath);
+                return false;
+            }
             FXMLLoader loader = new FXMLLoader(fxmlUrl);
             loader.setControllerFactory(springContext::getBean); // Sử dụng Spring để tạo controller
 
             Parent dialogRoot = loader.load();
             TwoFactorSetupController controller = loader.getController(); // Lấy controller
-
             if (controller == null) {
                 log.error("Failed to get controller for FXML: {}", fxmlPath);
                 DialogUtil.showErrorAlert("UI Error", "Could not initialize 2FA setup screen controller.");
@@ -319,10 +385,56 @@ public class UIManager {
             dialogStage.showAndWait(); // Hiển thị và chờ
 
             return controller.isSetupSuccessful(); // Lấy kết quả từ controller
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException e) {
             log.error("Failed to load 2FA Setup dialog FXML: " + fxmlPath, e);
             DialogUtil.showExceptionDialog("UI Load Error", "Could not load 2FA setup screen.", "FXML: " + fxmlPath, e);
             return false;
+        } catch (Exception e) { // Catch any other unexpected errors
+            log.error("Unexpected error opening 2FA setup dialog for FXML {}:", fxmlPath, e);
+            DialogUtil.showExceptionDialog("Unexpected UI Error",
+                    "An unexpected error occurred while opening the 2FA setup dialog.", "FXML: " + fxmlPath + ", Error: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Điều hướng người dùng sau khi đăng nhập thành công, dựa trên vai trò của
+     * họ.
+     *
+     * @param authentication Đối tượng Authentication chứa thông tin người dùng
+     * và vai trò.
+     */
+    public void navigateAfterLogin(Authentication authentication) {
+        Objects.requireNonNull(authentication, "Authentication object cannot be null for navigation.");
+        String username = authentication.getName();
+
+        // Giả sử vai trò trong Spring Security có tiền tố "ROLE_" (ví dụ: "ROLE_ADMIN", "ROLE_PATIENT")
+        // và UserRole enum của bạn (com.pma.model.enums.UserRole) có các giá trị như ADMIN, PATIENT, DOCTOR.
+        if (authentication.getAuthorities().stream()
+                .anyMatch(ga -> "ROLE_ADMIN".equals(ga.getAuthority()))) {
+            log.info("User {} is ADMIN, navigating to admin dashboard.", username);
+            // Ví dụ: switchToAdminDashboard(); // Bạn cần tạo phương thức này nếu có dashboard riêng cho admin
+            switchToMainDashboard(); // Hiện tại, vẫn điều hướng đến dashboard chính
+
+        } else if (authentication.getAuthorities().stream()
+                .anyMatch(ga -> "ROLE_DOCTOR".equals(ga.getAuthority()))) {
+            log.info("User {} is DOCTOR, navigating to doctor dashboard.", username);
+            // Ví dụ: switchToDoctorDashboard(); // Bạn cần tạo phương thức này nếu có dashboard riêng cho bác sĩ
+            switchToMainDashboard(); // Hiện tại, vẫn điều hướng đến dashboard chính
+
+        } else if (authentication.getAuthorities().stream()
+                .anyMatch(ga -> "ROLE_PATIENT".equals(ga.getAuthority()))) {
+            log.info("User {} is PATIENT, navigating to patient dashboard.", username);
+            // Ví dụ: switchToPatientDashboard(); // Bạn cần tạo phương thức này nếu có dashboard riêng cho bệnh nhân
+            switchToMainDashboard(); // Hiện tại, vẫn điều hướng đến dashboard chính
+
+        } else {
+            log.warn("User {} has no recognized role or no specific dashboard. Navigating to default main dashboard.", username);
+            switchToMainDashboard(); // Màn hình mặc định nếu không có vai trò nào khớp
+        }
+        // Có thể maximize cửa sổ sau khi vào màn hình chính
+        if (primaryStage != null && !primaryStage.isMaximized() && primaryStage.isShowing()) {
+            primaryStage.setMaximized(true);
         }
     }
 }

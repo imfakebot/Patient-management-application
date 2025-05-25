@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox fx:id="rootPane" alignment="CENTER" prefHeight="300.0" prefWidth="400.0" spacing="20.0" styleClass="root" stylesheets="@../css/style.css"
+    xmlns="http://javafx.com/javafx/21"
+    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.TwoFactorAuthController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <Label fx:id="titleLabel" styleClass="title-label" text="Two-Factor Authentication">
+        <font>
+            <Font name="System Bold" size="18.0" />
+        </font>
+    </Label>
+
+    <Label fx:id="infoLabel2FA" text="Please enter the code." wrapText="true" />
+
+    <VBox alignment="CENTER_LEFT" spacing="5.0">
+        <Label text="Authentication Code:" />
+        <TextField fx:id="otpCodeField" promptText="Enter 6-digit code" />
+    </VBox>
+
+    <Label fx:id="errorLabel" styleClass="error-label" managed="false" visible="false" textFill="RED"/>
+
+    <HBox alignment="CENTER" spacing="10.0">
+        <Button fx:id="verifyButton" onAction="#handleVerifyOtpAction" styleClass="button-primary" text="Verify Code" />
+        <Button fx:id="cancelButton" onAction="#handleCancelButtonAction" text="Cancel" />
+    </HBox>
+
+    <ProgressIndicator fx:id="progressIndicator" visible="false" />
+
+    <HBox alignment="CENTER_RIGHT" spacing="10.0" VBox.vgrow="ALWAYS">
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin>
+        <Label fx:id="resendOtpLabel" styleClass="hyperlink-label" text="Resend OTP?" visible="false" managed="false" onMouseClicked="#handleResendOtpAction"/>
+    </HBox>
+
+</VBox>

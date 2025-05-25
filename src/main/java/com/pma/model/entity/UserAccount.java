@@ -180,35 +180,29 @@ public class UserAccount {
      * @param patient Bệnh nhân liên quan, hoặc null.
      */
     public void setPatient(Patient patient) {
-        // Tránh gọi lại không cần thiết
+        // Nếu không có thay đổi (gán cùng một patient hoặc cả hai đều null), không làm gì cả
         if (Objects.equals(this.patient, patient)) {
             return;
         }
-        // Ngắt kết nối khỏi patient cũ (nếu có)
-        Patient oldPatient = this.patient;
-        // Nếu đang gỡ bỏ liên kết (patient = null)
-        if (patient == null) {
-            this.patient = null; // Gỡ phía này
-            if (oldPatient != null) {
-                oldPatient.setUserAccountInternal(null); // Gọi internal ở Patient cũ để gỡ bỏ tham chiếu ngược
-            }
-        } // Nếu đang thiết lập liên kết mới
-        else {
-            // Nếu patient mới này đã có user account khác, hoặc user account này đã có
-            // patient khác -> lỗi logic 1-1
+
+        // Nếu UserAccount hiện tại đang liên kết với một Patient, hãy ngắt kết nối đó trước
+        if (this.patient != null) {
+            Patient currentAssociatedPatient = this.patient;
+            this.patient = null;
+            currentAssociatedPatient.setUserAccountInternal(null);
+        }
+
+        // Nếu patient mới được cung cấp (không phải null), thiết lập liên kết mới
+        if (patient != null) {
+            // Kiểm tra xem patient mới này đã được liên kết với một UserAccount khác chưa
             if (patient.getUserAccount() != null && !patient.getUserAccount().equals(this)) {
                 throw new IllegalStateException(
                         "Patient " + patient.getPatientId() + " is already associated with another UserAccount.");
             }
-            if (this.patient != null && !this.patient.equals(patient)) {
-                // Đã ngắt ở trên hoặc nên throw lỗi nếu không cho đổi patient
-                throw new IllegalStateException(
-                        "UserAccount " + this.userId + " is already associated with another Patient.");
-            }
-
-            this.patient = patient; // Gán phía này
-            patient.setUserAccountInternal(this); // Gọi internal ở Patient mới
+            this.patient = patient; // Thiết lập liên kết ở phía UserAccount
+            this.patient.setUserAccountInternal(this); // Đồng bộ ở phía Patient
         }
+        // Nếu patient mới là null, this.patient đã được set là null ở bước ngắt kết nối trước đó (hoặc ban đầu đã là null)
     }
 
     /**
@@ -227,27 +221,29 @@ public class UserAccount {
      * @param doctor Bác sĩ liên quan, hoặc null.
      */
     public void setDoctor(Doctor doctor) {
+        // Nếu không có thay đổi, không làm gì cả
         if (Objects.equals(this.doctor, doctor)) {
             return;
         }
-        Doctor oldDoctor = this.doctor;
-        if (doctor == null) {
+
+        // Nếu UserAccount hiện tại đang liên kết với một Doctor, ngắt kết nối đó
+        if (this.doctor != null) {
+            Doctor currentAssociatedDoctor = this.doctor;
             this.doctor = null;
-            if (oldDoctor != null) {
-                oldDoctor.setUserAccountInternal(null);
-            }
-        } else {
+            currentAssociatedDoctor.setUserAccountInternal(null);
+        }
+
+        // Nếu doctor mới được cung cấp (không phải null), thiết lập liên kết mới
+        if (doctor != null) {
+            // Kiểm tra xem doctor mới này đã được liên kết với một UserAccount khác chưa
             if (doctor.getUserAccount() != null && !doctor.getUserAccount().equals(this)) {
                 throw new IllegalStateException(
                         "Doctor " + doctor.getDoctorId() + " is already associated with another UserAccount.");
             }
-            if (this.doctor != null && !this.doctor.equals(doctor)) {
-                throw new IllegalStateException(
-                        "UserAccount " + this.userId + " is already associated with another Doctor.");
-            }
             this.doctor = doctor;
-            doctor.setUserAccountInternal(this);
+            this.doctor.setUserAccountInternal(this); // Đồng bộ ở phía Doctor
         }
+        // Nếu doctor mới là null, this.doctor đã được set là null ở bước ngắt kết nối trước đó
     }
 
     /**
@@ -316,11 +312,6 @@ public class UserAccount {
         return (this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass()).hashCode();
-    }
-
-    public Object userIdProperty() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'userIdProperty'");
     }
 
     // --- Lưu ý về Helper Methods và Unique Constraints ---

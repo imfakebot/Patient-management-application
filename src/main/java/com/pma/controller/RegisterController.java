@@ -29,13 +29,13 @@ import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -271,8 +271,8 @@ public class RegisterController {
         // Create in-memory entities first
         UserAccount tempUserAccount = new UserAccount();
         tempUserAccount.setUsername(username);
-        tempUserAccount.setPasswordHash(password); // Raw password, service will hash
-        tempUserAccount.setRole(UserRole.Patient);
+        tempUserAccount.setPasswordHash(password); // Raw password, service will hash it
+        tempUserAccount.setRole(UserRole.PATIENT); // Use uppercase enum constant
         tempUserAccount.setEmailVerified(false); // Will be true after OTP
         tempUserAccount.setTwoFactorEnabled(false); // Can be enabled later
         tempUserAccount.setActive(true); // Activate immediately, email verification is separate

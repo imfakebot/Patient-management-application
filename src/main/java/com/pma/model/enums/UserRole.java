@@ -1,19 +1,24 @@
 package com.pma.model.enums;
 
 public enum UserRole {
-    Patient, Doctor, Admin;
+    // Đổi tên hằng số thành chữ hoa theo quy ước và để dễ dàng tạo chuỗi authority
+    PATIENT("ROLE_PATIENT"),
+    DOCTOR("ROLE_DOCTOR"),
+    ADMIN("ROLE_ADMIN");
 
-    private final String value;
+    private final String authority;
 
-    UserRole(final String value) {
-        this.value = value;
+    UserRole(String authority) {
+        this.authority = authority;
     }
 
-    UserRole() {
-        this.value = this.name();
-    }
-
-    public String getValue() {
-        return value;
+    /**
+     * Trả về chuỗi đại diện cho quyền (authority) được sử dụng trong Spring
+     * Security. Ví dụ: "ROLE_ADMIN".
+     *
+     * @return Chuỗi authority.
+     */
+    public String getAuthority() {
+        return authority;
     }
 }
