@@ -121,7 +121,8 @@ public class UserAccount {
     private int failedLoginAttempts = 0; // Giá trị mặc định
 
     /**
-     * Cờ đánh dấu người dùng có cần nhập OTP do đăng nhập sai nhiều lần hay không.
+     * Cờ đánh dấu người dùng có cần nhập OTP do đăng nhập sai nhiều lần hay
+     * không.
      */
     @Column(name = "otp_required_for_login", nullable = false)
     private boolean otpRequiredForLogin = false; // Mặc định là false
@@ -283,6 +284,24 @@ public class UserAccount {
         this.emailOtpExpiresAt = emailOtpExpiresAt;
     }
 
+    /**
+     * Lấy token đặt lại mật khẩu.
+     *
+     * @return Chuỗi token đặt lại mật khẩu.
+     */
+    public String getResetPasswordToken() {
+        return this.passwordResetToken;
+    }
+
+    /**
+     * Cập nhật token đặt lại mật khẩu.
+     *
+     * @param passwordResetToken Chuỗi token mới.
+     */
+    public void setResetPasswordToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
     // --- equals() và hashCode() chuẩn ---
     @Override
     public final boolean equals(Object o) {
@@ -314,6 +333,23 @@ public class UserAccount {
                 : this.getClass()).hashCode();
     }
 
+    /**
+     * Lấy thời điểm hết hạn của token đặt lại mật khẩu.
+     *
+     * @return Thời điểm hết hạn.
+     */
+    public LocalDateTime getPasswordResetExpires() {
+        return passwordResetExpires;
+    }
+
+    /**
+     * Cập nhật thời điểm hết hạn của token đặt lại mật khẩu.
+     *
+     * @param passwordResetExpires Thời điểm hết hạn mới.
+     */
+    public void setPasswordResetExpires(LocalDateTime passwordResetExpires) {
+        this.passwordResetExpires = passwordResetExpires;
+    }
     // --- Lưu ý về Helper Methods và Unique Constraints ---
     // Helper methods cho OneToOne cần kiểm tra ràng buộc 1-1 logic trong Java.
     // Ràng buộc 1 User / 1 Patient (khác null) cần được đảm bảo ở DB bằng Filtered

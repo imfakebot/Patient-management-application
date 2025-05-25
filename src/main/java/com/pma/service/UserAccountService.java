@@ -54,6 +54,7 @@ public class UserAccountService implements UserDetailsService {
     public static final Duration EMAIL_OTP_VALIDITY_DURATION = Duration.ofMinutes(5); // Make public
     public static final int EMAIL_OTP_LENGTH = 6; // Make public
     public static final int MAX_FAILED_ATTEMPTS_BEFORE_OTP = 5; // Thêm hằng số này
+    public static final Duration PASSWORD_RESET_TOKEN_VALIDITY_DURATION = Duration.ofHours(1);
 
     @Autowired
     public UserAccountService(UserAccountRepository userAccountRepository,
@@ -440,5 +441,90 @@ public class UserAccountService implements UserDetailsService {
         user.setOtpRequiredForLogin(false); // Quan trọng: reset cờ yêu cầu OTP
         userAccountRepository.save(user);
         log.info("Successfully reset failed login attempts and OTP requirement for user: {}", user.getUsername());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public boolean resetPasswordWithToken(String username, String token, String newPassword) {
+        log.info("Attempting to reset password with token for user: {}", username);
+        Optional<UserAccount> userOptional = userAccountRepository.findByUsername(username);
+
+        if (userOptional.isEmpty()) {
+            log.warn("Password reset failed. User not found: {}", username);
+            return false;
+        }
+
+        UserAccount user = userOptional.get();
+
+        if (user.getResetPasswordToken() == null || !user.getResetPasswordToken().equals(token)) {
+            log.warn("Password reset failed. Invalid token provided for user: {}", username);
+            return false;
+        }
+
+        if (user.getPasswordResetExpires() == null || LocalDateTime.now().isAfter(user.getPasswordResetExpires())) {
+            log.warn("Password reset failed. Token expired for user: {}", username);
+            // Clear the expired token
+            user.setResetPasswordToken(null);
+            user.setPasswordResetExpires(null); // Sử dụng setter cũ
+            userAccountRepository.save(user);
+            return false;
+        }
+
+        // Token is valid and not expired, proceed to reset password
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
+        user.setPasswordResetExpires(null); // Sử dụng setter cũ
+        user.setOtpRequiredForLogin(false); // Also reset OTP requirement if any
+        user.setFailedLoginAttempts(0); // Reset failed attempts
+        userAccountRepository.save(user);
+        log.info("Password successfully reset for user: {}", username);
+        return true;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public boolean initiatePasswordReset(String usernameOrEmail) {
+        log.info("Initiating password reset for input: {}", usernameOrEmail);
+        Optional<UserAccount> userOptional = userAccountRepository.findByUsername(usernameOrEmail);
+
+        // If not found by username, and if UserAccount entity had an email field, you could try:
+        // if (userOptional.isEmpty() && usernameOrEmail.contains("@")) {
+        //     userOptional = userAccountRepository.findByEmail(usernameOrEmail);
+        // }
+
+        if (userOptional.isEmpty()) {
+            log.warn("Password reset initiation: User not found by username/email '{}'.", usernameOrEmail);
+            // For security, don't reveal if user exists.
+            return true; 
+        }
+
+        UserAccount user = userOptional.get();
+        String emailAddress = null;
+
+        // Determine the email address for notification
+        if (user.getPatient() != null && user.getPatient().getEmail() != null && !user.getPatient().getEmail().isBlank()) {
+            emailAddress = user.getPatient().getEmail();
+        } else if (user.getDoctor() != null && user.getDoctor().getEmail() != null && !user.getDoctor().getEmail().isBlank()) {
+            emailAddress = user.getDoctor().getEmail();
+        }
+        // Add more conditions if UserAccount itself stores an email directly
+
+        if (emailAddress == null) {
+            log.warn("Password reset initiation: No email address found for user '{}' to send reset token.", user.getUsername());
+            return true; // Don't reveal this for security
+        }
+
+        String token = UUID.randomUUID().toString();
+        user.setResetPasswordToken(token);
+        user.setPasswordResetExpires(LocalDateTime.now().plus(PASSWORD_RESET_TOKEN_VALIDITY_DURATION));
+        userAccountRepository.save(user);
+
+        try {
+            emailService.sendPasswordResetEmail(emailAddress, user.getUsername(), token);
+            log.info("Password reset email successfully sent to {} for user {}", emailAddress, user.getUsername());
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to {} for user {}: {}", emailAddress, user.getUsername(), e.getMessage(), e);
+            // Even if email sending fails, don't reveal it to the user for security.
+            return true; 
+        }
     }
 }

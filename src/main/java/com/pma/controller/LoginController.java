@@ -11,8 +11,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException; // Keep this import
 import org.springframework.stereotype.Component;
+
 import java.util.UUID;
 import java.util.Optional;
 
@@ -32,14 +33,15 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.image.ImageView; // Keep this import
+import javafx.scene.input.MouseEvent; // Correct MouseEvent import for JavaFX
 import javafx.scene.layout.VBox;
 
-@Component
+@Component // Thêm annotation này để Spring quản lý Controller
 public class LoginController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
@@ -69,6 +71,8 @@ public class LoginController {
     private Label errorLabel;
     @FXML
     private ProgressIndicator progressIndicator;
+    @FXML
+    private Hyperlink forgotPasswordLink;
 
     private boolean passwordVisible = false;
     private final Image eyeOpenImage = loadImage("/com/pma/img/open.png"); // Nên có đường dẫn đầy đủ từ resources
@@ -111,6 +115,11 @@ public class LoginController {
         }
         if (textPasswordField != null) {
             textPasswordField.setOnAction(this::handleLoginButtonAction);
+        }
+
+        // Xử lý sự kiện cho link quên mật khẩu
+        if (forgotPasswordLink != null) {
+            forgotPasswordLink.setOnAction(this::handleForgotPasswordLinkAction);
         }
     }
 
@@ -375,6 +384,17 @@ public class LoginController {
             uiManager.switchToRegisterScreen(); // Đảm bảo UIManager có phương thức này
         } else {
             log.error("UIManager is null. Cannot switch to registration screen.");
+            showError("UI navigation error. Please contact support.");
+        }
+    }
+
+    @FXML
+    private void handleForgotPasswordLinkAction(ActionEvent event) {
+        log.info("Forgot Password link clicked. Switching to forgot password screen.");
+        if (uiManager != null) {
+            uiManager.switchToForgotPasswordScreen(); // Use the new method
+        } else {
+            log.error("UIManager is null. Cannot switch to forgot password screen.");
             showError("UI navigation error. Please contact support.");
         }
     }

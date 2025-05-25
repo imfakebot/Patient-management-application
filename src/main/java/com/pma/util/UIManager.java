@@ -3,6 +3,7 @@ package com.pma.util; // Hoặc package của bạn
 import java.io.IOException; // Lớp Application chính của bạn
 import java.net.URL;
 import java.util.Objects;
+import java.util.function.Consumer; // Added for controller initialization
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.pma.App;
+import com.pma.controller.ResetPasswordController; // Added for ResetPasswordScreen
 import com.pma.controller.TwoFactorAuthController;
 import com.pma.controller.TwoFactorSetupController;
 
@@ -151,13 +153,16 @@ public class UIManager {
     }
 
     /**
-     * Tải FXML và đặt nó làm root cho Scene chính.
+     * Tải FXML, đặt nó làm root cho Scene chính, và tùy chọn khởi tạo
+     * controller.
      *
      * @param fxmlPath Đường dẫn đến file FXML.
      * @param title Tiêu đề cửa sổ.
      * @param preferredWidth Chiều rộng mong muốn.
      * @param preferredHeight Chiều cao mong muốn.
      * @param resizable Cho phép thay đổi kích thước cửa sổ hay không.
+     * @param controllerInitializer Hàm để khởi tạo controller sau khi load (có
+     * thể null).
      *
      */
     public void loadAndSetScene(String fxmlPath, String title, double preferredWidth, double preferredHeight, boolean resizable) {
@@ -187,6 +192,16 @@ public class UIManager {
 
             Parent rootNode = loader.load();
 
+            // Khởi tạo controller nếu có initializer được cung cấp
+            // This part is moved to the new overloaded method to avoid type issues with a generic Consumer here.
+            // Instead, the specific methods calling this will handle controller retrieval and initialization if needed.
+            // For a generic solution, we'd need to make this method generic or pass Object and cast.
+            // For now, let's keep it simple and handle controller init in specific switch methods or a new generic one.
+            // The new overloaded method below will handle this.
+            // The current method will now call the overloaded one.
+            // This specific method is kept for calls that don't need controller initialization.
+            // However, to make it truly flexible, we should have one core method.
+            // Let's refactor: create one core method and have this one call it.
             // Tạo hiệu ứng fade khi chuyển scene (tùy chọn)
             // applyFadeTransition(rootNode);
             // Nếu mainScene chưa được tạo, hoặc nếu chúng ta muốn mỗi màn hình có kích thước riêng
@@ -224,6 +239,75 @@ public class UIManager {
             DialogUtil.showExceptionDialog("Unexpected UI Error",
                     "An unexpected error occurred while loading the screen.",
                     "FXML: " + fxmlPath + ", Error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Tải FXML, đặt nó làm root cho Scene chính, và tùy chọn khởi tạo
+     * controller.
+     *
+     * @param fxmlPath Đường dẫn đến file FXML.
+     * @param title Tiêu đề cửa sổ.
+     * @param preferredWidth Chiều rộng mong muốn.
+     * @param preferredHeight Chiều cao mong muốn.
+     * @param resizable Cho phép thay đổi kích thước cửa sổ hay không.
+     * @param controllerInitializer Hàm để khởi tạo controller sau khi load (có
+     * thể null).
+     * @param <T> Kiểu của controller.
+     */
+    public <T> void loadAndSetScene(String fxmlPath, String title, double preferredWidth, double preferredHeight, boolean resizable, Consumer<T> controllerInitializer) {
+        if (primaryStage == null) {
+            log.error("Primary stage is not initialized in UIManager.");
+            throw new IllegalStateException("Primary stage must be initialized before switching scenes.");
+        }
+        if (springContext == null) {
+            log.error("Spring ApplicationContext is not initialized in UIManager. Cannot load FXML: {}", fxmlPath);
+            DialogUtil.showErrorAlert("Critical Error", "Application context not available. Cannot switch scenes.");
+            return;
+        }
+
+        URL fxmlUrl = null;
+        try {
+            fxmlUrl = App.class.getResource(fxmlPath);
+            if (fxmlUrl == null) {
+                log.error("FXML file not found at path: {}", fxmlPath);
+                DialogUtil.showErrorAlert("Configuration Error", "Cannot find FXML: " + fxmlPath);
+                return;
+            }
+            log.info("Loading FXML from: {}", fxmlUrl);
+
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            loader.setControllerFactory(springContext::getBean);
+
+            Parent rootNode = loader.load();
+
+            if (controllerInitializer != null) {
+                T controller = loader.getController();
+                if (controller != null) {
+                    controllerInitializer.accept(controller);
+                } else {
+                    log.warn("Controller not found for FXML: {} while trying to initialize.", fxmlPath);
+                }
+            }
+
+            if (mainScene == null) {
+                mainScene = new Scene(rootNode, preferredWidth, preferredHeight);
+                primaryStage.setScene(mainScene);
+            } else {
+                mainScene.setRoot(rootNode);
+                primaryStage.setWidth(preferredWidth);
+                primaryStage.setHeight(preferredHeight);
+            }
+            primaryStage.setTitle(title);
+            primaryStage.setResizable(resizable);
+            if (!primaryStage.isShowing()) {
+                primaryStage.show();
+            }
+            primaryStage.centerOnScreen();
+            log.info("Scene switched to: {} with title: {}", fxmlPath, title);
+        } catch (IOException | IllegalStateException e) {
+            log.error("Failed to load or set FXML scene: " + fxmlPath, e);
+            DialogUtil.showExceptionDialog("UI Load Error", "Could not load the screen.", "FXML: " + fxmlPath, e);
         }
     }
 
@@ -271,27 +355,12 @@ public class UIManager {
             }
             controller.initData(username, preAuthToken, infoMessage);
 
-            // Logic tương tự loadAndSetScene
-            if (mainScene == null) {
-                mainScene = new Scene(rootNode, 400, 350); // Kích thước có thể tùy chỉnh
-                primaryStage.setScene(mainScene);
-            } else {
-                mainScene.setRoot(rootNode);
-                primaryStage.setWidth(400);
-                primaryStage.setHeight(350); // Kích thước có thể tùy chỉnh
-            }
+            // Sử dụng lại logic loadAndSetScene chung, nhưng vì controller.initData đã được gọi,
+            // chúng ta chỉ cần đảm bảo scene được set đúng cách.
+            // Thay vì gọi loadAndSetScene trực tiếp (vì nó sẽ load lại FXML), ta set root và stage props.
+            setupPrimaryStageForScene(rootNode, "PMA - Two-Factor Authentication", 400, 350, false);
 
-            // Các thiết lập khác cho primaryStage
-            primaryStage.setTitle("PMA - Two-Factor Authentication");
-            primaryStage.setResizable(false);
-
-            if (!primaryStage.isShowing()) {
-                primaryStage.show();
-            }
-            primaryStage.centerOnScreen();
-            log.info("Scene switched to 2FA screen for user: {}", username);
-
-        } catch (IOException e) { // Catches errors from loader.load()
+        } catch (IOException e) {
             log.error("Failed to load 2FA FXML scene: " + fxmlPathForAuth, e);
             DialogUtil.showExceptionDialog("UI Load Error",
                     "Could not load the 2FA screen.",
@@ -304,6 +373,23 @@ public class UIManager {
         }
     }
 
+    private void setupPrimaryStageForScene(Parent rootNode, String title, double width, double height, boolean resizable) {
+        if (mainScene == null) {
+            mainScene = new Scene(rootNode, width, height);
+            primaryStage.setScene(mainScene);
+        } else {
+            mainScene.setRoot(rootNode);
+            primaryStage.setWidth(width);
+            primaryStage.setHeight(height);
+        }
+        primaryStage.setTitle(title);
+        primaryStage.setResizable(resizable);
+        if (!primaryStage.isShowing()) {
+            primaryStage.show();
+        }
+        primaryStage.centerOnScreen();
+    }
+
     /**
      * Chuyển đến màn hình Register.
      */
@@ -311,7 +397,7 @@ public class UIManager {
         log.info("Switching to Register Screen");
         double desiredWidth = 1200;
         double desiredHeight = 700;
-        loadAndSetScene("/com/pma/fxml/register.fxml", "PMA - Đăng ký tài khoản", desiredWidth, desiredHeight, false);
+        loadAndSetScene("/com/pma/fxml/register.fxml", "PMA - Đăng ký tài khoản", desiredWidth, desiredHeight, false, null);
     }
 
     /**
@@ -436,5 +522,24 @@ public class UIManager {
         if (primaryStage != null && !primaryStage.isMaximized() && primaryStage.isShowing()) {
             primaryStage.setMaximized(true);
         }
+    }
+
+    /**
+     * Chuyển đến màn hình yêu cầu đặt lại mật khẩu.
+     */
+    public void switchToForgotPasswordScreen() {
+        log.info("Navigating to Forgot Password Screen."); // Updated log message
+        loadAndSetScene("/com/pma/fxml/forgot_password_request.fxml", "Yêu cầu đặt lại mật khẩu", 450, 400, false, null); // Corrected FXML path
+    }
+
+    /**
+     * Chuyển đến màn hình đặt lại mật khẩu.
+     *
+     * @param username Tên người dùng (hoặc email) để đặt lại mật khẩu.
+     */
+    public void switchToResetPasswordScreen(String username) {
+        log.info("Navigating to Reset Password Screen for user: {}", username);
+        loadAndSetScene("/com/pma/fxml/reset_password.fxml", "Đặt lại mật khẩu", 450, 550, false,
+                (ResetPasswordController controller) -> controller.initData(username));
     }
 }

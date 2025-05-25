@@ -237,4 +237,51 @@ public class EmailService {
             return future;
         }
     }
+
+    @Async
+    public Future<Void> sendPasswordResetEmail(String recipientEmail, String username, String resetToken) {
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            log.warn("Cannot send password reset email. Invalid recipient email for user: {}", username);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        try {
+            log.info("Preparing password reset email for user: {} to {}", username, recipientEmail);
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmailAddress);
+            message.setTo(recipientEmail);
+            message.setSubject("Password Reset Request - PMA System");
+            message.setText(String.format("""
+                                          Dear %s,
+
+                                          A password reset was requested for your account.
+                                          
+                                          Please use the following token in the application to reset your password:
+                                          %s
+                                          
+                                          This token will expire in %d hour(s).
+                                          
+                                          If you did not request a password reset, please ignore this email or contact support if you have concerns.
+                                          
+                                          Best regards,
+                                          PMA System""",
+                    username,
+                    resetToken,
+                    UserAccountService.PASSWORD_RESET_TOKEN_VALIDITY_DURATION.toHours()
+            ));
+
+            mailSender.send(message);
+            log.info("Successfully sent password reset email to user: {}", username);
+            return CompletableFuture.completedFuture(null);
+        } catch (MailException e) {
+            log.error("Failed to send password reset email to user: {} at {}: {}",
+                    username, recipientEmail, e.getMessage());
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            future.completeExceptionally(
+                    new RuntimeException("Failed to send password reset email to " + recipientEmail
+                            + ". Please check mail server configuration or network.", e));
+            return future;
+        }
+    }
 }
