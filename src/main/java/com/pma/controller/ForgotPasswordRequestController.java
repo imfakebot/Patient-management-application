@@ -69,10 +69,10 @@ public class ForgotPasswordRequestController {
                 Platform.runLater(() -> {
                     hideProgress();
                     DialogUtil.showInfoAlert("Yêu cầu đã được xử lý",
-                            "Nếu tài khoản của bạn tồn tại trong hệ thống, một email chứa hướng dẫn đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn (bao gồm cả thư mục spam).");
-                    // Optionally disable the form further or navigate away
-                    submitRequestButton.setDisable(true);
-                    emailOrUsernameField.setDisable(true);
+                            "Nếu tài khoản của bạn tồn tại trong hệ thống, một email chứa mã đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn (bao gồm cả thư mục spam) và nhập mã đó cùng với mật khẩu mới của bạn vào màn hình tiếp theo.");
+                    // Chuyển đến màn hình đặt lại mật khẩu, truyền username/email đã nhập
+                    // để ResetPasswordController có thể điền sẵn nếu muốn.
+                    uiManager.switchToResetPasswordScreen(input);
                 });
             } catch (Exception e) {
                 log.error("Lỗi khi bắt đầu quá trình đặt lại mật khẩu cho '{}': {}", input, e.getMessage(), e);

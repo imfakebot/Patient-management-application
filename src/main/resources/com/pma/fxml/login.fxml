@@ -125,7 +125,6 @@
                            </children>
                            <VBox.margin>
                               <Insets bottom="-5.0" top="5.0" />
-                              <!-- Điều chỉnh khoảng cách nếu cần -->
                            </VBox.margin>
                         </HBox>
                      </children>

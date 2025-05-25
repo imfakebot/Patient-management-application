@@ -1,6 +1,7 @@
 package com.pma.controller;
 
 import com.pma.service.UserAccountService;
+import com.pma.model.enums.PasswordResetInitiationResult;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
 import javafx.application.Platform;
@@ -14,6 +15,7 @@ import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -61,20 +63,28 @@ public class ForgotPasswordController {
 
         Thread resetInitiationThread = new Thread(() -> {
             try {
-                boolean requestProcessed = userAccountService.initiatePasswordReset(input);
+                PasswordResetInitiationResult result = userAccountService.initiatePasswordReset(input);
 
                 Platform.runLater(() -> {
                     hideProgress();
-                    if (requestProcessed) { // Generic message for security
-                        DialogUtil.showInfoAlert("Password Reset",
-                                "If an account with that username or email exists, a password reset token has been sent. Please check your email (including spam folder) for the token and instructions.");
-                        sendResetLinkButton.setDisable(true);
-                        usernameOrEmailField.setDisable(true);
-                        // User will then go to ResetPasswordScreen and input the token from email
-                    } else {
-                        // This case might occur if email sending failed critically or other specific internal error
-                        setFormDisabled(false); 
-                        showError("Could not process your request. Please try again later or contact support.");
+                    switch (result) {
+                        case EMAIL_SENT:
+                            DialogUtil.showInfoAlert("Yêu cầu đã được xử lý",
+                                    "Một email chứa mã đặt lại mật khẩu đã được gửi đến địa chỉ liên kết với tài khoản của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư mục spam) và nhập mã đó cùng với mật khẩu mới của bạn vào màn hình tiếp theo.");
+                            // Chuyển đến màn hình đặt lại mật khẩu, truyền username/email đã nhập
+                            // để ResetPasswordController có thể điền sẵn nếu muốn.
+                            uiManager.switchToResetPasswordScreen(input);
+                            break;
+                        case USER_NOT_FOUND_OR_NO_EMAIL:
+                            setFormDisabled(false); // Kích hoạt lại form
+                            showError("Tài khoản không tồn tại hoặc không có email liên kết. Vui lòng thử lại. Nếu chưa có tài khoản, bạn có thể quay lại để đăng ký.");
+                            // Nút "Quay lại đăng nhập" đã có sẵn và sẽ được kích hoạt lại.
+                            // Bạn có thể thêm nút "Đăng ký" vào FXML nếu muốn có tùy chọn trực tiếp.
+                            break;
+                        case EMAIL_SEND_FAILURE:
+                            setFormDisabled(false); // Kích hoạt lại form
+                            showError("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.");
+                            break;
                     }
                 });
             } catch (Exception e) {
@@ -131,7 +141,11 @@ public class ForgotPasswordController {
         if (forgotPasswordFormContainer != null) {
             forgotPasswordFormContainer.setDisable(disabled);
         }
-        if (usernameOrEmailField != null) usernameOrEmailField.setDisable(disabled);
-        if (sendResetLinkButton != null) sendResetLinkButton.setDisable(disabled);
+        if (usernameOrEmailField != null) {
+            usernameOrEmailField.setDisable(disabled);
+        }
+        if (sendResetLinkButton != null) {
+            sendResetLinkButton.setDisable(disabled);
+        }
     }
 }

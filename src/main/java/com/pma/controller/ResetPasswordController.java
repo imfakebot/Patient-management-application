@@ -34,6 +34,8 @@ public class ResetPasswordController {
     @FXML
     private VBox resetPasswordFormContainer;
     @FXML
+    private TextField usernameResetField; // Thêm trường username
+    @FXML
     private TextField tokenField;
     @FXML
     private PasswordField newPasswordField;
@@ -91,12 +93,26 @@ public class ResetPasswordController {
         setupPasswordToggle(newPasswordField, textNewPasswordField, toggleNewPasswordVisibility, newPasswordVisible, this::toggleNewPasswordVisibilityAction);
         setupPasswordToggle(confirmNewPasswordField, textConfirmNewPasswordField, toggleConfirmNewPasswordVisibility, confirmNewPasswordVisible, this::toggleConfirmNewPasswordVisibilityAction);
 
+        if (usernameForReset != null && !usernameForReset.isEmpty() && usernameResetField != null) {
+            usernameResetField.setText(usernameForReset);
+            usernameResetField.setDisable(true); // Nếu username được truyền vào, không cho sửa
+        } else if (usernameResetField != null) {
+            usernameResetField.setDisable(false); // Cho phép nhập nếu không được truyền
+        }
+
         confirmNewPasswordField.setOnAction(this::handleResetPasswordAction);
         textConfirmNewPasswordField.setOnAction(this::handleResetPasswordAction);
     }
 
     public void initData(String username) {
         this.usernameForReset = username;
+        if (username != null && usernameResetField != null) {
+            usernameResetField.setText(username);
+            usernameResetField.setDisable(true);
+        } else if (usernameResetField != null) {
+            usernameResetField.setDisable(false);
+            usernameResetField.clear();
+        }
         log.info("ResetPasswordController initialized for user: {}", username);
     }
 
@@ -123,9 +139,18 @@ public class ResetPasswordController {
         String confirmPassword = confirmNewPasswordVisible ? textConfirmNewPasswordField.getText() : confirmNewPasswordField.getText();
 
         clearError();
+        String usernameToUse;
+        if (usernameResetField != null && !usernameResetField.getText().trim().isEmpty()) {
+            usernameToUse = usernameResetField.getText().trim();
+        } else if (usernameForReset != null && !usernameForReset.isEmpty()) {
+            usernameToUse = usernameForReset;
+        } else {
+            showError("Username is required to reset password.");
+            return;
+        }
 
-        if (usernameForReset == null || usernameForReset.isEmpty()) {
-            showError("Thông tin người dùng không hợp lệ. Vui lòng thử lại từ đầu.");
+        if (usernameToUse.isEmpty()) {
+            showError("Thông tin người dùng không hợp lệ. Vui lòng thử lại từ đầu hoặc nhập username.");
             return;
         }
         if (token.isEmpty()) {
@@ -150,7 +175,7 @@ public class ResetPasswordController {
         setFormDisabled(true);
 
         Thread resetThread = new Thread(() -> {
-            boolean success = userAccountService.resetPasswordWithToken(usernameForReset, token, newPassword);
+            boolean success = userAccountService.resetPasswordWithToken(usernameToUse, token, newPassword);
             Platform.runLater(() -> {
                 hideProgress();
                 if (success) {

@@ -257,7 +257,7 @@ public class EmailService {
 
                                           A password reset was requested for your account.
                                           
-                                          Please use the following token in the application to reset your password:
+                                          Please use the following token along with your username on the 'Reset Password with Token' screen in the application:
                                           %s
                                           
                                           This token will expire in %d hour(s).

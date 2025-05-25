@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pma.model.entity.Doctor;
 import com.pma.model.entity.Patient;
 import com.pma.model.entity.UserAccount;
+import com.pma.model.enums.PasswordResetInitiationResult;
 import com.pma.repository.DoctorRepository;
 import com.pma.repository.PatientRepository;
 import com.pma.repository.UserAccountRepository;
@@ -481,7 +482,7 @@ public class UserAccountService implements UserDetailsService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public boolean initiatePasswordReset(String usernameOrEmail) {
+    public PasswordResetInitiationResult initiatePasswordReset(String usernameOrEmail) {
         log.info("Initiating password reset for input: {}", usernameOrEmail);
         Optional<UserAccount> userOptional = userAccountRepository.findByUsername(usernameOrEmail);
 
@@ -489,11 +490,9 @@ public class UserAccountService implements UserDetailsService {
         // if (userOptional.isEmpty() && usernameOrEmail.contains("@")) {
         //     userOptional = userAccountRepository.findByEmail(usernameOrEmail);
         // }
-
         if (userOptional.isEmpty()) {
             log.warn("Password reset initiation: User not found by username/email '{}'.", usernameOrEmail);
-            // For security, don't reveal if user exists.
-            return true; 
+            return PasswordResetInitiationResult.USER_NOT_FOUND_OR_NO_EMAIL;
         }
 
         UserAccount user = userOptional.get();
@@ -509,7 +508,7 @@ public class UserAccountService implements UserDetailsService {
 
         if (emailAddress == null) {
             log.warn("Password reset initiation: No email address found for user '{}' to send reset token.", user.getUsername());
-            return true; // Don't reveal this for security
+            return PasswordResetInitiationResult.USER_NOT_FOUND_OR_NO_EMAIL;
         }
 
         String token = UUID.randomUUID().toString();
@@ -520,11 +519,10 @@ public class UserAccountService implements UserDetailsService {
         try {
             emailService.sendPasswordResetEmail(emailAddress, user.getUsername(), token);
             log.info("Password reset email successfully sent to {} for user {}", emailAddress, user.getUsername());
-            return true;
+            return PasswordResetInitiationResult.EMAIL_SENT;
         } catch (Exception e) {
             log.error("Failed to send password reset email to {} for user {}: {}", emailAddress, user.getUsername(), e.getMessage(), e);
-            // Even if email sending fails, don't reveal it to the user for security.
-            return true; 
+            return PasswordResetInitiationResult.EMAIL_SEND_FAILURE;
         }
     }
 }
