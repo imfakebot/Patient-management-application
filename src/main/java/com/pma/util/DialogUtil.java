@@ -161,19 +161,25 @@ public final class DialogUtil { // final class vì chỉ chứa static methods
     }
 
     /**
-     * Hiển thị một Information Alert.
+     * Hiển thị một Information Alert đơn giản. Đây là một alias cho
+     * showInfoAlert để phù hợp với cách gọi cũ.
      *
      * @param title Tiêu đề của dialog.
      * @param message Nội dung thông báo.
      */
     public static void showInformation(String title, String message) {
-        showAlert(AlertType.INFORMATION, title, null, message);
+        showInfoAlert(title, message);
     }
-    // The showConfirmation method with specific Vietnamese parameters seems like a leftover or typo.
-    // Assuming the generic showConfirmationAlert is the intended method.
 
-	public static boolean showConfirmation(String string, String string2) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'showConfirmation'");
-	}
+    /**
+     * Hiển thị một Confirmation Alert và trả về true nếu người dùng chọn OK.
+     *
+     * @param title Tiêu đề của dialog.
+     * @param message Câu hỏi xác nhận.
+     * @return true nếu người dùng chọn OK, false nếu ngược lại.
+     */
+    public static boolean showConfirmation(String title, String message) {
+        Optional<ButtonType> result = showConfirmationAlert(title, message);
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
 }
