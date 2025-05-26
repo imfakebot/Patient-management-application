@@ -218,6 +218,17 @@ public class BillService {
         }
     }
 
+    /**
+     * Lấy danh sách tất cả các hóa đơn.
+     *
+     * @return List các Bill.
+     */
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<Bill> findAll() {
+        log.info("Fetching all bills");
+        return billRepository.findAll();
+    }
+
     // --- DTO đơn giản cho Bill Item ---
     // Nên tạo class này ở package riêng (ví dụ: com.pma.dto)
     @Getter

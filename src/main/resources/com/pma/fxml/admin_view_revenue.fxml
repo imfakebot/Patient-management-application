@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.hospital.AdminViewRevenueController">
+<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.AdminViewRevenueController">
     <left>
         <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
             <padding>
@@ -41,16 +41,16 @@
                <content>
                       <TableView fx:id="billsTable" fixedCellSize="0.0">
                           <columns>
-                              <TableColumn fx:id="billIdColumn" prefWidth="100.0" text="Mã Hóa đơn" />
-                              <TableColumn fx:id="patientColumn" prefWidth="118.0" text="Bệnh nhân" />
-                              <TableColumn fx:id="appointmentColumn" prefWidth="90.0" text="Lịch hẹn" />
-                              <TableColumn fx:id="paymentStatusColumn" prefWidth="142.0" text="Trạng thái Thanh toán" />
-                              <TableColumn fx:id="billDatetimeColumn" prefWidth="114.0" text="Ngày lập" />
-                              <TableColumn fx:id="dueDateColumn" prefWidth="117.0" text="Hạn thanh toán" />
-                              <TableColumn fx:id="paymentDateColumn" prefWidth="126.0" text="Ngày Thanh toán" />
-                              <TableColumn fx:id="paymentMethodColumn" prefWidth="175.0" text="Phương thức Thanh toán" />
-                              <TableColumn fx:id="createdAtColumn" prefWidth="118.0" text="Ngày tạo" />
-                              <TableColumn fx:id="updatedAtColumn" prefWidth="150.0" text="Ngày cập nhật" />
+                              <TableColumn fx:id="billIdColumn" minWidth="150.0" prefWidth="200.0" text="Mã Hóa đơn" />
+                              <TableColumn fx:id="patientColumn" minWidth="120.0" prefWidth="150.0" text="Bệnh nhân" />
+                              <TableColumn fx:id="appointmentColumn" minWidth="150.0" prefWidth="200.0" text="Lịch hẹn ID" />
+                              <TableColumn fx:id="paymentStatusColumn" minWidth="120.0" prefWidth="150.0" text="Trạng thái Thanh toán" />
+                              <TableColumn fx:id="billDatetimeColumn" minWidth="120.0" prefWidth="150.0" text="Ngày lập" />
+                              <TableColumn fx:id="dueDateColumn" minWidth="100.0" prefWidth="120.0" text="Hạn thanh toán" />
+                              <TableColumn fx:id="paymentDateColumn" minWidth="120.0" prefWidth="150.0" text="Ngày Thanh toán" />
+                              <TableColumn fx:id="paymentMethodColumn" minWidth="120.0" prefWidth="150.0" text="Phương thức Thanh toán" />
+                              <TableColumn fx:id="billCreatedAtColumn" minWidth="120.0" prefWidth="150.0" text="Ngày tạo HĐ" />
+                              <TableColumn fx:id="billUpdatedAtColumn" minWidth="120.0" prefWidth="150.0" text="Cập nhật HĐ" />
                           </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -60,14 +60,14 @@
             </ScrollPane>
                 <TableView fx:id="billItemsTable">
                     <columns>
-                        <TableColumn fx:id="itemDescriptionColumn" prefWidth="150.0" text="Mô tả" />
-                        <TableColumn fx:id="itemTypeColumn" prefWidth="100.0" text="Loại" />
-                        <TableColumn fx:id="quantityColumn" prefWidth="80.0" text="Số lượng" />
-                        <TableColumn fx:id="unitPriceColumn" prefWidth="80.0" text="Đơn giá" />
-                        <TableColumn fx:id="lineTotalColumn" prefWidth="80.0" text="Tổng" />
-                        <TableColumn fx:id="prescriptionDetailColumn" prefWidth="100.0" text="Chi tiết Đơn thuốc" />
-                        <TableColumn fx:id="createdAtColumn" prefWidth="150.0" text="Ngày tạo" />
-                        <TableColumn fx:id="updatedAtColumn" prefWidth="150.0" text="Ngày cập nhật" />
+                        <TableColumn fx:id="itemDescriptionColumn" minWidth="150.0" prefWidth="200.0" text="Mô tả" />
+                        <TableColumn fx:id="itemTypeColumn" minWidth="100.0" prefWidth="120.0" text="Loại" />
+                        <TableColumn fx:id="quantityColumn" minWidth="70.0" prefWidth="80.0" text="Số lượng" />
+                        <TableColumn fx:id="unitPriceColumn" minWidth="100.0" prefWidth="120.0" text="Đơn giá" />
+                        <TableColumn fx:id="lineTotalColumn" minWidth="100.0" prefWidth="120.0" text="Tổng" />
+                        <TableColumn fx:id="prescriptionDetailColumn" minWidth="150.0" prefWidth="200.0" text="Chi tiết Đơn thuốc ID" />
+                        <TableColumn fx:id="itemCreatedAtColumn" minWidth="120.0" prefWidth="150.0" text="Ngày tạo mục" />
+                        <TableColumn fx:id="itemUpdatedAtColumn" minWidth="120.0" prefWidth="150.0" text="Cập nhật mục" />
                     </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

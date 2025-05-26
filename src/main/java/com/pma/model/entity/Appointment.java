@@ -227,6 +227,11 @@ public class Appointment {
                 : this.getClass()).hashCode();
     }
 
+    public Object getId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+    }
+
     // --- Lưu ý quan trọng cho helper methods `setPatient`/`setDoctor` ---
     // Các phương thức này yêu cầu các lớp liên quan (Patient, Doctor) phải có
     // các phương thức helper nội bộ (ví dụ: addAppointmentInternal,

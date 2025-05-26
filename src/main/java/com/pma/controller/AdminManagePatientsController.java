@@ -5,6 +5,8 @@ import com.pma.model.enums.Gender;
 import com.pma.service.PatientService; // Giả sử bạn có một PatientService
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
+
+import jakarta.persistence.EntityNotFoundException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -22,12 +24,15 @@ import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -184,12 +189,16 @@ public class AdminManagePatientsController implements Initializable {
 
     private void loadPatientsData() {
         // Ví dụ: patientList.setAll(patientService.findAll());
-        // Cần triển khai patientService để lấy dữ liệu
         log.info("Đang tải dữ liệu bệnh nhân...");
-        // patientList.setAll(patientService.getAllPatients()); // Thay thế bằng lời gọi service thực tế
-        // Để test, bạn có thể thêm dữ liệu mẫu:
-        // patientList.add(new Patient("Nguyễn Văn A", LocalDate.of(1990, 1, 1), "Male", "0909123456", "vana@example.com"));
-        // patientList.add(new Patient("Trần Thị B", LocalDate.of(1985, 5, 15), "Female", "0909654321", "thib@example.com"));
+        try {
+            List<Patient> patients = patientService.getAllPatients();
+            patientList.setAll(patients);
+            log.info("Đã tải {} bệnh nhân.", patients.size());
+        } catch (Exception e) {
+            log.error("Lỗi khi tải dữ liệu bệnh nhân: {}", e.getMessage(), e);
+            DialogUtil.showErrorAlert("Lỗi tải dữ liệu", "Không thể tải danh sách bệnh nhân. Vui lòng thử lại.");
+            patientList.clear();
+        }
     }
 
     private void populateForm(Patient patient) {
@@ -218,12 +227,31 @@ public class AdminManagePatientsController implements Initializable {
     @FXML
     private void addPatient(ActionEvent event) {
         log.info("Nút Thêm Bệnh nhân được nhấn");
-        // Lấy dữ liệu từ form
-        // Tạo đối tượng Patient mới
-        // Gọi patientService.save(newPatient);
-        // loadPatientsData();
-        // clearForm();
-        DialogUtil.showInformation("Thông báo", "Chức năng Thêm Bệnh nhân chưa được triển khai.");
+        if (!validateInput()) {
+            return;
+        }
+
+        Patient newPatient = new Patient();
+        setPatientFromForm(newPatient);
+
+        try {
+            Patient registeredPatient = patientService.registerPatient(newPatient);
+            log.info("Đã thêm bệnh nhân mới: {}", registeredPatient.getFullName());
+            // Thêm trực tiếp bệnh nhân vừa đăng ký vào ObservableList
+            // Điều này hiệu quả hơn là tải lại toàn bộ danh sách
+            if (registeredPatient != null) { // Đảm bảo service trả về đối tượng hợp lệ
+                patientList.add(registeredPatient);
+                patientsTable.getSelectionModel().select(registeredPatient); // Tùy chọn: chọn hàng vừa thêm
+            }
+            DialogUtil.showSuccessAlert("Thành công", "Đã thêm bệnh nhân mới thành công.");
+            clearForm(null);
+        } catch (IllegalArgumentException e) {
+            log.warn("Lỗi khi thêm bệnh nhân: {}", e.getMessage());
+            DialogUtil.showErrorAlert("Lỗi dữ liệu", e.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi thêm bệnh nhân: {}", e.getMessage(), e);
+            DialogUtil.showExceptionDialog("Lỗi hệ thống", "Không thể thêm bệnh nhân.", "Vui lòng thử lại sau.", e);
+        }
     }
 
     @FXML
@@ -234,11 +262,45 @@ public class AdminManagePatientsController implements Initializable {
             DialogUtil.showWarningAlert("Cảnh báo", "Vui lòng chọn một bệnh nhân để cập nhật.");
             return;
         }
-        // Cập nhật thông tin cho selectedPatient từ form
-        // Gọi patientService.update(selectedPatient);
-        // loadPatientsData();
-        // clearForm();
-        DialogUtil.showInformation("Thông báo", "Chức năng Cập nhật Bệnh nhân chưa được triển khai.");
+
+        if (!validateInput()) {
+            return;
+        }
+
+        // Tạo một đối tượng Patient mới từ form để truyền vào service
+        // Hoặc cập nhật trực tiếp selectedPatient rồi truyền nó (tùy thiết kế service)
+        Patient updatedDetails = new Patient(); // Tạo đối tượng mới để chứa thông tin cập nhật
+        setPatientFromForm(updatedDetails);
+
+        try {
+            Patient updatedPatient = patientService.updatePatientDetails(selectedPatient.getPatientId(), updatedDetails);
+            log.info("Đã cập nhật bệnh nhân: {}", updatedPatient.getFullName());
+            // Cập nhật item trong ObservableList
+            // Cách này yêu cầu Patient phải có equals() và hashCode() được implement đúng (thường dựa trên ID)
+            // để indexOf hoạt động chính xác.
+            int index = patientList.indexOf(selectedPatient);
+            if (index != -1) {
+                patientList.set(index, updatedPatient);
+                patientsTable.getSelectionModel().select(updatedPatient); // Tùy chọn: chọn lại hàng vừa sửa
+            } else {
+                // Nếu không tìm thấy (hiếm khi xảy ra nếu selectedPatient thực sự từ list),
+                // hoặc nếu equals/hashCode không được implement, tải lại toàn bộ là một giải pháp dự phòng.
+                log.warn("Không tìm thấy bệnh nhân đã chọn trong danh sách để cập nhật. Tải lại toàn bộ danh sách.");
+                loadPatientsData();
+            }
+            DialogUtil.showSuccessAlert("Thành công", "Đã cập nhật thông tin bệnh nhân thành công.");
+            clearForm(null);
+        } catch (EntityNotFoundException e) {
+            log.error("Lỗi cập nhật: Không tìm thấy bệnh nhân với ID {}", selectedPatient.getPatientId());
+            DialogUtil.showErrorAlert("Lỗi", "Không tìm thấy bệnh nhân để cập nhật. Có thể bệnh nhân đã bị xóa.");
+            loadPatientsData(); // Tải lại để đồng bộ
+        } catch (IllegalArgumentException e) {
+            log.warn("Lỗi khi cập nhật bệnh nhân: {}", e.getMessage());
+            DialogUtil.showErrorAlert("Lỗi dữ liệu", e.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi cập nhật bệnh nhân: {}", e.getMessage(), e);
+            DialogUtil.showExceptionDialog("Lỗi hệ thống", "Không thể cập nhật bệnh nhân.", "Vui lòng thử lại sau.", e);
+        }
     }
 
     @FXML
@@ -249,13 +311,71 @@ public class AdminManagePatientsController implements Initializable {
             DialogUtil.showWarningAlert("Cảnh báo", "Vui lòng chọn một bệnh nhân để xóa.");
             return;
         }
-        boolean confirmed = DialogUtil.showConfirmation("Xác nhận xóa", "Bạn có chắc chắn muốn xóa bệnh nhân này không?");
+        boolean confirmed = DialogUtil.showConfirmation("Xác nhận xóa",
+                "Bạn có chắc chắn muốn xóa bệnh nhân '" + selectedPatient.getFullName() + "' không? "
+                + "Hành động này không thể hoàn tác và sẽ xóa tất cả dữ liệu liên quan (lịch hẹn, hồ sơ bệnh án,...).");
         if (confirmed) {
-            // Gọi patientService.delete(selectedPatient.getId());
-            // loadPatientsData();
-            // clearForm();
-            DialogUtil.showInformation("Thông báo", "Chức năng Xóa Bệnh nhân chưa được triển khai đầy đủ.");
+            try {
+                patientService.deletePatient(selectedPatient.getPatientId());
+                log.info("Đã xóa bệnh nhân: {}", selectedPatient.getFullName());
+                patientList.remove(selectedPatient); // Xóa khỏi ObservableList
+                DialogUtil.showSuccessAlert("Thành công", "Đã xóa bệnh nhân thành công.");
+                clearForm(null);
+            } catch (EntityNotFoundException e) {
+                log.error("Lỗi xóa: Không tìm thấy bệnh nhân với ID {}", selectedPatient.getPatientId());
+                DialogUtil.showErrorAlert("Lỗi", "Không tìm thấy bệnh nhân để xóa. Có thể bệnh nhân đã bị xóa.");
+                loadPatientsData(); // Tải lại để đồng bộ
+            } catch (IllegalStateException | DataIntegrityViolationException e) {
+                log.warn("Lỗi khi xóa bệnh nhân {}: {}", selectedPatient.getPatientId(), e.getMessage());
+                DialogUtil.showErrorAlert("Không thể xóa", "Không thể xóa bệnh nhân do có dữ liệu liên quan hoặc ràng buộc hệ thống. " + e.getMessage());
+            } catch (Exception e) {
+                log.error("Lỗi không mong muốn khi xóa bệnh nhân: {}", e.getMessage(), e);
+                DialogUtil.showExceptionDialog("Lỗi hệ thống", "Không thể xóa bệnh nhân.", "Vui lòng thử lại sau.", e);
+            }
         }
+    }
+
+    private void setPatientFromForm(Patient patient) {
+        patient.setFullName(fullNameField1.getText().trim());
+        patient.setDateOfBirth(dateOfBirthPicker1.getValue());
+        String genderString = genderCombo1.getValue();
+        if (genderString != null) {
+            try {
+                patient.setGender(Gender.valueOf(genderString.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Giá trị gender không hợp lệ từ ComboBox: {}", genderString);
+                patient.setGender(null); // Hoặc xử lý lỗi
+            }
+        } else {
+            patient.setGender(null);
+        }
+        patient.setPhone(phoneField1.getText().trim());
+        patient.setEmail(emailField1.getText().trim());
+        patient.setAddressLine1(addressLine1Field1.getText().trim());
+        patient.setAddressLine2(addressLine2Field1.getText().trim());
+        patient.setCity(cityField1.getText().trim());
+        patient.setPostalCode(postalCodeField1.getText().trim());
+        patient.setCountry(countryField1.getText().trim());
+        patient.setBloodType(bloodTypeCombo1.getValue());
+        patient.setAllergies(allergiesField1.getText().trim());
+        patient.setMedicalHistory(medicalHistoryField1.getText().trim());
+        patient.setInsuranceNumber(insuranceNumberField1.getText().trim());
+        patient.setEmergencyContactName(emergencyContactNameField1.getText().trim());
+        patient.setEmergencyContactPhone(emergencyContactPhoneField1.getText().trim());
+    }
+
+    private boolean validateInput() {
+        // Thêm các kiểm tra chi tiết hơn ở đây
+        if (fullNameField1.getText().trim().isEmpty()
+                || dateOfBirthPicker1.getValue() == null
+                || genderCombo1.getValue() == null
+                || phoneField1.getText().trim().isEmpty()
+                || emailField1.getText().trim().isEmpty()) {
+            DialogUtil.showWarningAlert("Thiếu thông tin", "Vui lòng điền đầy đủ các trường bắt buộc: Họ tên, Ngày sinh, Giới tính, Số điện thoại, Email.");
+            return false;
+        }
+        // Kiểm tra định dạng email, phone...
+        return true;
     }
 
     @FXML
