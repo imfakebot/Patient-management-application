@@ -1,4 +1,4 @@
-package com.pma.model.entity; // <-- THAY ĐỔI PACKAGE NẾU CẦN
+package com.pma.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -19,24 +19,26 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-// ---> IMPORT ENUM TỪ PACKAGE RIÊNG (NẾU CÓ) <---
-import com.pma.model.enums.BillPaymentStatus; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import com.pma.model.enums.PaymentMethod; // Import enum PaymentMethod
+import com.pma.model.enums.BillPaymentStatus;
 
 /**
- * Entity đại diện cho bảng Bills trong cơ sở dữ liệu.
- * Lưu trữ thông tin hóa đơn thanh toán cho bệnh nhân.
+ * Entity đại diện cho bảng Bills trong cơ sở dữ liệu. Lưu trữ thông tin hóa đơn
+ * thanh toán cho bệnh nhân.
  */
 @Getter
 @Setter
 // Exclude các quan hệ và collection để tránh lỗi LAZY / vòng lặp
-@ToString(exclude = { "patient", "appointment", "billItems" })
+@ToString(exclude = {"patient", "appointment", "billItems"})
 @NoArgsConstructor // Constructor mặc định cho JPA
 @Entity
 @Table(name = "Bills", indexes = {
-        // Index từ schema SQL
-        @Index(name = "IX_Bills_patient_id", columnList = "patient_id"),
-        @Index(name = "IX_Bills_appointment_id", columnList = "appointment_id"),
-        @Index(name = "IX_Bills_payment_status", columnList = "payment_status") // Index cho cột status
+    // Index từ schema SQL
+    @Index(name = "IX_Bills_patient_id", columnList = "patient_id"),
+    @Index(name = "IX_Bills_appointment_id", columnList = "appointment_id"),
+    @Index(name = "IX_Bills_payment_status", columnList = "payment_status") // Index cho cột status
 })
 public class Bill {
 
@@ -53,8 +55,8 @@ public class Bill {
     private BillPaymentStatus paymentStatus = BillPaymentStatus.Pending; // Gán giá trị mặc định
 
     /**
-     * Ngày và giờ hóa đơn được tạo hoặc phát hành.
-     * DB có DEFAULT CURRENT_TIMESTAMP, có thể gán mặc định ở Java.
+     * Ngày và giờ hóa đơn được tạo hoặc phát hành. DB có DEFAULT
+     * CURRENT_TIMESTAMP, có thể gán mặc định ở Java.
      */
     @Column(name = "bill_datetime") // nullable=true là mặc định
     private LocalDateTime billDatetime = LocalDateTime.now();
@@ -69,16 +71,17 @@ public class Bill {
      * Ngày và giờ hóa đơn được thanh toán (tùy chọn).
      */
     @Column(name = "payment_date") // DATETIME2(3) -> LocalDateTime
-    private LocalDateTime paymentDate;
+    private LocalDateTime paymentDate; // Vẫn giữ kiểu LocalDateTime
 
+    @Enumerated(EnumType.STRING) // Lưu tên Enum vào DB
     /**
      * Phương thức thanh toán (ví dụ: Tiền mặt, Thẻ, Bảo hiểm).
      */
     @Column(name = "payment_method", length = 50)
-    private String paymentMethod;
+    private PaymentMethod paymentMethod; // Thay đổi kiểu dữ liệu từ String sang PaymentMethod
 
     /**
-     * Thời điểm bản ghi hóa đơn được tạo. Quản lý tự động.
+     * Thời điểm bản ghi hóa đơn được tạo. Quản lý tự động bởi Hibernate.
      */
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -92,7 +95,6 @@ public class Bill {
     private LocalDateTime updatedAt;
 
     // --- Mối quan hệ ManyToOne (Phía sở hữu khóa ngoại) ---
-
     /**
      * Bệnh nhân liên quan đến hóa đơn này. Bắt buộc.
      */
@@ -101,20 +103,18 @@ public class Bill {
     private Patient patient;
 
     /**
-     * Cuộc hẹn chính liên quan đến hóa đơn này (tùy chọn, có thể null).
-     * DB có ON DELETE SET NULL.
+     * Cuộc hẹn chính liên quan đến hóa đơn này (tùy chọn, có thể null). DB có
+     * ON DELETE SET NULL.
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "appointment_id", nullable = true)
     private Appointment appointment;
 
     // --- Mối quan hệ OneToMany (Phía không sở hữu - Inverse Side) ---
-
     /**
-     * Danh sách các chi tiết mục trong hóa đơn này.
-     * Mối quan hệ master-detail, xóa Bill nên xóa BillItems.
-     * CascadeType.ALL và orphanRemoval=true là phù hợp.
-     * Khớp với ON DELETE CASCADE trong SQL cho BillItems.bill_id.
+     * Danh sách các chi tiết mục trong hóa đơn này. Mối quan hệ master-detail,
+     * xóa Bill nên xóa BillItems. CascadeType.ALL và orphanRemoval=true là phù
+     * hợp. Khớp với ON DELETE CASCADE trong SQL cho BillItems.bill_id.
      */
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, // Xóa Bill sẽ xóa BillItems
             fetch = FetchType.LAZY, orphanRemoval = true) // Xóa BillItem khỏi Set sẽ xóa nó khỏi DB
@@ -128,20 +128,23 @@ public class Bill {
      * lệ
      * }
      */
-
     // --- Helper methods quản lý quan hệ hai chiều ---
-
     // --- Cho Patient ---
     public void setPatient(Patient patient) {
-        if (Objects.equals(this.patient, patient))
+        if (Objects.equals(this.patient, patient)) {
             return;
+        }
         Patient oldPatient = this.patient;
         this.patient = null; // Ngắt trước
-        if (oldPatient != null)
+        if (oldPatient != null) {
             oldPatient.removeBillInternal(this); // Gọi lại internal
+
+        }
         this.patient = patient;
-        if (patient != null)
+        if (patient != null) {
             patient.addBillInternal(this); // Gọi lại internal
+
+        }
     }
 
     // --- Cho Appointment (Optional) ---
@@ -149,8 +152,9 @@ public class Bill {
         // Tương tự Patient, nhưng Appointment là optional và có ON DELETE SET NULL
         // Có thể không cần quản lý hai chiều phức tạp ở đây nếu không cần truy cập
         // Bills từ Appointment
-        if (Objects.equals(this.appointment, appointment))
+        if (Objects.equals(this.appointment, appointment)) {
             return;
+        }
         // Có thể thêm logic gọi lại Appointment.removeBillInternal / addBillInternal
         // nếu cần
         this.appointment = appointment;
@@ -159,8 +163,9 @@ public class Bill {
     // --- Cho BillItems (QUAN TRỌNG vì Cascade ALL & orphanRemoval) ---
     public void addBillItem(BillItem billItem) {
         Objects.requireNonNull(billItem, "BillItem cannot be null");
-        if (this.billItems == null)
+        if (this.billItems == null) {
             this.billItems = new HashSet<>();
+        }
         if (this.billItems.add(billItem)) {
             // Đồng bộ phía đối diện
             billItem.setBillInternal(this); // Gọi setter internal ở BillItem
@@ -178,9 +183,9 @@ public class Bill {
     }
 
     /**
-     * Internal method to remove a BillItem from the Bill's collection.
-     * This ensures consistency in the bidirectional relationship.
-     * 
+     * Internal method to remove a BillItem from the Bill's collection. This
+     * ensures consistency in the bidirectional relationship.
+     *
      * @param billItem The BillItem to remove.
      */
     void removeBillItemInternal(BillItem billItem) {
@@ -190,9 +195,9 @@ public class Bill {
     }
 
     /**
-     * Internal method to add a BillItem to this Bill.
-     * This ensures bidirectional consistency.
-     * 
+     * Internal method to add a BillItem to this Bill. This ensures
+     * bidirectional consistency.
+     *
      * @param billItem The BillItem to add.
      */
     void addBillItemInternal(BillItem billItem) {
@@ -214,8 +219,9 @@ public class Bill {
     /**
      * Tính tổng số tiền của hóa đơn dựa trên các mục chi tiết (BillItems).
      * Phương thức này không ánh xạ tới cột nào trong DB (@Transient).
-     * 
-     * @return Tổng số tiền của hóa đơn, hoặc BigDecimal.ZERO nếu không có mục nào.
+     *
+     * @return Tổng số tiền của hóa đơn, hoặc BigDecimal.ZERO nếu không có mục
+     * nào.
      */
     @Transient // Đánh dấu là không ánh xạ tới DB
     public BigDecimal getTotalAmount() {
@@ -232,18 +238,21 @@ public class Bill {
     // --- equals() và hashCode() chuẩn ---
     @Override
     public final boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null)
+        }
+        if (o == null) {
             return false;
+        }
         Class<?> oEffectiveClass = o instanceof HibernateProxy
                 ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass)
+        if (thisEffectiveClass != oEffectiveClass) {
             return false;
+        }
         Bill bill = (Bill) o;
         return getBillId() != null && Objects.equals(getBillId(), bill.getBillId());
     }
@@ -253,6 +262,17 @@ public class Bill {
         return (this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass()).hashCode();
+    }
+
+    // --- JavaFX Property (nếu cần cho TableView binding) ---
+    /**
+     * Trả về một ObjectProperty cho billId, hữu ích cho JavaFX TableView
+     * binding.
+     *
+     * @return ObjectProperty chứa UUID của billId.
+     */
+    public ObjectProperty<UUID> billIdProperty() {
+        return new SimpleObjectProperty<>(this.billId);
     }
 
     // --- Lưu ý về Helper Methods ---

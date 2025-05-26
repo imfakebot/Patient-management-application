@@ -159,4 +159,27 @@ public final class DialogUtil { // final class vì chỉ chứa static methods
     public static void showSuccessAlert(String title, String message) {
         showAlert(AlertType.INFORMATION, title, null, message);
     }
+
+    /**
+     * Hiển thị một Information Alert đơn giản. Đây là một alias cho
+     * showInfoAlert để phù hợp với cách gọi cũ.
+     *
+     * @param title Tiêu đề của dialog.
+     * @param message Nội dung thông báo.
+     */
+    public static void showInformation(String title, String message) {
+        showInfoAlert(title, message);
+    }
+
+    /**
+     * Hiển thị một Confirmation Alert và trả về true nếu người dùng chọn OK.
+     *
+     * @param title Tiêu đề của dialog.
+     * @param message Câu hỏi xác nhận.
+     * @return true nếu người dùng chọn OK, false nếu ngược lại.
+     */
+    public static boolean showConfirmation(String title, String message) {
+        Optional<ButtonType> result = showConfirmationAlert(title, message);
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
 }

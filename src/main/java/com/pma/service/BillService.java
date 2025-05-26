@@ -2,6 +2,7 @@ package com.pma.service;
 
 import com.pma.model.entity.*; // Import các entity cần thiết
 import com.pma.model.enums.BillItemType;
+import com.pma.model.enums.PaymentMethod; // Import enum PaymentMethod
 import com.pma.model.enums.BillPaymentStatus; // Import Enum
 import com.pma.repository.*; // Import các repository cần thiết
 import jakarta.persistence.EntityNotFoundException;
@@ -38,7 +39,7 @@ public class BillService {
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository; // Optional
     private final PrescriptionDetailRepository prescriptionDetailRepository; // Nếu cần tạo BillItem từ
-                                                                             // PrescriptionDetail
+    // PrescriptionDetail
     // Inject các Repository khác nếu cần tạo BillItem từ LabTest, Procedure...
     // private final LabTestRepository labTestRepository;
     // private final ProcedureRepository procedureRepository;
@@ -57,14 +58,14 @@ public class BillService {
     /**
      * Tạo một hóa đơn mới với các mục chi tiết.
      *
-     * @param bill          Đối tượng Bill cơ bản (chưa có ID, Patient, Appointment,
-     *                      Items).
-     * @param patientId     ID của Patient.
+     * @param bill Đối tượng Bill cơ bản (chưa có ID, Patient, Appointment,
+     * Items).
+     * @param patientId ID của Patient.
      * @param appointmentId (Optional) ID của Appointment liên quan.
-     * @param billItemDTOs  Danh sách các DTO chứa thông tin chi tiết hóa đơn.
+     * @param billItemDTOs Danh sách các DTO chứa thông tin chi tiết hóa đơn.
      * @return Bill đã được lưu cùng các chi tiết.
-     * @throws EntityNotFoundException  nếu Patient hoặc Appointment (nếu có) không
-     *                                  tồn tại.
+     * @throws EntityNotFoundException nếu Patient hoặc Appointment (nếu có)
+     * không tồn tại.
      * @throws IllegalArgumentException nếu thông tin chi tiết không hợp lệ.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -118,7 +119,7 @@ public class BillService {
             if (dto.getPrescriptionDetailId() != null) {
                 PrescriptionDetail pd = prescriptionDetailRepository.findById(dto.getPrescriptionDetailId())
                         .orElseThrow(() -> new EntityNotFoundException(
-                                "PrescriptionDetail not found with id: " + dto.getPrescriptionDetailId()));
+                        "PrescriptionDetail not found with id: " + dto.getPrescriptionDetailId()));
                 // Kiểm tra xem PrescriptionDetail có đúng của Patient không?
                 if (!pd.getPrescription().getPatient().getPatientId().equals(patientId)) {
                     throw new IllegalArgumentException("PrescriptionDetail " + dto.getPrescriptionDetailId()
@@ -139,7 +140,6 @@ public class BillService {
         log.info("Successfully created bill with id: {}", savedBill.getBillId());
 
         // Tổng tiền có thể lấy qua savedBill.getTotalAmount() nhờ @Transient/@Formula
-
         return savedBill;
     }
 
@@ -166,18 +166,18 @@ public class BillService {
     /**
      * Cập nhật trạng thái thanh toán của hóa đơn.
      *
-     * @param billId        ID của hóa đơn.
-     * @param newStatus     Trạng thái mới.
+     * @param billId ID của hóa đơn.
+     * @param newStatus Trạng thái mới.
      * @param paymentMethod (Optional) Phương thức thanh toán nếu trạng thái là
-     *                      Paid/Partially Paid.
-     * @param paymentDate   (Optional) Ngày thanh toán, mặc định là now() nếu là
-     *                      Paid/Partially Paid và không được cung cấp.
+     * Paid/Partially Paid (sử dụng enum PaymentMethod).
+     * @param paymentDate (Optional) Ngày thanh toán, mặc định là now() nếu là
+     * Paid/Partially Paid và không được cung cấp.
      * @return Bill đã được cập nhật.
      * @throws EntityNotFoundException nếu không tìm thấy Bill.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
-    public Bill updatePaymentStatus(UUID billId, BillPaymentStatus newStatus, String paymentMethod,
-            LocalDateTime paymentDate) {
+    public Bill updatePaymentStatus(UUID billId, BillPaymentStatus newStatus, PaymentMethod paymentMethod, // Sử dụng enum
+            LocalDateTime paymentDate) { // Vẫn giữ LocalDateTime cho ngày
         log.info("Attempting to update payment status for bill id: {} to {}", billId, newStatus);
         Bill bill = getBillById(billId);
 
@@ -186,7 +186,7 @@ public class BillService {
         if (newStatus == BillPaymentStatus.Paid || newStatus == BillPaymentStatus.Partially_Paid) {
             bill.setPaymentMethod(paymentMethod); // Cần validation paymentMethod nếu muốn
             bill.setPaymentDate(Objects.requireNonNullElseGet(paymentDate, LocalDateTime::now)); // Gán ngày hiện tại
-                                                                                                 // nếu không cung cấp
+            // nếu không cung cấp
         } else {
             // Nếu chuyển về Pending hoặc Cancelled, có thể xóa payment info
             bill.setPaymentMethod(null);
@@ -198,9 +198,8 @@ public class BillService {
     }
 
     /**
-     * Xóa một hóa đơn.
-     * CẢNH BÁO: Do CascadeType.ALL cho billItems, việc này sẽ xóa tất cả chi tiết
-     * hóa đơn liên quan.
+     * Xóa một hóa đơn. CẢNH BÁO: Do CascadeType.ALL cho billItems, việc này sẽ
+     * xóa tất cả chi tiết hóa đơn liên quan.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public void deleteBill(UUID billId) {
@@ -224,6 +223,7 @@ public class BillService {
     @Getter
     @Setter
     public static class BillItemDTO {
+
         private String itemDescription;
         private BillItemType itemType; // Enum
         private int quantity;

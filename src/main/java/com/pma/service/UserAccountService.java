@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pma.model.entity.Doctor;
 import com.pma.model.entity.Patient;
 import com.pma.model.entity.UserAccount;
+import com.pma.model.enums.UserRole;
 import com.pma.model.enums.PasswordResetInitiationResult;
 import com.pma.repository.DoctorRepository;
 import com.pma.repository.PatientRepository;
@@ -181,10 +182,13 @@ public class UserAccountService implements UserDetailsService {
             int attempts = user.getFailedLoginAttempts() + 1;
             user.setFailedLoginAttempts(attempts);
 
-            // Thay vì khóa, yêu cầu OTP
-            if (attempts >= MAX_FAILED_ATTEMPTS_BEFORE_OTP) {
+            // Check if user is ADMIN before requiring OTP
+            if (user.getRole() != UserRole.ADMIN && attempts >= MAX_FAILED_ATTEMPTS_BEFORE_OTP) {
                 user.setOtpRequiredForLogin(true);
                 log.warn("User account {} now requires OTP for login due to {} failed attempts.", username, attempts);
+            } else if (user.getRole() == UserRole.ADMIN) {
+                log.info("Admin user {} reached {} failed attempts. OTP requirement is bypassed for admins.", username, attempts);
+                user.setOtpRequiredForLogin(false); // Ensure it's false for admin
             } else {
                 user.setOtpRequiredForLogin(false); // Đảm bảo cờ này false nếu chưa đạt ngưỡng
             }
@@ -234,6 +238,12 @@ public class UserAccountService implements UserDetailsService {
     public void generateAndSendEmailOtp(UUID userId) {
         UserAccount user = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("UserAccount not found with id: " + userId));
+
+        if (user.getRole() == UserRole.ADMIN) {
+            log.info("Skipping OTP email generation and sending for ADMIN user: {}", user.getUsername());
+            // For a void method, just return.
+            return;
+        }
 
         if (user.getPatient() == null || user.getPatient().getEmail() == null) {
             throw new IllegalStateException("User does not have an email address configured for 2FA.");
