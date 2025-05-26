@@ -35,15 +35,18 @@
             </padding>
             <Label styleClass="title-label" text="Xem Đơn thuốc" />
             <VBox spacing="20.0">
-                <TableView fx:id="prescriptionsTable" minHeight="400.0" prefHeight="400.0">
+                <TableView fx:id="prescriptionsTable" minHeight="300.0" prefHeight="300.0">
                     <columns>
                         <TableColumn fx:id="prescriptionDateColumn" prefWidth="119.0" text="Ngày kê" />
                         <TableColumn fx:id="doctorColumn" prefWidth="145.0" text="Bác sĩ" />
                         <TableColumn fx:id="notesColumn" prefWidth="141.0" text="Ghi chú" />
                         <TableColumn fx:id="statusColumn" prefWidth="153.0" text="Trạng thái" />
                     </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
                 </TableView>
-                <TableView fx:id="prescriptionDetailsTable" minHeight="400.0" prefHeight="200.0">
+                <TableView fx:id="prescriptionDetailsTable" minHeight="300.0" prefHeight="200.0">
                     <columns>
                         <TableColumn fx:id="medicineColumn" prefWidth="150.0" text="Thuốc" />
                         <TableColumn fx:id="quantityColumn" prefWidth="80.0" text="Số lượng" />
@@ -51,6 +54,9 @@
                         <TableColumn fx:id="dosageColumn" prefWidth="100.0" text="Liều lượng" />
                         <TableColumn fx:id="instructionsColumn" prefWidth="150.0" text="Hướng dẫn" />
                     </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
                 </TableView>
             </VBox>
             <BorderPane.margin>
