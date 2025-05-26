@@ -1,5 +1,8 @@
 package com.pma.controller;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +25,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-
-import java.io.InputStream;
-import java.io.IOException;
 
 @Component
 public class ResetPasswordController {
@@ -126,7 +126,7 @@ public class ResetPasswordController {
         pf.setManaged(!isInitiallyVisible);
         pf.setVisible(!isInitiallyVisible);
         if (iv.getImage() == null && eyeClosedImage != null) { // Set default if not set by FXML
-             iv.setImage(isInitiallyVisible ? eyeOpenImage : eyeClosedImage);
+            iv.setImage(isInitiallyVisible ? eyeOpenImage : eyeClosedImage);
         }
         iv.setCursor(Cursor.HAND);
         iv.setOnMouseClicked(handler);
@@ -209,22 +209,30 @@ public class ResetPasswordController {
     }
 
     private void updateFieldVisibility(PasswordField pf, TextField tf, ImageView iv, boolean makeTextVisible, Image openImg, Image closedImg) {
-        if (pf == null || tf == null || iv == null) return;
+        if (pf == null || tf == null || iv == null) {
+            return;
+        }
         Image newImage = makeTextVisible ? openImg : closedImg;
-        if (newImage != null) iv.setImage(newImage);
+        if (newImage != null) {
+            iv.setImage(newImage);
+        }
 
         if (makeTextVisible) {
             tf.setText(pf.getText());
-            tf.setVisible(true); tf.setManaged(true);
-            pf.setVisible(false); pf.setManaged(false);
+            tf.setVisible(true);
+            tf.setManaged(true);
+            pf.setVisible(false);
+            pf.setManaged(false);
             Platform.runLater(() -> {
                 tf.requestFocus();
                 tf.positionCaret(tf.getText().length());
             });
         } else {
             pf.setText(tf.getText());
-            pf.setVisible(true); pf.setManaged(true);
-            tf.setVisible(false); tf.setManaged(false);
+            pf.setVisible(true);
+            pf.setManaged(true);
+            tf.setVisible(false);
+            tf.setManaged(false);
             Platform.runLater(() -> {
                 pf.requestFocus();
                 pf.positionCaret(pf.getText().length());

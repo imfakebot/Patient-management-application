@@ -1,10 +1,10 @@
-package com.pma.util; // Hoặc package của bạn
+package com.pma.util;
 
-import java.io.IOException; // Lớp Application chính của bạn
+import java.io.IOException; // Lớp Application chính
 import java.net.URL;
 import java.util.Objects;
-import java.util.function.Consumer; // Added for controller initialization
-import java.util.UUID;
+import java.util.UUID; // Added for controller initialization
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory; // Để đặt icon cho cửa sổ
