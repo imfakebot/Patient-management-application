@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.pma.model.entity.UserAccount;
+import com.pma.model.enums.UserRole;
 import com.pma.service.UserAccountService;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
@@ -78,9 +79,15 @@ public class TwoFactorAuthController {
         // Hiển thị tùy chọn "Resend OTP" nếu đây là luồng OTP qua email
         // (tức là preAuth != null VÀ 2FA (TOTP) chưa được bật HOẶC preAuth == null (OTP do đăng nhập sai))
         UserAccount user = userAccountService.findByUsername(usernameFor2FA).orElse(null);
-        if (user != null && ((preAuthenticatedToken != null && !user.isTwoFactorEnabled()) || preAuthenticatedToken == null)) {
-            resendOtpLabel.setVisible(true);
-            resendOtpLabel.setManaged(true);
+        if (user != null && ( (preAuthenticatedToken != null && !user.isTwoFactorEnabled()) || preAuthenticatedToken == null) ) {
+            // If user is ADMIN, resend should also be hidden as they shouldn't be in this flow for email OTP.
+            if (user.getRole() == UserRole.ADMIN) {
+                 resendOtpLabel.setVisible(false);
+                 resendOtpLabel.setManaged(false);
+            } else {
+                 resendOtpLabel.setVisible(true);
+                 resendOtpLabel.setManaged(true);
+            }
         } else {
             resendOtpLabel.setVisible(false);
             resendOtpLabel.setManaged(false);

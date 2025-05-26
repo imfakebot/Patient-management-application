@@ -20,32 +20,34 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.hospital.AdminManagePatientsController">
-    <left>
-        <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
-            <padding>
-                <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
-            </padding>
-            <Label style="-fx-font-weight: bold; -fx-text-fill: -primary-color;" styleClass="title-label" text="Admin" textFill="#923b9e">
-                <font>
-                    <Font name="System Bold" size="24.0" />
-                </font>
-            </Label>
-            <Button fx:id="adminViewRevenueButton" onAction="#loadAdminViewRevenue" styleClass="sidebar-button" text="Xem Doanh thu" />
-            <Button fx:id="adminManageDoctorsButton" onAction="#loadAdminManageDoctors" styleClass="sidebar-button" text="Quản lý Bác sĩ" />
-            <Button fx:id="adminManagePatientsButton" onAction="#loadAdminManagePatients" style="-fx-background-color: -accent-color;" styleClass="sidebar-button" text="Quản lý Bệnh nhân" />
-            <Button fx:id="adminManageDepartmentsButton" onAction="#loadAdminManageDepartments" styleClass="sidebar-button" text="Quản lý Khoa" />
-            <Button fx:id="adminManageMedicinesButton" onAction="#loadAdminManageMedicines" styleClass="sidebar-button" text="Quản lý Thuốc" />
-            <Button fx:id="adminManageUserAccountsButton" onAction="#loadAdminManageUserAccounts" styleClass="sidebar-button" text="Quản lý Tài khoản" />
-            <Button fx:id="adminManageDiseasesButton" onAction="#loadAdminManageDiseases" styleClass="sidebar-button" text="Quản lý Bệnh" />
-        </VBox>
-    </left>
-    <center>
-        <VBox spacing="15.0" styleClass="card">
-            <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-            </padding>
-            <Label styleClass="title-label" text="Quản lý Bệnh nhân" />
+<BorderPane stylesheets="@../css/modern-style.css"
+   xmlns="http://javafx.com/javafx/23.0.1"
+   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.AdminManagePatientsController">
+   <left>
+      <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
+         <padding>
+            <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
+         </padding>
+         <Label style="-fx-font-weight: bold; -fx-text-fill: -primary-color;" styleClass="title-label" text="Admin" textFill="#923b9e">
+            <font>
+               <Font name="System Bold" size="24.0" />
+            </font>
+         </Label>
+         <Button fx:id="adminViewRevenueButton" onAction="#loadAdminViewRevenue" styleClass="sidebar-button" text="Xem Doanh thu" />
+         <Button fx:id="adminManageDoctorsButton" onAction="#loadAdminManageDoctors" styleClass="sidebar-button" text="Quản lý Bác sĩ" />
+         <Button fx:id="adminManagePatientsButton" onAction="#loadAdminManagePatients" style="-fx-background-color: -accent-color;" styleClass="sidebar-button" text="Quản lý Bệnh nhân" />
+         <Button fx:id="adminManageDepartmentsButton" onAction="#loadAdminManageDepartments" styleClass="sidebar-button" text="Quản lý Khoa" />
+         <Button fx:id="adminManageMedicinesButton" onAction="#loadAdminManageMedicines" styleClass="sidebar-button" text="Quản lý Thuốc" />
+         <Button fx:id="adminManageUserAccountsButton" onAction="#loadAdminManageUserAccounts" styleClass="sidebar-button" text="Quản lý Tài khoản" />
+         <Button fx:id="adminManageDiseasesButton" onAction="#loadAdminManageDiseases" styleClass="sidebar-button" text="Quản lý Bệnh" />
+      </VBox>
+   </left>
+   <center>
+      <VBox spacing="15.0" styleClass="card">
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+         <Label styleClass="title-label" text="Quản lý Bệnh nhân" />
          <ScrollPane hbarPolicy="NEVER" hmax="0.0">
             <content>
                <GridPane alignment="TOP_CENTER" hgap="20.0" maxWidth="-Infinity" vgap="10.0">
@@ -140,39 +142,39 @@
          </ScrollPane>
          <ScrollPane vbarPolicy="NEVER" vmax="0.0">
             <content>
-                  <VBox spacing="20.0">
-                      <TableView fx:id="patientsTable">
-                          <columns>
-                              <TableColumn fx:id="fullNameColumn" prefWidth="150.0" text="Họ và Tên" />
-                              <TableColumn fx:id="dateOfBirthColumn" prefWidth="100.0" text="Ngày sinh" />
-                              <TableColumn fx:id="genderColumn" prefWidth="80.0" text="Giới tính" />
-                              <TableColumn fx:id="phoneColumn" prefWidth="100.0" text="Số điện thoại" />
-                              <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
-                              <TableColumn fx:id="addressLine1Column" prefWidth="150.0" text="Địa chỉ 1" />
-                              <TableColumn fx:id="addressLine2Column" prefWidth="150.0" text="Địa chỉ 2" />
-                              <TableColumn fx:id="cityColumn" prefWidth="100.0" text="Thành phố" />
-                              <TableColumn fx:id="stateProvinceColumn" prefWidth="100.0" text="Tỉnh/TP" />
-                              <TableColumn fx:id="postalCodeColumn" prefWidth="80.0" text="Mã bưu điện" />
-                              <TableColumn fx:id="countryColumn" prefWidth="100.0" text="Quốc gia" />
-                              <TableColumn fx:id="bloodTypeColumn" prefWidth="80.0" text="Nhóm máu" />
-                              <TableColumn fx:id="allergiesColumn" prefWidth="200.0" text="Dị ứng" />
-                              <TableColumn fx:id="medicalHistoryColumn" prefWidth="200.0" text="Tiền sử bệnh" />
-                              <TableColumn fx:id="insuranceNumberColumn" prefWidth="100.0" text="Số bảo hiểm" />
-                              <TableColumn fx:id="emergencyContactNameColumn" prefWidth="150.0" text="Liên hệ khẩn cấp" />
-                              <TableColumn fx:id="emergencyContactPhoneColumn" prefWidth="100.0" text="SĐT khẩn cấp" />
-                              <TableColumn fx:id="createdAtColumn" prefWidth="150.0" text="Ngày tạo" />
-                              <TableColumn fx:id="updatedAtColumn" prefWidth="150.0" text="Ngày cập nhật" />
-                          </columns>
-                      </TableView>
-                  </VBox>
+               <VBox spacing="20.0">
+                  <TableView fx:id="patientsTable">
+                     <columns>
+                        <TableColumn fx:id="fullNameColumn" prefWidth="150.0" text="Họ và Tên" />
+                        <TableColumn fx:id="dateOfBirthColumn" prefWidth="100.0" text="Ngày sinh" />
+                        <TableColumn fx:id="genderColumn" prefWidth="80.0" text="Giới tính" />
+                        <TableColumn fx:id="phoneColumn" prefWidth="100.0" text="Số điện thoại" />
+                        <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
+                        <TableColumn fx:id="addressLine1Column" prefWidth="150.0" text="Địa chỉ 1" />
+                        <TableColumn fx:id="addressLine2Column" prefWidth="150.0" text="Địa chỉ 2" />
+                        <TableColumn fx:id="cityColumn" prefWidth="100.0" text="Thành phố" />
+                        <TableColumn fx:id="stateProvinceColumn" prefWidth="100.0" text="Tỉnh/TP" />
+                        <TableColumn fx:id="postalCodeColumn" prefWidth="80.0" text="Mã bưu điện" />
+                        <TableColumn fx:id="countryColumn" prefWidth="100.0" text="Quốc gia" />
+                        <TableColumn fx:id="bloodTypeColumn" prefWidth="80.0" text="Nhóm máu" />
+                        <TableColumn fx:id="allergiesColumn" prefWidth="200.0" text="Dị ứng" />
+                        <TableColumn fx:id="medicalHistoryColumn" prefWidth="200.0" text="Tiền sử bệnh" />
+                        <TableColumn fx:id="insuranceNumberColumn" prefWidth="100.0" text="Số bảo hiểm" />
+                        <TableColumn fx:id="emergencyContactNameColumn" prefWidth="150.0" text="Liên hệ khẩn cấp" />
+                        <TableColumn fx:id="emergencyContactPhoneColumn" prefWidth="100.0" text="SĐT khẩn cấp" />
+                        <TableColumn fx:id="createdAtColumn" prefWidth="150.0" text="Ngày tạo" />
+                        <TableColumn fx:id="updatedAtColumn" prefWidth="150.0" text="Ngày cập nhật" />
+                     </columns>
+                  </TableView>
+               </VBox>
             </content>
          </ScrollPane>
-            <BorderPane.margin>
-                <Insets left="-15.0" />
-            </BorderPane.margin>
-        </VBox>
-    </center>
-    <padding>
-        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-    </padding>
+         <BorderPane.margin>
+            <Insets left="-15.0" />
+         </BorderPane.margin>
+      </VBox>
+   </center>
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
 </BorderPane>

@@ -1,19 +1,20 @@
 package com.pma.model.enums;
 
 public enum BillItemType {
-    Consultation, Medicine, Lab_Test("Lab Test"), Procedure, Other; // Cần value nếu có khoảng trắng/ký tự đặc biệt
+    // Đổi tên các hằng số theo quy ước chuẩn (chữ hoa, gạch dưới)
+    // Tên này sẽ được lưu vào cơ sở dữ liệu khi dùng @Enumerated(EnumType.STRING)
+    CONSULTATION,
+    MEDICINE,
+    LAB_TEST,
+    PROCEDURE,
+    OTHER;
 
-    private final String value;
-
-    BillItemType(String value) {
-        this.value = value;
-    }
-
-    BillItemType() {
-        this.value = this.name();
-    }
-
+    /**
+     * Trả về tên của hằng số enum.
+     * Đây là giá trị sẽ được lưu vào DB khi dùng @Enumerated(EnumType.STRING).
+     * @return Tên hằng số enum.
+     */
     public String getValue() {
-        return value;
+        return this.name(); // Trả về tên hằng số (ví dụ: "CONSULTATION", "LAB_TEST")
     }
 }

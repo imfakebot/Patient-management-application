@@ -70,12 +70,24 @@ public class UIManager {
     }
 
     /**
-     * Chuyển đến màn hình chính (Dashboard) sau khi đăng nhập.
+     * Chuyển đến màn hình Doctor Dashboard.
      */
-    public void switchToMainDashboard() {
-        log.info("Switching to Main Dashboard Screen");
+    public void switchToDoctorDashboard() {
+        log.info("Switching to Doctor Dashboard Screen");
         loadAndSetScene("/com/pma/view/dashboard.fxml", "PMA - Dashboard", 1200, 800, true); // Ví dụ kích thước, cho phép resize
         // Có thể maximize cửa sổ sau khi vào màn hình chính
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    /**
+     * Chuyển đến màn hình Admin Dashboard.
+     */
+    public void switchToAdminDashboard() {
+        log.info("Switching to Admin Dashboard Screen");
+        // Giả sử file FXML của bạn là "admin_dashboard.fxml" hoặc một tên tương tự
+        loadAndSetScene("/com/pma/fxml/admin_manage_patients.fxml", "PMA - Admin Dashboard", 1200, 800, true);
         if (primaryStage != null && !primaryStage.isMaximized()) {
             primaryStage.setMaximized(true);
         }
@@ -499,27 +511,35 @@ public class UIManager {
         if (authentication.getAuthorities().stream()
                 .anyMatch(ga -> "ROLE_ADMIN".equals(ga.getAuthority()))) {
             log.info("User {} is ADMIN, navigating to admin dashboard.", username);
-            // Ví dụ: switchToAdminDashboard(); // Bạn cần tạo phương thức này nếu có dashboard riêng cho admin
-            switchToMainDashboard(); // Hiện tại, vẫn điều hướng đến dashboard chính
+            switchToAdminDashboard(); // Chuyển đến màn hình admin
+            // switchToMainDashboard(); // Xóa hoặc comment dòng này
 
         } else if (authentication.getAuthorities().stream()
                 .anyMatch(ga -> "ROLE_DOCTOR".equals(ga.getAuthority()))) {
             log.info("User {} is DOCTOR, navigating to doctor dashboard.", username);
-            // Ví dụ: switchToDoctorDashboard(); // Bạn cần tạo phương thức này nếu có dashboard riêng cho bác sĩ
-            switchToMainDashboard(); // Hiện tại, vẫn điều hướng đến dashboard chính
+            switchToDoctorDashboard(); // Chuyển đến màn hình dashboard của bác sĩ
 
         } else if (authentication.getAuthorities().stream()
                 .anyMatch(ga -> "ROLE_PATIENT".equals(ga.getAuthority()))) {
             log.info("User {} is PATIENT, navigating to patient dashboard.", username);
-            // Ví dụ: switchToPatientDashboard(); // Bạn cần tạo phương thức này nếu có dashboard riêng cho bệnh nhân
-            switchToMainDashboard(); // Hiện tại, vẫn điều hướng đến dashboard chính
-
+            switchToPatientDashboard(); // Chuyển đến màn hình dashboard của bệnh nhân
         } else {
             log.warn("User {} has no recognized role or no specific dashboard. Navigating to default main dashboard.", username);
-            switchToMainDashboard(); // Màn hình mặc định nếu không có vai trò nào khớp
+            switchToDoctorDashboard(); // Hoặc một màn hình mặc định khác nếu cần
         }
         // Có thể maximize cửa sổ sau khi vào màn hình chính
         if (primaryStage != null && !primaryStage.isMaximized() && primaryStage.isShowing()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    /**
+     * Chuyển đến màn hình Patient Dashboard.
+     */
+    private void switchToPatientDashboard() {
+        log.info("Switching to Patient Dashboard Screen");
+        loadAndSetScene("/com/pma/fxml/patient_dashboard.fxml", "PMA - Patient Dashboard", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
             primaryStage.setMaximized(true);
         }
     }
@@ -541,5 +561,61 @@ public class UIManager {
         log.info("Navigating to Reset Password Screen for user: {}", username);
         loadAndSetScene("/com/pma/fxml/reset_password.fxml", "Đặt lại mật khẩu", 450, 550, false,
                 (ResetPasswordController controller) -> controller.initData(username));
+    }
+
+    public void switchToAdminViewRevenue() {
+        log.info("Switching to Admin View Revenue Screen");
+        loadAndSetScene("/com/pma/fxml/admin_view_revenue.fxml", "PMA - Admin View Revenue", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    public void switchToAdminManageDoctors() {
+        log.info("Switching to Admin Manage Doctors Screen");
+        loadAndSetScene("/com/pma/fxml/admin_manage_doctors.fxml", "PMA - Admin Manage Doctors", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    public void switchToAdminManagePatients() {
+        log.info("Switching to Admin Manage Patients Screen");
+        loadAndSetScene("/com/pma/fxml/admin_manage_patients.fxml", "PMA - Admin Manage Patients", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    public void switchToAdminManageDepartments() {
+        log.info("Switching to Admin Manage Departments Screen");
+        loadAndSetScene("/com/pma/fxml/admin_manage_departments.fxml", "PMA - Admin Manage Departments", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    public void switchToAdminManageMedicines() {
+        log.info("Switching to Admin Manage Medicines Screen");
+        loadAndSetScene("/com/pma/fxml/admin_manage_medicines.fxml", "PMA - Admin Manage Medicines", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    public void switchToAdminManageUserAccounts() {
+        log.info("Switching to Admin Manage User Accounts Screen");
+        loadAndSetScene("/com/pma/fxml/admin_manage_user_accounts.fxml", "PMA - Admin Manage User Accounts", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
+    }
+
+    public void switchToAdminManageDiseases() {
+        log.info("Switching to Admin Manage Diseases Screen");
+        loadAndSetScene("/com/pma/fxml/admin_manage_diseases.fxml", "PMA - Admin Manage Diseases", 1200, 800, true);
+        if (primaryStage != null && !primaryStage.isMaximized()) {
+            primaryStage.setMaximized(true);
+        }
     }
 }

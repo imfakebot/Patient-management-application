@@ -1,4 +1,4 @@
-package com.pma.model.entity; // <-- THAY ĐỔI PACKAGE NẾU CẦN
+package com.pma.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,23 +16,22 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-// ---> IMPORT ENUM TỪ PACKAGE RIÊNG (NẾU CÓ) <---
-import com.pma.model.enums.BillItemType; // <-- THAY ĐỔI PACKAGE ENUM NẾU CẦN
+import com.pma.model.enums.BillItemType;
 
 /**
- * Entity đại diện cho bảng BillItems trong cơ sở dữ liệu.
- * Lưu trữ chi tiết từng mục trong một hóa đơn.
+ * Entity đại diện cho bảng BillItems trong cơ sở dữ liệu. Lưu trữ chi tiết từng
+ * mục trong một hóa đơn.
  */
 @Getter
 @Setter
 // Exclude các quan hệ để tránh lỗi LAZY / vòng lặp
-@ToString(exclude = { "bill", "prescriptionDetail" /* , "labTest", "procedure" */ })
+@ToString(exclude = {"bill", "prescriptionDetail" /* , "labTest", "procedure" */})
 @NoArgsConstructor // Constructor mặc định cho JPA
 @Entity
 @Table(name = "BillItems", indexes = {
-        // Index từ schema SQL
-        @Index(name = "IX_BillItems_bill_id", columnList = "bill_id"),
-        @Index(name = "IX_BillItems_prescription_detail_id", columnList = "prescription_detail_id")
+    // Index từ schema SQL
+    @Index(name = "IX_BillItems_bill_id", columnList = "bill_id"),
+    @Index(name = "IX_BillItems_prescription_detail_id", columnList = "prescription_detail_id")
 // Add indexes for lab_test_id, procedure_id if they exist
 })
 public class BillItem {
@@ -68,11 +67,10 @@ public class BillItem {
     private BigDecimal unitPrice = BigDecimal.ZERO; // Khởi tạo mặc định
 
     /**
-     * Tổng tiền cho mục này (Số lượng * Đơn giá).
-     * Đây là cột tính toán trong DB (AS ...).
-     * Sử dụng @Formula của Hibernate để đọc giá trị này từ DB.
-     * Không nên set giá trị này từ Java.
-     * Hibernate sẽ không bao gồm cột này trong câu lệnh INSERT/UPDATE.
+     * Tổng tiền cho mục này (Số lượng * Đơn giá). Đây là cột tính toán trong DB
+     * (AS ...). Sử dụng @Formula của Hibernate để đọc giá trị này từ DB. Không
+     * nên set giá trị này từ Java. Hibernate sẽ không bao gồm cột này trong câu
+     * lệnh INSERT/UPDATE.
      */
     @Formula("CAST(quantity * unit_price AS DECIMAL(12, 2))") // Khớp với công thức trong SQL
     // Hoặc đơn giản hơn nếu DB hỗ trợ tốt: @Formula("quantity * unit_price")
@@ -94,21 +92,18 @@ public class BillItem {
     private LocalDateTime updatedAt;
 
     // --- Mối quan hệ ManyToOne (Phía sở hữu khóa ngoại) ---
-
     /**
-     * Hóa đơn mà mục này thuộc về. Bắt buộc.
-     * Quan hệ này có ON DELETE CASCADE ở DB, nên khi Bill bị xóa, BillItem này cũng
-     * bị xóa.
-     * Hibernate sẽ tự động xử lý nếu Bill có CascadeType.ALL hoặc REMOVE cho
-     * collection billItems.
+     * Hóa đơn mà mục này thuộc về. Bắt buộc. Quan hệ này có ON DELETE CASCADE ở
+     * DB, nên khi Bill bị xóa, BillItem này cũng bị xóa. Hibernate sẽ tự động
+     * xử lý nếu Bill có CascadeType.ALL hoặc REMOVE cho collection billItems.
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false) // Bắt buộc phải có Bill
     @JoinColumn(name = "bill_id", nullable = false)
     private Bill bill;
 
     /**
-     * Liên kết tùy chọn tới chi tiết đơn thuốc (nếu mục này là thuốc).
-     * DB có ON DELETE SET NULL.
+     * Liên kết tùy chọn tới chi tiết đơn thuốc (nếu mục này là thuốc). DB có ON
+     * DELETE SET NULL.
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = true) // PrescriptionDetail có thể null
     @JoinColumn(name = "prescription_detail_id", nullable = true)
@@ -120,14 +115,12 @@ public class BillItem {
     // @ManyToOne(fetch = FetchType.LAZY, optional = true)
     // @JoinColumn(name = "lab_test_id", nullable = true)
     // private LabTest labTest; // Giả sử có Entity LabTest
-
     /**
      * Liên kết tùy chọn tới thủ thuật (nếu có bảng Procedures).
      */
     // @ManyToOne(fetch = FetchType.LAZY, optional = true)
     // @JoinColumn(name = "procedure_id", nullable = true)
     // private Procedure procedure; // Giả sử có Entity Procedure
-
     // --- Enum cho ItemType (nếu chưa tạo file riêng) ---
     /*
      * public enum BillItemType {
@@ -135,14 +128,12 @@ public class BillItem {
      * hợp lệ
      * }
      */
-
     // --- Helper methods quản lý quan hệ hai chiều ---
-
     // --- Cho Bill (QUAN TRỌNG vì Cascade ALL ở phía Bill) ---
     /**
-     * Thiết lập Bill và đảm bảo tính nhất quán hai chiều.
-     * Phương thức này nên là cách chính để liên kết BillItem với Bill.
-     * 
+     * Thiết lập Bill và đảm bảo tính nhất quán hai chiều. Phương thức này nên
+     * là cách chính để liên kết BillItem với Bill.
+     *
      * @param bill Hóa đơn liên quan.
      */
     public void setBill(Bill bill) {
@@ -164,9 +155,9 @@ public class BillItem {
     }
 
     /**
-     * Phương thức nội bộ được gọi bởi Bill.addBillItem/removeBillItem.
-     * Chỉ cập nhật tham chiếu phía này, không gọi lại Bill.
-     * 
+     * Phương thức nội bộ được gọi bởi Bill.addBillItem/removeBillItem. Chỉ cập
+     * nhật tham chiếu phía này, không gọi lại Bill.
+     *
      * @param bill Hóa đơn hoặc null.
      */
     void setBillInternal(Bill bill) {
@@ -184,18 +175,22 @@ public class BillItem {
     // --- equals() và hashCode() chuẩn ---
     @Override
     public final boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null)
+        
+        }
+        if (o == null) {
             return false;
+        }
         Class<?> oEffectiveClass = o instanceof HibernateProxy
                 ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass)
+        if (thisEffectiveClass != oEffectiveClass) {
             return false;
+        }
         BillItem billItem = (BillItem) o;
         return getBillItemId() != null && Objects.equals(getBillItemId(), billItem.getBillItemId());
     }

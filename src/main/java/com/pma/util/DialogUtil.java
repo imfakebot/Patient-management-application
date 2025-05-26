@@ -159,4 +159,21 @@ public final class DialogUtil { // final class vì chỉ chứa static methods
     public static void showSuccessAlert(String title, String message) {
         showAlert(AlertType.INFORMATION, title, null, message);
     }
+
+    /**
+     * Hiển thị một Information Alert.
+     *
+     * @param title Tiêu đề của dialog.
+     * @param message Nội dung thông báo.
+     */
+    public static void showInformation(String title, String message) {
+        showAlert(AlertType.INFORMATION, title, null, message);
+    }
+    // The showConfirmation method with specific Vietnamese parameters seems like a leftover or typo.
+    // Assuming the generic showConfirmationAlert is the intended method.
+
+	public static boolean showConfirmation(String string, String string2) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'showConfirmation'");
+	}
 }
