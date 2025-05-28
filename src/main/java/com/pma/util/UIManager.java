@@ -92,7 +92,81 @@ public class UIManager {
             primaryStage.setMaximized(true);
         }
     }
+    
+        public void switchToPatientBookAppointment() {
+        log.info("Switching to Patient Book Appointment Screen");
+        loadAndSetScene("/com/pma/view/patient_book_appointment.fxml", "PMA - Patient Book Appointment", 1200, 800, true);
+    }
 
+        public void switchToPatientViewPrescriptions() {
+        log.info("Switching to Patient View Prescriptions Screen");
+        loadAndSetScene("/com/pma/view/patient_view_prescriptions.fxml", "PMA - Patient View Prescriptions", 1200, 800, true);
+    }
+
+        public void switchToPatientMedicalHistory() {
+        log.info("Switching to Patient Medical History Screen");
+        loadAndSetScene("/com/pma/view/patient_medical_history.fxml", "PMA - Patient Medical History", 1200, 800, true);
+    }
+
+        public void switchToPatientUpdateProfile() {
+        log.info("Switching to Patient Update Profile Screen");
+        loadAndSetScene("/com/pma/view/patient_update_profile.fxml", "PMA - Patient UpdateProfile", 1200, 800, true);
+    }
+
+        public void switchToPatientReview() {
+        log.info("Switching to Patient Review Screen");
+        loadAndSetScene("/com/pma/view/patient_review.fxml", "PMA - Patient Review", 1200, 800, true);
+    }
+
+        public void switchToPatientViewBills() {
+        log.info("Switching to Patient View Bills Screen");
+        loadAndSetScene("/com/pma/view/patient_view_bills.fxml", "PMA - Patient ViewBills", 1200, 800, true);
+    }
+        public void switchToDoctorViewPatients() {
+        log.info("Switching to Doctor View Patients Screen");
+        loadAndSetScene("/com/pma/view/doctor_view_patients.fxml", "PMA - Doctor View Patients", 1200, 800, true);
+    }
+        public void switchToDoctorMedicalRecords() {
+        log.info("Switching to Doctor Medical Records Screen");
+        loadAndSetScene("/com/pma/view/doctor_medical_records.fxml", "PMA - Doctor Medical Records", 1200, 800, true);
+    }
+        public void switchToDoctorPrescribe() {
+        log.info("Switching to Doctor Prescribe Screen");
+        loadAndSetScene("/com/pma/view/doctor_prescribe.fxml", "PMA - Doctor Prescribe", 1200, 800, true);
+    }
+        public void switchToDoctorBookAppointment() {
+        log.info("Switching to Doctor Book Appointment Screen");
+        loadAndSetScene("/com/pma/view/doctor_book_appointment.fxml", "PMA - Doctor Book Appointment", 1200, 800, true);
+    }
+        public void switchToAdminViewRevenue() {
+        log.info("Switching to Admin View Revenue Screen");
+        loadAndSetScene("/com/pma/view/admin_view_revenue.fxml", "PMA - Admin View Revenue", 1200, 800, true);
+    }
+        public void switchToAdminManageDoctors() {
+        log.info("Switching to Admin Manage Doctors Screen");
+        loadAndSetScene("/com/pma/view/admin_manage_doctors.fxml", "PMA - Admin Manage Doctors", 1200, 800, true);
+    }
+        public void switchToAdminManagePatients() {
+        log.info("Switching to Patient Admin Manage Patients Screen");
+        loadAndSetScene("/com/pma/view/admin_manage_patients.fxml", "PMA - Admin Manage Patients", 1200, 800, true);
+    }
+        public void switchToAdminManageDepartments() {
+        log.info("Switching to Admin Manage Departments Screen");
+        loadAndSetScene("/com/pma/view/admin_manage_departments.fxml", "PMA - Admin Manage Departments", 1200, 800, true);
+    }
+        public void switchToAdminManageMedicines() {
+        log.info("Switching to Admin Manage Medicines Screen");
+        loadAndSetScene("/com/pma/view/admin_manage_medicines.fxml", "PMA - Admin Manage Medicines", 1200, 800, true);
+    }
+        public void switchToAdminManageUserAccounts() {
+        log.info("Switching to Admin Manage User Accounts Screen");
+        loadAndSetScene("/com/pma/view/admin_manage_user_accounts.fxml", "PMA - Admin Manage User Accounts", 1200, 800, true);
+    }
+        public void switchToAdminManageDiseases() {
+        log.info("Switching to Admin Manage Diseases Screen");
+        loadAndSetScene("/com/pma/view/admin_manage_diseases.fxml", "PMA - Admin Manage Diseases", 1200, 800, true);
+    }
+    
     // Thêm các phương thức chuyển màn hình cụ thể khác ở đây
     // public void switchToPatientManagementScreen() {
     //     loadAndSetScene("/com/pma/view/PatientManagementView.fxml", "PMA - Patient Management", 1000, 700, true);
