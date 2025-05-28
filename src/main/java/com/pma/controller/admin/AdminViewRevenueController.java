@@ -1,4 +1,4 @@
-package com.pma.controller;
+package com.pma.controller.admin;
 
 import com.pma.model.entity.Appointment;
 import com.pma.model.entity.Bill;

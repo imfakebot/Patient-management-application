@@ -197,6 +197,10 @@ public class Department {
                 : this.getClass()).hashCode();
     }
 
+    public String getName() {
+        return this.departmentName;
+    }
+
     // --- Lưu ý quan trọng về quản lý quan hệ hai chiều ---
     // Để các helper methods hoạt động chính xác và an toàn nhất, lớp Doctor nên:
     // 1. Có phương thức `setDepartment(Department department)`

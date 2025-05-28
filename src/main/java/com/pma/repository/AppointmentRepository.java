@@ -65,6 +65,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     List<Appointment> findByStatus(AppointmentStatus status);
 
     /**
+     * Tìm danh sách các cuộc hẹn của một bác sĩ theo trạng thái.
+     *
+     * @param doctorId ID của Doctor.
+     * @param status Trạng thái cần lọc.
+     * @return Danh sách các Appointment phù hợp.
+     */
+    List<Appointment> findByDoctor_DoctorIdAndStatus(UUID doctorId, AppointmentStatus status);
+    /**
      * Tìm danh sách các cuộc hẹn diễn ra sau một thời điểm nhất định.
      *
      * @param dateTime Thời điểm bắt đầu (không bao gồm).
@@ -166,4 +174,18 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
          * 
          * @Param("beforeTime") LocalDateTime beforeTime);
      */
+    /**
+     * Kiểm tra xem có tồn tại cuộc hẹn của bác sĩ vào thời điểm cụ thể với
+     * trạng thái nhất định không.
+     *
+     * @param doctorId ID của Doctor cần kiểm tra
+     * @param appointmentDatetime Thời điểm cuộc hẹn cần kiểm tra
+     * @param status Trạng thái cuộc hẹn cần kiểm tra
+     * @return true nếu tồn tại cuộc hẹn thỏa mãn điều kiện, false nếu ngược lại
+     */
+    boolean existsByDoctor_DoctorIdAndAppointmentDatetimeAndStatus(
+            UUID doctorId,
+            LocalDateTime appointmentDatetime,
+            AppointmentStatus status
+    );
 }

@@ -1,6 +1,7 @@
 package com.pma.service; // Đảm bảo đúng package
 
 import java.time.LocalDateTime; // Import Entity Appointment
+import java.util.List; // Import List for Appointment collections
 import java.util.UUID; // Import Doctor
 
 import org.slf4j.Logger; // Import Patient
@@ -25,9 +26,8 @@ import com.pma.repository.PatientRepository;
 import jakarta.persistence.EntityNotFoundException; // Cần import nếu có phương thức trả về List
 
 /**
- * Lớp Service cho việc quản lý các nghiệp vụ liên quan đến Appointment.
- * Bao gồm đặt lịch, hủy lịch, cập nhật trạng thái, truy vấn và gửi email thông
- * báo.
+ * Lớp Service cho việc quản lý các nghiệp vụ liên quan đến Appointment. Bao gồm
+ * đặt lịch, hủy lịch, cập nhật trạng thái, truy vấn và gửi email thông báo.
  */
 @Service
 public class AppointmentService {
@@ -66,19 +66,19 @@ public class AppointmentService {
     }
 
     /**
-     * Tạo một cuộc hẹn mới (đặt lịch).
-     * Gửi email xác nhận sau khi đặt lịch thành công.
+     * Tạo một cuộc hẹn mới (đặt lịch). Gửi email xác nhận sau khi đặt lịch
+     * thành công.
      *
-     * @param appointment Đối tượng Appointment chứa thông tin cơ bản (reason, type,
-     *                    dateTime). ID nên là null.
-     * @param patientId   UUID của Patient đặt lịch.
-     * @param doctorId    (Optional) UUID của Doctor được yêu cầu. Null nếu chưa xác
-     *                    định hoặc không yêu cầu cụ thể.
+     * @param appointment Đối tượng Appointment chứa thông tin cơ bản (reason,
+     * type, dateTime). ID nên là null.
+     * @param patientId UUID của Patient đặt lịch.
+     * @param doctorId (Optional) UUID của Doctor được yêu cầu. Null nếu chưa
+     * xác định hoặc không yêu cầu cụ thể.
      * @return Appointment đã được tạo và lưu.
-     * @throws EntityNotFoundException  nếu patientId hoặc doctorId (nếu khác null)
-     *                                  không tồn tại.
-     * @throws IllegalArgumentException nếu thời gian hẹn không hợp lệ (ví dụ: trong
-     *                                  quá khứ).
+     * @throws EntityNotFoundException nếu patientId hoặc doctorId (nếu khác
+     * null) không tồn tại.
+     * @throws IllegalArgumentException nếu thời gian hẹn không hợp lệ (ví dụ:
+     * trong quá khứ).
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Appointment scheduleAppointment(Appointment appointment, UUID patientId, UUID doctorId) {
@@ -98,7 +98,33 @@ public class AppointmentService {
         if (doctorId != null) {
             doctor = doctorRepository.findById(doctorId)
                     .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + doctorId));
-            // TODO: Thêm logic kiểm tra lịch trống của bác sĩ
+
+            // Giả định mỗi cuộc hẹn có thời lượng cố định (ví dụ: 60 phút).
+            // Cần điều chỉnh nếu Appointment model có trường duration hoặc endTime.
+            final long DEFAULT_APPOINTMENT_DURATION_MINUTES = 60;
+            LocalDateTime newAppStartTime = appointment.getAppointmentDatetime();
+            LocalDateTime newAppEndTime = newAppStartTime.plusMinutes(DEFAULT_APPOINTMENT_DURATION_MINUTES);
+
+            // Lấy tất cả các cuộc hẹn "Scheduled" (chưa hoàn thành) của bác sĩ
+            List<Appointment> doctorScheduledAppointments = appointmentRepository
+                    .findByDoctor_DoctorIdAndStatus(doctorId, AppointmentStatus.Scheduled);
+
+            for (Appointment existingApp : doctorScheduledAppointments) {
+                LocalDateTime existingAppStartTime = existingApp.getAppointmentDatetime();
+                // Giả sử các cuộc hẹn đã có cũng có cùng thời lượng mặc định
+                LocalDateTime existingAppEndTime = existingAppStartTime.plusMinutes(DEFAULT_APPOINTMENT_DURATION_MINUTES);
+
+                // Kiểm tra chồng chéo: (StartA < EndB) AND (EndA > StartB)
+                if (newAppStartTime.isBefore(existingAppEndTime) && newAppEndTime.isAfter(existingAppStartTime)) {
+                    log.warn("Scheduling failed. Doctor {} (ID: {}) has an overlapping scheduled appointment (ID: {}) "
+                            + "from {} to {}. New appointment attempted for {} to {}.",
+                            doctor.getFullName(), doctorId, existingApp.getAppointmentId(),
+                            existingAppStartTime, existingAppEndTime, newAppStartTime, newAppEndTime);
+                    throw new IllegalArgumentException(
+                            "Doctor is not available at the selected time due to an overlapping appointment. "
+                            + "Please choose a different time slot.");
+                }
+            }
         }
 
         // --- Thiết lập và Lưu ---
@@ -137,16 +163,16 @@ public class AppointmentService {
     }
 
     /**
-     * Cập nhật trạng thái của một cuộc hẹn.
-     * Gửi email thông báo nếu trạng thái được cập nhật thành Cancelled.
+     * Cập nhật trạng thái của một cuộc hẹn. Gửi email thông báo nếu trạng thái
+     * được cập nhật thành Cancelled.
      *
-     * @param id         UUID của Appointment cần cập nhật.
-     * @param newStatus  Trạng thái mới (Completed, Cancelled, No_Show).
+     * @param id UUID của Appointment cần cập nhật.
+     * @param newStatus Trạng thái mới (Completed, Cancelled, No_Show).
      * @param updateNote (Optional) Ghi chú lý do cập nhật.
      * @return Appointment đã được cập nhật.
-     * @throws EntityNotFoundException  nếu không tìm thấy Appointment.
-     * @throws IllegalArgumentException nếu trạng thái mới không hợp lệ hoặc không
-     *                                  được phép thay đổi.
+     * @throws EntityNotFoundException nếu không tìm thấy Appointment.
+     * @throws IllegalArgumentException nếu trạng thái mới không hợp lệ hoặc
+     * không được phép thay đổi.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Appointment updateAppointmentStatus(UUID id, AppointmentStatus newStatus, String updateNote) {
@@ -155,8 +181,8 @@ public class AppointmentService {
 
         // --- Validation ---
         if ((appointment.getStatus() == AppointmentStatus.Completed
-                || appointment.getStatus() == AppointmentStatus.Cancelled) &&
-                appointment.getStatus() != newStatus) {
+                || appointment.getStatus() == AppointmentStatus.Cancelled)
+                && appointment.getStatus() != newStatus) {
             log.warn("Update failed. Cannot change status from {} for appointment id: {}", appointment.getStatus(), id);
             throw new IllegalStateException("Cannot change status from " + appointment.getStatus());
         }
@@ -192,7 +218,7 @@ public class AppointmentService {
     /**
      * Hủy một cuộc hẹn. Wrapper cho updateAppointmentStatus.
      *
-     * @param id                 UUID của Appointment cần hủy.
+     * @param id UUID của Appointment cần hủy.
      * @param cancellationReason Lý do hủy.
      * @return Appointment đã được hủy.
      */
@@ -206,7 +232,7 @@ public class AppointmentService {
      * Lấy danh sách các cuộc hẹn của một bệnh nhân (có phân trang).
      *
      * @param patientId ID của Patient.
-     * @param pageable  Thông tin phân trang.
+     * @param pageable Thông tin phân trang.
      * @return Page chứa danh sách Appointment.
      */
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -233,8 +259,8 @@ public class AppointmentService {
      * Lấy danh sách các cuộc hẹn trong một khoảng thời gian (có phân trang).
      *
      * @param startDateTime Thời điểm bắt đầu.
-     * @param endDateTime   Thời điểm kết thúc.
-     * @param pageable      Thông tin phân trang.
+     * @param endDateTime Thời điểm kết thúc.
+     * @param pageable Thông tin phân trang.
      * @return Page chứa danh sách Appointment.
      */
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)

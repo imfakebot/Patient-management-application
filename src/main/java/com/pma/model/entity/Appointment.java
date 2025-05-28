@@ -29,20 +29,21 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Entity đại diện cho bảng Appointments trong cơ sở dữ liệu.
- * Phiên bản tối ưu, sử dụng Lombok, equals/hashCode chuẩn,
- * FetchType.LAZY và helper methods quản lý quan hệ hai chiều.
+ * Entity đại diện cho bảng Appointments trong cơ sở dữ liệu. Phiên bản tối ưu,
+ * sử dụng Lombok, equals/hashCode chuẩn, FetchType.LAZY và helper methods quản
+ * lý quan hệ hai chiều.
  */
 @Getter
 @Setter
 // ToString luôn exclude các quan hệ LAZY để tránh lỗi và vấn đề hiệu năng
-@ToString(exclude = { "patient", "doctor" })
+@ToString(exclude = {"patient", "doctor"})
 @NoArgsConstructor // Bắt buộc cho JPA
 @Entity
 @Table(name = "Appointments", schema = "dbo", indexes = { // Thêm index từ schema SQL
-        @Index(name = "IX_Appointments_patient_id", columnList = "patient_id"),
-        @Index(name = "IX_Appointments_doctor_id", columnList = "doctor_id"),
-        @Index(name = "IX_Appointments_appointment_datetime", columnList = "appointment_datetime")
+
+    @Index(name = "IX_Appointments_patient_id", columnList = "patient_id"),
+    @Index(name = "IX_Appointments_doctor_id", columnList = "doctor_id"),
+    @Index(name = "IX_Appointments_appointment_datetime", columnList = "appointment_datetime")
 })
 public class Appointment {
 
@@ -55,19 +56,17 @@ public class Appointment {
     private UUID appointmentId;
 
     /**
-     * Bệnh nhân liên quan đến cuộc hẹn này.
-     * QUAN TRỌNG: Luôn dùng FetchType.LAZY cho @ManyToOne/@OneToOne
-     * để tránh tải dữ liệu không cần thiết và gây lỗi N+1.
-     * Mối quan hệ là bắt buộc (optional = false).
+     * Bệnh nhân liên quan đến cuộc hẹn này. QUAN TRỌNG: Luôn dùng
+     * FetchType.LAZY cho @ManyToOne/@OneToOne để tránh tải dữ liệu không cần
+     * thiết và gây lỗi N+1. Mối quan hệ là bắt buộc (optional = false).
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false) // Bắt buộc có Patient
     @JoinColumn(name = "patient_id", nullable = false) // Liên kết cột FK, không null
     private Patient patient;
 
     /**
-     * Bác sĩ thực hiện cuộc hẹn (có thể null).
-     * QUAN TRỌNG: FetchType.LAZY.
-     * Mối quan hệ là tùy chọn (optional = true).
+     * Bác sĩ thực hiện cuộc hẹn (có thể null). QUAN TRỌNG: FetchType.LAZY. Mối
+     * quan hệ là tùy chọn (optional = true).
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = true) // Doctor có thể null
     @JoinColumn(name = "doctor_id", nullable = true) // Liên kết cột FK, cho phép null
@@ -80,41 +79,40 @@ public class Appointment {
     private LocalDateTime appointmentDatetime;
 
     /**
-     * Lý do của cuộc hẹn (chi tiết).
-     * Sử dụng @Lob cho kiểu TEXT/NTEXT để hỗ trợ chuỗi dài hiệu quả.
+     * Lý do của cuộc hẹn (chi tiết). Sử dụng @Lob cho kiểu TEXT/NTEXT để hỗ trợ
+     * chuỗi dài hiệu quả.
      */
     @Lob
     @Column(name = "reason", columnDefinition = "TEXT") // Hoặc NTEXT nếu DB dùng Unicode
     private String reason;
 
     /**
-     * Loại cuộc hẹn (ví dụ: Khám lần đầu, Tái khám).
-     * Kiểu VARCHAR(50). Cân nhắc dùng Enum AppointmentType nếu danh sách cố định.
+     * Loại cuộc hẹn (ví dụ: Khám lần đầu, Tái khám). Kiểu VARCHAR(50). Cân nhắc
+     * dùng Enum AppointmentType nếu danh sách cố định.
      */
     @Column(name = "appointment_type", length = 50)
     private String appointmentType;
 
     /**
-     * Trạng thái hiện tại của cuộc hẹn.
-     * Sử dụng Enum để đảm bảo tính nhất quán.
-     * Sử dụng EnumType.STRING là an toàn nhất khi enum thay đổi.
-     * Gán giá trị mặc định trong Java để phản ánh DEFAULT của DB.
+     * Trạng thái hiện tại của cuộc hẹn. Sử dụng Enum để đảm bảo tính nhất quán.
+     * Sử dụng EnumType.STRING là an toàn nhất khi enum thay đổi. Gán giá trị
+     * mặc định trong Java để phản ánh DEFAULT của DB.
      */
     @Enumerated(EnumType.STRING) // Lưu tên Enum ("Scheduled", "Completed", ...)
     @Column(name = "status", length = 15)
     private AppointmentStatus status = AppointmentStatus.Scheduled; // Gán mặc định
 
     /**
-     * Thời điểm bản ghi cuộc hẹn được tạo.
-     * Được quản lý tự động bởi Hibernate (@CreationTimestamp).
+     * Thời điểm bản ghi cuộc hẹn được tạo. Được quản lý tự động bởi Hibernate
+     * (@CreationTimestamp).
      */
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     /**
-     * Thời điểm bản ghi cuộc hẹn được cập nhật lần cuối.
-     * Được quản lý tự động bởi Hibernate (@UpdateTimestamp).
+     * Thời điểm bản ghi cuộc hẹn được cập nhật lần cuối. Được quản lý tự động
+     * bởi Hibernate (@UpdateTimestamp).
      */
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
@@ -124,18 +122,14 @@ public class Appointment {
     // (Ví dụ: @OneToMany(mappedBy = "appointment") private Set<MedicalRecord>
     // medicalRecords;)
     // Giữ Entity tập trung vào các mối quan hệ chính (ManyToOne).
-
     // --- Helper methods để quản lý quan hệ hai chiều một cách an toàn và nhất quán
     // ---
     // Đảm bảo trạng thái của object graph trong bộ nhớ luôn đúng.
-
     /**
      * Thiết lập Bệnh nhân cho cuộc hẹn này, đồng thời quản lý mối quan hệ hai
-     * chiều.
-     * Phương thức này sẽ tự động thêm/xóa cuộc hẹn này khỏi danh sách của Patient
-     * cũ/mới.
-     * Yêu cầu lớp Patient phải có phương thức addAppointmentInternal và
-     * removeAppointmentInternal.
+     * chiều. Phương thức này sẽ tự động thêm/xóa cuộc hẹn này khỏi danh sách
+     * của Patient cũ/mới. Yêu cầu lớp Patient phải có phương thức
+     * addAppointmentInternal và removeAppointmentInternal.
      *
      * @param patient Bệnh nhân mới, hoặc null để gỡ bỏ liên kết.
      */
@@ -160,11 +154,10 @@ public class Appointment {
     }
 
     /**
-     * Thiết lập Bác sĩ cho cuộc hẹn này, đồng thời quản lý mối quan hệ hai chiều.
-     * Phương thức này sẽ tự động thêm/xóa cuộc hẹn này khỏi danh sách của Doctor
-     * cũ/mới.
-     * Yêu cầu lớp Doctor phải có phương thức addAppointmentInternal và
-     * removeAppointmentInternal.
+     * Thiết lập Bác sĩ cho cuộc hẹn này, đồng thời quản lý mối quan hệ hai
+     * chiều. Phương thức này sẽ tự động thêm/xóa cuộc hẹn này khỏi danh sách
+     * của Doctor cũ/mới. Yêu cầu lớp Doctor phải có phương thức
+     * addAppointmentInternal và removeAppointmentInternal.
      *
      * @param doctor Bác sĩ mới, hoặc null để gỡ bỏ liên kết.
      */
@@ -191,14 +184,15 @@ public class Appointment {
     // --- equals() và hashCode() chuẩn cho JPA/Hibernate ---
     // Đảm bảo hoạt động đúng với LAZY loading và Hibernate proxies.
     // Chỉ dựa vào ID (nếu có) và class thực sự.
-
     @Override
     public final boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
+        }
         // Kiểm tra null và proxy an toàn
-        if (o == null)
+        if (o == null) {
             return false;
+        }
         Class<?> oEffectiveClass = o instanceof HibernateProxy
                 ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
@@ -206,8 +200,9 @@ public class Appointment {
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
         // So sánh class thực sự
-        if (thisEffectiveClass != oEffectiveClass)
+        if (thisEffectiveClass != oEffectiveClass) {
             return false;
+        }
         // Ép kiểu an toàn sau khi kiểm tra class
         Appointment that = (Appointment) o;
         // Chỉ so sánh ID nếu nó không null (đối tượng đã được lưu hoặc gán ID)
@@ -227,11 +222,9 @@ public class Appointment {
                 : this.getClass()).hashCode();
     }
 
-    public Object getId() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+    public UUID getId() {
+        return this.appointmentId;
     }
-
     // --- Lưu ý quan trọng cho helper methods `setPatient`/`setDoctor` ---
     // Các phương thức này yêu cầu các lớp liên quan (Patient, Doctor) phải có
     // các phương thức helper nội bộ (ví dụ: addAppointmentInternal,

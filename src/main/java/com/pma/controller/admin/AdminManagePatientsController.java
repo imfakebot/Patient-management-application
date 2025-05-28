@@ -1,4 +1,4 @@
-package com.pma.controller;
+package com.pma.controller.admin;
 
 import com.pma.model.entity.Patient; // Thay thế bằng Patient entity/DTO thực tế của bạn
 import com.pma.model.enums.Gender;

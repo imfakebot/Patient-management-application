@@ -60,6 +60,8 @@ module com.pma {
     exports com.pma.repository;
     exports com.pma.util;
     exports com.pma.config;
+    exports com.pma.controller.admin to spring.beans, spring.context, javafx.fxml;
     // exports com.pma.dto;
     opens com.pma.util to spring.core, spring.beans, spring.context;
+    opens com.pma.controller.admin to spring.core, spring.beans, spring.context, javafx.fxml;
 }
