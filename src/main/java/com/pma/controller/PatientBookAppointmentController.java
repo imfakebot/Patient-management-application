@@ -35,8 +35,8 @@ import java.util.UUID;
 
 /**
  * Controller cho giao diện đặt lịch hẹn của bệnh nhân
- * (patient_book_appointment.fxml).
- * Quản lý đặt lịch hẹn và điều hướng qua sidebar.
+ * (patient_book_appointment.fxml). Quản lý đặt lịch hẹn và điều hướng qua
+ * sidebar.
  */
 @Controller
 public class PatientBookAppointmentController {
@@ -83,7 +83,7 @@ public class PatientBookAppointmentController {
     private final ApplicationContext applicationContext;
 
     // ID của bệnh nhân
-    private final UUID patientId;
+    private UUID patientId;
 
     // Formatter cho thời gian
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
@@ -93,23 +93,29 @@ public class PatientBookAppointmentController {
             DoctorService doctorService,
             PatientService patientService,
             BillService billService,
-            ApplicationContext applicationContext,
-            UUID patientId) {
+            ApplicationContext applicationContext
+    /* UUID patientId removed from constructor */) {
         this.appointmentService = appointmentService;
         this.doctorService = doctorService;
         this.patientService = patientService;
         this.billService = billService;
         this.applicationContext = applicationContext;
-        this.patientId = patientId;
+        // this.patientId will be set by initData()
     }
 
     /**
-     * Khởi tạo controller, điền danh sách bác sĩ và loại cuộc hẹn.
+     * Initializes the controller with patient-specific data. This method should
+     * be called after the controller is created and FXML is loaded.
+     *
+     * @param patientId The ID of the current patient.
      */
+    public void initData(UUID patientId) {
+        this.patientId = patientId;
+        log.info("PatientBookAppointmentController initialized for patientId: {}", this.patientId);
+    }
+
     @FXML
     public void initialize() {
-        log.info("Initializing PatientBookAppointmentController for patientId: {}", patientId);
-
         // Điền danh sách bác sĩ vào ComboBox
         try {
             List<Doctor> doctors = doctorService.getAllDoctors();

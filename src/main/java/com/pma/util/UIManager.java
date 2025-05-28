@@ -74,7 +74,7 @@ public class UIManager {
      */
     public void switchToDoctorDashboard() {
         log.info("Switching to Doctor Dashboard Screen");
-        loadAndSetScene("/com/pma/view/dashboard.fxml", "PMA - Dashboard", 1200, 800, true); // Ví dụ kích thước, cho phép resize
+        loadAndSetScene("/com/pma/fxml/dashboard.fxml", "PMA - Dashboard", 1200, 800, true); // Ví dụ kích thước, cho phép resize
         // Có thể maximize cửa sổ sau khi vào màn hình chính
         if (primaryStage != null && !primaryStage.isMaximized()) {
             primaryStage.setMaximized(true);
@@ -92,84 +92,99 @@ public class UIManager {
             primaryStage.setMaximized(true);
         }
     }
-    
-        public void switchToPatientBookAppointment() {
-        log.info("Switching to Patient Book Appointment Screen");
-        loadAndSetScene("/com/pma/view/patient_book_appointment.fxml", "PMA - Patient Book Appointment", 1200, 800, true);
+
+    public void switchToPatientBookAppointment(UUID patientId) {
+        log.info("Switching to Patient Book Appointment Screen for patient ID: {}", patientId);
+        loadAndSetScene("/com/pma/fxml/patient_book_appointment.fxml",
+                "PMA - Patient Book Appointment",
+                1200, 800, true,
+                (com.pma.controller.PatientBookAppointmentController controller) -> controller.initData(patientId)
+        );
     }
 
-        public void switchToPatientViewPrescriptions() {
+    public void switchToPatientViewPrescriptions() {
         log.info("Switching to Patient View Prescriptions Screen");
-        loadAndSetScene("/com/pma/view/patient_view_prescriptions.fxml", "PMA - Patient View Prescriptions", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/patient_view_prescriptions.fxml", "PMA - Patient View Prescriptions", 1200, 800, true);
     }
 
-        public void switchToPatientMedicalHistory() {
+    public void switchToPatientMedicalHistory() {
         log.info("Switching to Patient Medical History Screen");
-        loadAndSetScene("/com/pma/view/patient_medical_history.fxml", "PMA - Patient Medical History", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/patient_medical_history.fxml", "PMA - Patient Medical History", 1200, 800, true);
     }
 
-        public void switchToPatientUpdateProfile() {
+    public void switchToPatientUpdateProfile() {
         log.info("Switching to Patient Update Profile Screen");
-        loadAndSetScene("/com/pma/view/patient_update_profile.fxml", "PMA - Patient UpdateProfile", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/patient_update_profile.fxml", "PMA - Patient UpdateProfile", 1200, 800, true);
     }
 
-        public void switchToPatientReview() {
+    public void switchToPatientReview() {
         log.info("Switching to Patient Review Screen");
-        loadAndSetScene("/com/pma/view/patient_review.fxml", "PMA - Patient Review", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/patient_review.fxml", "PMA - Patient Review", 1200, 800, true);
     }
 
-        public void switchToPatientViewBills() {
+    public void switchToPatientViewBills() {
         log.info("Switching to Patient View Bills Screen");
-        loadAndSetScene("/com/pma/view/patient_view_bills.fxml", "PMA - Patient ViewBills", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/patient_view_bills.fxml", "PMA - Patient ViewBills", 1200, 800, true);
     }
-        public void switchToDoctorViewPatients() {
+
+    public void switchToDoctorViewPatients() {
         log.info("Switching to Doctor View Patients Screen");
-        loadAndSetScene("/com/pma/view/doctor_view_patients.fxml", "PMA - Doctor View Patients", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/doctor_view_patients.fxml", "PMA - Doctor View Patients", 1200, 800, true);
     }
-        public void switchToDoctorMedicalRecords() {
+
+    public void switchToDoctorMedicalRecords() {
         log.info("Switching to Doctor Medical Records Screen");
-        loadAndSetScene("/com/pma/view/doctor_medical_records.fxml", "PMA - Doctor Medical Records", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/doctor_medical_records.fxml", "PMA - Doctor Medical Records", 1200, 800, true);
     }
-        public void switchToDoctorPrescribe() {
+
+    public void switchToDoctorPrescribe() {
         log.info("Switching to Doctor Prescribe Screen");
-        loadAndSetScene("/com/pma/view/doctor_prescribe.fxml", "PMA - Doctor Prescribe", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/doctor_prescribe.fxml", "PMA - Doctor Prescribe", 1200, 800, true);
     }
-        public void switchToDoctorBookAppointment() {
+
+    public void switchToDoctorBookAppointment() {
         log.info("Switching to Doctor Book Appointment Screen");
-        loadAndSetScene("/com/pma/view/doctor_book_appointment.fxml", "PMA - Doctor Book Appointment", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/doctor_book_appointment.fxml", "PMA - Doctor Book Appointment", 1200, 800, true);
     }
-        public void switchToAdminViewRevenue() {
+
+    public void switchToAdminViewRevenue() {
         log.info("Switching to Admin View Revenue Screen");
-        loadAndSetScene("/com/pma/view/admin_view_revenue.fxml", "PMA - Admin View Revenue", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/admin_view_revenue.fxml", "PMA - Admin View Revenue", 1200, 800, true);
     }
-        public void switchToAdminManageDoctors() {
+
+    public void switchToAdminManageDoctors() {
         log.info("Switching to Admin Manage Doctors Screen");
-        loadAndSetScene("/com/pma/view/admin_manage_doctors.fxml", "PMA - Admin Manage Doctors", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/admin_manage_doctors.fxml", "PMA - Admin Manage Doctors", 1200, 800, true);
     }
-        public void switchToAdminManagePatients() {
+
+    public void switchToAdminManagePatients() {
         log.info("Switching to Patient Admin Manage Patients Screen");
-        loadAndSetScene("/com/pma/view/admin_manage_patients.fxml", "PMA - Admin Manage Patients", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/admin_manage_patients.fxml", "PMA - Admin Manage Patients", 1200, 800, true);
     }
-        public void switchToAdminManageDepartments() {
+
+    public void switchToAdminManageDepartments() {
         log.info("Switching to Admin Manage Departments Screen");
-        loadAndSetScene("/com/pma/view/admin_manage_departments.fxml", "PMA - Admin Manage Departments", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/admin_manage_departments.fxml", "PMA - Admin Manage Departments", 1200, 800, true);
     }
-        public void switchToAdminManageMedicines() {
+
+    public void switchToAdminManageMedicines() {
         log.info("Switching to Admin Manage Medicines Screen");
-        loadAndSetScene("/com/pma/view/admin_manage_medicines.fxml", "PMA - Admin Manage Medicines", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/admin_manage_medicines.fxml", "PMA - Admin Manage Medicines", 1200, 800, true);
     }
-        public void switchToAdminManageUserAccounts() {
+
+    public void switchToAdminManageUserAccounts() {
         log.info("Switching to Admin Manage User Accounts Screen");
-        loadAndSetScene("/com/pma/view/admin_manage_user_accounts.fxml", "PMA - Admin Manage User Accounts", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/admin_manage_user_accounts.fxml", "PMA - Admin Manage User Accounts", 1200, 800, true);
     }
-        public void switchToAdminManageDiseases() {
+
+    public void switchToAdminManageDiseases() {
         log.info("Switching to Admin Manage Diseases Screen");
-        loadAndSetScene("/com/pma/view/admin_manage_diseases.fxml", "PMA - Admin Manage Diseases", 1200, 800, true);
+        loadAndSetScene("/com/pma/fxml/admin_manage_diseases.fxml", "PMA - Admin Manage Diseases", 1200, 800, true);
     }
-    
+
     // Thêm các phương thức chuyển màn hình cụ thể khác ở đây
     // public void switchToPatientManagementScreen() {
-    //     loadAndSetScene("/com/pma/view/PatientManagementView.fxml", "PMA - Patient Management", 1000, 700, true);
+    //     loadAndSetScene("/com/pma/fxml/PatientManagementView.fxml", "PMA - Patient Management", 1000, 700, true);
     // }
     /**
      * Mở một cửa sổ dialog (modal) mới.
@@ -292,7 +307,7 @@ public class UIManager {
             // applyFadeTransition(rootNode);
             // Nếu mainScene chưa được tạo, hoặc nếu chúng ta muốn mỗi màn hình có kích thước riêng
             // thì tạo Scene mới. Nếu không, chỉ thay đổi root.
-            // Hiện tại, logic này tạo Scene mới nếu chưa có, sau đó chỉ thay root và kích thước.
+            // Hiện tại, logic này tạo Scene mới nếu chưa có, sau đó chỉ thay đổi root và kích thước.
             if (mainScene == null) {
                 mainScene = new Scene(rootNode, preferredWidth, preferredHeight);
                 // Có thể thêm CSS chung cho ứng dụng ở đây
@@ -635,61 +650,5 @@ public class UIManager {
         log.info("Navigating to Reset Password Screen for user: {}", username);
         loadAndSetScene("/com/pma/fxml/reset_password.fxml", "Đặt lại mật khẩu", 450, 550, false,
                 (ResetPasswordController controller) -> controller.initData(username));
-    }
-
-    public void switchToAdminViewRevenue() {
-        log.info("Switching to Admin View Revenue Screen");
-        loadAndSetScene("/com/pma/fxml/admin_view_revenue.fxml", "PMA - Admin View Revenue", 1200, 800, true);
-        if (primaryStage != null && !primaryStage.isMaximized()) {
-            primaryStage.setMaximized(true);
-        }
-    }
-
-    public void switchToAdminManageDoctors() {
-        log.info("Switching to Admin Manage Doctors Screen");
-        loadAndSetScene("/com/pma/fxml/admin_manage_doctors.fxml", "PMA - Admin Manage Doctors", 1200, 800, true);
-        if (primaryStage != null && !primaryStage.isMaximized()) {
-            primaryStage.setMaximized(true);
-        }
-    }
-
-    public void switchToAdminManagePatients() {
-        log.info("Switching to Admin Manage Patients Screen");
-        loadAndSetScene("/com/pma/fxml/admin_manage_patients.fxml", "PMA - Admin Manage Patients", 1200, 800, true);
-        if (primaryStage != null && !primaryStage.isMaximized()) {
-            primaryStage.setMaximized(true);
-        }
-    }
-
-    public void switchToAdminManageDepartments() {
-        log.info("Switching to Admin Manage Departments Screen");
-        loadAndSetScene("/com/pma/fxml/admin_manage_departments.fxml", "PMA - Admin Manage Departments", 1200, 800, true);
-        if (primaryStage != null && !primaryStage.isMaximized()) {
-            primaryStage.setMaximized(true);
-        }
-    }
-
-    public void switchToAdminManageMedicines() {
-        log.info("Switching to Admin Manage Medicines Screen");
-        loadAndSetScene("/com/pma/fxml/admin_manage_medicines.fxml", "PMA - Admin Manage Medicines", 1200, 800, true);
-        if (primaryStage != null && !primaryStage.isMaximized()) {
-            primaryStage.setMaximized(true);
-        }
-    }
-
-    public void switchToAdminManageUserAccounts() {
-        log.info("Switching to Admin Manage User Accounts Screen");
-        loadAndSetScene("/com/pma/fxml/admin_manage_user_accounts.fxml", "PMA - Admin Manage User Accounts", 1200, 800, true);
-        if (primaryStage != null && !primaryStage.isMaximized()) {
-            primaryStage.setMaximized(true);
-        }
-    }
-
-    public void switchToAdminManageDiseases() {
-        log.info("Switching to Admin Manage Diseases Screen");
-        loadAndSetScene("/com/pma/fxml/admin_manage_diseases.fxml", "PMA - Admin Manage Diseases", 1200, 800, true);
-        if (primaryStage != null && !primaryStage.isMaximized()) {
-            primaryStage.setMaximized(true);
-        }
     }
 }

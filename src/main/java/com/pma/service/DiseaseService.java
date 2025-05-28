@@ -1,20 +1,22 @@
 package com.pma.service;
 
-import com.pma.model.entity.Disease; // Import Entity Disease
-import com.pma.repository.DiagnosisRepository; // Import nếu cần kiểm tra ràng buộc khi xóa
-import com.pma.repository.DiseaseRepository; // Import Repository Disease
-import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.Optional; // Import Entity Disease
+
+import org.slf4j.Logger; // Import nếu cần kiểm tra ràng buộc khi xóa
+import org.slf4j.LoggerFactory; // Import Repository Disease
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException; // Import để bắt lỗi xóa
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Propagation; // Import để bắt lỗi xóa
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import com.pma.model.entity.Disease;
+import com.pma.repository.DiagnosisRepository;
+import com.pma.repository.DiseaseRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Lớp Service cho việc quản lý các nghiệp vụ liên quan đến Disease (Loại bệnh).
@@ -72,12 +74,13 @@ public class DiseaseService {
     }
 
     /**
-     * Tạo một loại bệnh mới.
-     * Lưu ý: diseaseCode là assigned identifier, phải được cung cấp và là duy nhất.
+     * Tạo một loại bệnh mới. Lưu ý: diseaseCode là assigned identifier, phải
+     * được cung cấp và là duy nhất.
      *
      * @param disease Đối tượng Disease chứa thông tin (bao gồm diseaseCode).
      * @return Disease đã được lưu.
-     * @throws IllegalArgumentException nếu diseaseCode hoặc diseaseName đã tồn tại.
+     * @throws IllegalArgumentException nếu diseaseCode hoặc diseaseName đã tồn
+     * tại.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Disease createDisease(Disease disease) {
@@ -109,13 +112,13 @@ public class DiseaseService {
     }
 
     /**
-     * Cập nhật thông tin một loại bệnh (ví dụ: tên, mô tả).
-     * Không cho phép cập nhật diseaseCode (khóa chính).
+     * Cập nhật thông tin một loại bệnh (ví dụ: tên, mô tả). Không cho phép cập
+     * nhật diseaseCode (khóa chính).
      *
-     * @param diseaseCode    Mã bệnh cần cập nhật.
+     * @param diseaseCode Mã bệnh cần cập nhật.
      * @param diseaseDetails Đối tượng chứa thông tin mới (tên, mô tả).
      * @return Disease đã được cập nhật.
-     * @throws EntityNotFoundException  nếu không tìm thấy Disease.
+     * @throws EntityNotFoundException nếu không tìm thấy Disease.
      * @throws IllegalArgumentException nếu tên mới bị trùng.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -148,13 +151,13 @@ public class DiseaseService {
     }
 
     /**
-     * Xóa một loại bệnh theo mã bệnh.
-     * Chỉ xóa được nếu không có Diagnosis nào đang tham chiếu đến nó.
+     * Xóa một loại bệnh theo mã bệnh. Chỉ xóa được nếu không có Diagnosis nào
+     * đang tham chiếu đến nó.
      *
      * @param diseaseCode Mã bệnh cần xóa.
      * @throws EntityNotFoundException nếu không tìm thấy Disease.
-     * @throws IllegalStateException   nếu Disease đang được sử dụng trong
-     *                                 Diagnosis.
+     * @throws IllegalStateException nếu Disease đang được sử dụng trong
+     * Diagnosis.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public void deleteDisease(String diseaseCode) {
@@ -174,8 +177,8 @@ public class DiseaseService {
         if (diagnosisCount > 0) {
             log.warn("Deletion failed for disease code: {}. Found {} associated diagnoses.", diseaseCode,
                     diagnosisCount);
-            throw new IllegalStateException("Cannot delete disease with code " + diseaseCode + " because " +
-                    diagnosisCount + " diagnosis/diagnoses are still associated with it.");
+            throw new IllegalStateException("Cannot delete disease with code " + diseaseCode + " because "
+                    + diagnosisCount + " diagnosis/diagnoses are still associated with it.");
         }
 
         // 3. Nếu không có ràng buộc, tiến hành xóa
@@ -189,6 +192,12 @@ public class DiseaseService {
             throw new IllegalStateException(
                     "Could not delete disease with code " + diseaseCode + " due to data integrity issues.", e);
         }
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public Optional<Disease> findByDiseaseCode(String code) {
+        log.debug("Finding disease by code: {}", code);
+        return diseaseRepository.findById(code);
     }
 
     // --- Cần thêm vào DiagnosisRepository ---

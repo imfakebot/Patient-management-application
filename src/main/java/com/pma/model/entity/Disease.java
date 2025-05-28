@@ -194,6 +194,11 @@ public class Disease {
                 : this.getClass()).hashCode();
     }
 
+    public Object getId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+    }
+
     // --- Lưu ý về Helper Methods ---
     // Yêu cầu lớp Diagnosis phải có các phương thức setter hoặc internal helper
     // tương ứng

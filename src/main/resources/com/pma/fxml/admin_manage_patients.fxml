@@ -22,7 +22,7 @@
 
 <BorderPane stylesheets="@../css/modern-style.css"
    xmlns="http://javafx.com/javafx/23.0.1"
-   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.AdminManagePatientsController">
+   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.admin.AdminManagePatientsController">
    <left>
       <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
          <padding>
