@@ -67,7 +67,7 @@ public class App extends Application {
         // Đảm bảo nền tảng JavaFX thoát sạch sẽ
         Platform.exit();
         // Tùy chọn: Thoát toàn bộ tiến trình
-        // System.exit(0);
+        System.exit(0);
     }
 
     public static void main(String[] args) {

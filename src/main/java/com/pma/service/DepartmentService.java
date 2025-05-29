@@ -180,8 +180,7 @@ public class DepartmentService {
 
         // --- Business Logic Validation ---
         String newName = updatedDetails.getDepartmentName();
-        // Chỉ kiểm tra trùng tên nếu tên thực sự thay đổi và khác tên hiện tại (bỏ qua
-        // hoa thường)
+        // Chỉ kiểm tra trùng tên nếu tên thực sự thay đổi và khác tên hiện tại (bỏ qua hoa thường)
         if (newName != null && !newName.trim().isEmpty()
                 && !existingDepartment.getDepartmentName().equalsIgnoreCase(newName.trim())) {
             log.info("Department name change detected. Old: '{}', New: '{}'. Checking for conflicts.",

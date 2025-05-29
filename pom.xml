@@ -159,6 +159,13 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Library to load .env files -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>            <!-- Bạn có thể kiểm tra phiên bản mới nhất -->
+        </dependency>
     </dependencies>
 
     <build>

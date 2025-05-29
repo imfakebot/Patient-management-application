@@ -79,14 +79,14 @@ public class TwoFactorAuthController {
         // Hiển thị tùy chọn "Resend OTP" nếu đây là luồng OTP qua email
         // (tức là preAuth != null VÀ 2FA (TOTP) chưa được bật HOẶC preAuth == null (OTP do đăng nhập sai))
         UserAccount user = userAccountService.findByUsername(usernameFor2FA).orElse(null);
-        if (user != null && ( (preAuthenticatedToken != null && !user.isTwoFactorEnabled()) || preAuthenticatedToken == null) ) {
+        if (user != null && ((preAuthenticatedToken != null && !user.isTwoFactorEnabled()) || preAuthenticatedToken == null)) {
             // If user is ADMIN, resend should also be hidden as they shouldn't be in this flow for email OTP.
             if (user.getRole() == UserRole.ADMIN) {
-                 resendOtpLabel.setVisible(false);
-                 resendOtpLabel.setManaged(false);
+                resendOtpLabel.setVisible(false);
+                resendOtpLabel.setManaged(false);
             } else {
-                 resendOtpLabel.setVisible(true);
-                 resendOtpLabel.setManaged(true);
+                resendOtpLabel.setVisible(true);
+                resendOtpLabel.setManaged(true);
             }
         } else {
             resendOtpLabel.setVisible(false);

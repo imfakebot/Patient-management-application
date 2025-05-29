@@ -52,6 +52,7 @@
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>
+                    <!-- Column 1 -->
                     <Label text="Họ và Tên:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                     <TextField fx:id="fullNameField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                     <Label text="Ngày sinh:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
@@ -60,9 +61,9 @@
                     <ComboBox fx:id="genderCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
-                                <String fx:value="Male" />
-                                <String fx:value="Female" />
-                                <String fx:value="Other" />
+                                <String fx:value="MALE" />
+                                <String fx:value="FEMALE" />
+                                <String fx:value="OTHER" />
                             </FXCollections>
                         </items>
                     </ComboBox>
@@ -70,51 +71,54 @@
                     <TextField fx:id="phoneField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                     <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                     <TextField fx:id="emailField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                    <Label text="Chuyên khoa:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                    <TextField fx:id="specialtyField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                    <Label text="Khoa:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                    <ComboBox fx:id="departmentCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                    <Label text="Giấy phép y tế:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-                    <TextField fx:id="medicalLicenseField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                    <Label text="Năm kinh nghiệm:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
-                    <TextField fx:id="yearsOfExperienceField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                    <Label text="Lương:" GridPane.columnIndex="0" GridPane.rowIndex="9" />
-                    <TextField fx:id="salaryField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-                    <Label text="Trạng thái:" GridPane.columnIndex="0" GridPane.rowIndex="10" />
-                    <ComboBox fx:id="statusCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                    <Label text="Trạng thái:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                    <ComboBox fx:id="statusCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
-                                <String fx:value="Active" />
-                                <String fx:value="Inactive" />
-                                <String fx:value="Retired" />
+                                <String fx:value="ACTIVE" />
+                                <String fx:value="INACTIVE" />
+                                <String fx:value="RETIRED" />
                             </FXCollections>
                         </items>
                     </ComboBox>
-                    <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="11">
+
+                    <!-- Column 2 -->
+                    <Label text="Chuyên khoa:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                    <TextField fx:id="specialtyField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                    <Label text="Khoa:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                    <ComboBox fx:id="departmentCombo" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                    <Label text="Giấy phép y tế:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                    <TextField fx:id="medicalLicenseField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                    <Label text="Năm kinh nghiệm:" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                    <TextField fx:id="yearsOfExperienceField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                    <Label text="Lương:" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                    <TextField fx:id="salaryField" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+
+                    <!-- Action Buttons - Spanning across columns or placed strategically -->
+                    <HBox spacing="10.0" GridPane.columnIndex="0" GridPane.columnSpan="4" GridPane.rowIndex="6" alignment="CENTER_LEFT">
                         <padding>
                             <Insets top="10.0" />
                         </padding>
                         <Button fx:id="addButton" onAction="#addDoctor" text="Thêm" />
                         <Button fx:id="updateButton" onAction="#updateDoctor" text="Cập nhật" />
                         <Button fx:id="deleteButton" onAction="#deleteDoctor" text="Xóa" />
+                        <Button onAction="#clearForm" text="Làm mới Form" styleClass="clear-button" />
                     </HBox>
+
                     <columnConstraints>
-                        <ColumnConstraints percentWidth="0.0" />
-                        <ColumnConstraints />
+                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="100.0" prefWidth="120.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="180.0" prefWidth="200.0"/>
+                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="100.0" prefWidth="120.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="180.0" prefWidth="200.0"/>
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
-                        <RowConstraints />
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                 </GridPane>
                 <!-- Search Bar -->
@@ -130,7 +134,7 @@
                                 <String fx:value="Theo Tên" />
                                 <String fx:value="Theo Chuyên khoa" />
                                 <String fx:value="Theo Khoa" />
-                                <String fx:value="Theo Email" />
+                                <String fx:value="Theo Email" /> <String fx:value="Theo Số điện thoại" />
                             </FXCollections>
                         </items>
                     </ComboBox>

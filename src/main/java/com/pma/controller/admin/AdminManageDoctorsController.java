@@ -30,8 +30,8 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
-// import java.util.UUID; // UUID was imported but not used
 
 @Component
 @RequiredArgsConstructor
@@ -122,8 +122,20 @@ public class AdminManageDoctorsController implements Initializable {
     @FXML
     private TableColumn<Doctor, LocalDateTime> updatedAtColumn;
 
+    // Search Fields
+    @FXML
+    private TextField searchField;
+    @FXML
+    private ComboBox<String> searchCriteriaCombo;
+    @FXML
+    private Button searchButton;
+    @FXML
+    private Button showAllButton;
+
     private final ObservableList<Doctor> doctorObservableList = FXCollections.observableArrayList();
     private final ObservableList<Department> departmentObservableList = FXCollections.observableArrayList();
+    // List to hold all doctors fetched from the database, used as a master list for searching
+    private final ObservableList<Doctor> allDoctorsMasterList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -132,7 +144,8 @@ public class AdminManageDoctorsController implements Initializable {
         setupFormControls();
         setupDoctorsTable();
         loadDepartmentsData();
-        loadDoctorsData();
+        loadInitialDoctorsData(); // Load all doctors into master list first
+        doctorObservableList.setAll(allDoctorsMasterList); // Initially display all doctors
 
         doctorsTable.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
@@ -142,6 +155,13 @@ public class AdminManageDoctorsController implements Initializable {
                         clearForm(null);
                     }
                 });
+
+        // Setup search criteria
+        searchCriteriaCombo.setItems(FXCollections.observableArrayList(
+                "Theo Tên", "Theo Chuyên khoa", "Theo Khoa", "Theo Email", "Theo Số điện thoại"
+        ));
+        searchCriteriaCombo.setPromptText("Tiêu chí tìm kiếm");
+
         log.info("AdminManageDoctorsController initialized successfully");
     }
 
@@ -210,21 +230,21 @@ public class AdminManageDoctorsController implements Initializable {
         }
     }
 
-    private void loadDoctorsData() {
+    private void loadInitialDoctorsData() {
         try {
             log.debug("Loading doctors data...");
             List<Doctor> doctors = doctorService.getAllDoctors(); // Giả sử DoctorService có phương thức này
             if (doctors != null) {
-                doctorObservableList.setAll(doctors);
+                allDoctorsMasterList.setAll(doctors);
                 log.info("Loaded {} doctors.", doctors.size());
             } else {
-                doctorObservableList.clear();
+                allDoctorsMasterList.clear();
                 log.warn("DoctorService returned null for loading doctors.");
             }
         } catch (Exception e) {
             log.error("Error loading doctors data: {}", e.getMessage(), e);
             DialogUtil.showErrorAlert("Lỗi tải Bác sĩ", "Không thể tải danh sách bác sĩ.");
-            doctorObservableList.clear();
+            allDoctorsMasterList.clear();
         }
     }
 
@@ -258,6 +278,8 @@ public class AdminManageDoctorsController implements Initializable {
         medicalLicenseField.clear();
         yearsOfExperienceField.clear();
         salaryField.clear();
+        searchField.clear();
+        searchCriteriaCombo.getSelectionModel().clearSelection();
         statusCombo.getSelectionModel().clearSelection();
         doctorsTable.getSelectionModel().clearSelection();
         log.debug("Form cleared.");
@@ -418,7 +440,7 @@ public class AdminManageDoctorsController implements Initializable {
                 doctorObservableList.set(index, updatedDoctor);
                 doctorsTable.getSelectionModel().select(updatedDoctor);
             } else {
-                loadDoctorsData(); // Fallback nếu không tìm thấy (hiếm khi xảy ra)
+                refreshDoctorsTable(); // Fallback nếu không tìm thấy (hiếm khi xảy ra)
             }
             DialogUtil.showSuccessAlert("Thành công", "Đã cập nhật thông tin bác sĩ thành công.");
             clearForm(null);
@@ -433,6 +455,13 @@ public class AdminManageDoctorsController implements Initializable {
             log.error("Error updating doctor: {}", e.getMessage(), e);
             DialogUtil.showExceptionDialog("Lỗi Hệ thống", "Không thể cập nhật bác sĩ.", "Vui lòng thử lại sau.", e);
         }
+    }
+
+    private void loadDoctorsData() {
+        // This method is called as a fallback, for example, when an entity is not found during an update.
+        // Refreshing the entire table and master list is a safe approach here.
+        log.debug("loadDoctorsData() called, refreshing doctors table.");
+        refreshDoctorsTable();
     }
 
     @FXML
@@ -456,7 +485,7 @@ public class AdminManageDoctorsController implements Initializable {
             } catch (EntityNotFoundException e) {
                 log.error("Doctor not found for deletion: {}", selectedDoctor.getDoctorId(), e);
                 DialogUtil.showErrorAlert("Không tìm thấy", "Không tìm thấy bác sĩ để xóa. Có thể đã bị xóa.");
-                loadDoctorsData();
+                refreshDoctorsTable();
             } catch (DataIntegrityViolationException e) {
                 log.error("Cannot delete doctor due to existing references: {}", selectedDoctor.getDoctorId(), e);
                 DialogUtil.showErrorAlert("Không thể Xóa", "Không thể xóa bác sĩ này do có các dữ liệu liên quan (ví dụ: lịch hẹn).");
@@ -465,6 +494,58 @@ public class AdminManageDoctorsController implements Initializable {
                 DialogUtil.showExceptionDialog("Lỗi Hệ thống", "Không thể xóa bác sĩ.", "Vui lòng thử lại sau.", e);
             }
         }
+    }
+
+    @FXML
+    private void searchDoctors(ActionEvent event) {
+        String keyword = searchField.getText().toLowerCase().trim();
+        String criteria = searchCriteriaCombo.getValue();
+
+        if (keyword.isEmpty() || criteria == null) {
+            DialogUtil.showWarningAlert("Thiếu thông tin", "Vui lòng nhập từ khóa và chọn tiêu chí tìm kiếm.");
+            doctorObservableList.setAll(allDoctorsMasterList); // Hiển thị lại tất cả nếu tìm kiếm rỗng
+            return;
+        }
+
+        ObservableList<Doctor> filteredList = FXCollections.observableArrayList();
+        for (Doctor doctor : allDoctorsMasterList) {
+            boolean match = false;
+            switch (criteria) {
+                case "Theo Tên":
+                    match = doctor.getFullName() != null && doctor.getFullName().toLowerCase().contains(keyword);
+                    break;
+                case "Theo Chuyên khoa":
+                    match = doctor.getSpecialty() != null && doctor.getSpecialty().toLowerCase().contains(keyword);
+                    break;
+                case "Theo Khoa":
+                    match = doctor.getDepartment() != null && doctor.getDepartment().getName() != null
+                            && doctor.getDepartment().getName().toLowerCase().contains(keyword);
+                    break;
+                case "Theo Email":
+                    match = doctor.getEmail() != null && doctor.getEmail().toLowerCase().contains(keyword);
+                    break;
+                case "Theo Số điện thoại":
+                    match = doctor.getPhone() != null && doctor.getPhone().toLowerCase().contains(keyword);
+                    break;
+            }
+            if (match) {
+                filteredList.add(doctor);
+            }
+        }
+        doctorObservableList.setAll(filteredList);
+        if (filteredList.isEmpty()) {
+            DialogUtil.showInfoAlert("Không tìm thấy", "Không tìm thấy bác sĩ nào khớp với tiêu chí tìm kiếm.");
+        }
+    }
+
+    @FXML
+    private void loadAllDoctors(ActionEvent event) {
+        doctorObservableList.setAll(allDoctorsMasterList);
+        searchField.clear();
+        searchCriteriaCombo.getSelectionModel().clearSelection();
+        searchCriteriaCombo.setPromptText("Tiêu chí tìm kiếm");
+        doctorsTable.getSelectionModel().clearSelection();
+        clearForm(null); // Clear form fields as well
     }
 
     // --- Sidebar Navigation Methods ---
@@ -477,7 +558,7 @@ public class AdminManageDoctorsController implements Initializable {
     private void loadAdminManageDoctors(ActionEvent event) {
         // Already on this screen, maybe refresh data or do nothing
         log.info("Admin Manage Doctors button clicked (already on this screen).");
-        loadDoctorsData(); // Refresh data
+        refreshDoctorsTable(); // Refresh data
         loadDepartmentsData(); // Also refresh department list in case it changed
     }
 
@@ -505,5 +586,11 @@ public class AdminManageDoctorsController implements Initializable {
     @FXML
     private void loadAdminManageDiseases(ActionEvent event) {
         uiManager.switchToAdminManageDiseases();
+    }
+
+    private void refreshDoctorsTable() {
+        loadInitialDoctorsData(); // Tải lại dữ liệu gốc
+        doctorObservableList.setAll(allDoctorsMasterList); // Cập nhật bảng hiển thị
+        clearForm(null); // Xóa form
     }
 }

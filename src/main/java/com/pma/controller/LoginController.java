@@ -1,45 +1,40 @@
 package com.pma.controller;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException; // Keep this import
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-import java.util.Optional;
-
-import com.pma.model.entity.UserAccount;
-import com.pma.model.enums.UserRole; // Ensure UserRole is imported
+import com.pma.model.entity.UserAccount; // Keep this import
+import com.pma.model.enums.UserRole;
 import com.pma.service.UserAccountService;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
-import com.pma.service.UserAccountService.TwoFactorSecretAndQrData; // Assuming this might be used elsewhere or a typo
 
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
+import javafx.application.Platform; // Import LocalDateTime
+import javafx.event.ActionEvent; // Ensure UserRole is imported
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button; // Assuming this might be used elsewhere or a typo
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView; // Keep this import
-import javafx.scene.input.MouseEvent; // Correct MouseEvent import for JavaFX
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
 @Component // Thêm annotation này để Spring quản lý Controller
@@ -144,6 +139,18 @@ public class LoginController {
                 UserAccount userAccount = userAccountService.findByUsername(username)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+                // Kiểm tra xem tài khoản có active không
+                if (!userAccount.isActive()) {
+                    log.warn("Login attempt for inactive account: {}", username);
+                    // Phân biệt giữa chưa xác thực email và bị admin vô hiệu hóa
+                    if (!userAccount.isEmailVerified()) {
+                        handleAuthenticationFailure("Your account is not active. Please verify your email address first.", username, false);
+                    } else {
+                        handleAuthenticationFailure("Your account has been deactivated. Please contact support.", username, false);
+                    }
+                    return;
+                }
+
                 if (userAccount.getRole() != UserRole.ADMIN && userAccount.isOtpRequiredForLogin()) {
                     log.info("User '{}' requires OTP due to previous failed attempts. Proceeding to OTP screen.", username);
                     sendOtpAndSwitchTo2FAScreen(userAccount, null,
@@ -201,8 +208,12 @@ public class LoginController {
                         });
                     }
                 }
-            } catch (Exception e) {
-                handleAuthenticationFailure("An unexpected error occurred. Please try again.", username);
+            } catch (UsernameNotFoundException e) {
+                handleAuthenticationFailure(e.getMessage(), username, true); // Increment failed attempts for auth errors
+            } catch (org.springframework.security.core.AuthenticationException e) {
+                handleAuthenticationFailure(e.getMessage(), username, true); // Increment failed attempts for auth errors
+            } catch (Exception e) { // Catch-all for other unexpected errors
+                handleAuthenticationFailure("An unexpected error occurred. Please try again.", username, false);
             }
         });
 
@@ -255,12 +266,15 @@ public class LoginController {
         });
     }
 
-    private void handleAuthenticationFailure(String errorMessage, String username) {
+    private void handleAuthenticationFailure(String errorMessage, String username, boolean incrementFailedAttempts) {
         log.warn("Authentication failure for '{}': {}", username, errorMessage);
+        if (incrementFailedAttempts && username != null && !username.isEmpty()) {
+            userAccountService.handleFailedLoginAttempt(username);
+        }
         Platform.runLater(() -> {
             hideProgress();
             setFormDisabled(false);
-            showError(errorMessage);
+            showError(errorMessage); // Hiển thị thông báo lỗi
         });
     }
 
