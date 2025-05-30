@@ -1,92 +1,100 @@
 /* Màu sắc chủ đạo */
 .root {
-    -primary-color: #7E57C2;
-    -primary-light: #B39DDB;
-    -primary-dark: #5E35B1;
-    -secondary-color: #EDE7F6;
-    -accent-color: #D1C4E9;
-    -text-color: #263238;
-    -light-text: #FFFFFF;
-    -error-color: #EF5350;
-    -success-color: #66BB6A;
-    -warning-color: #FFA726;
-    -card-shadow: rgba(0, 0, 0, 0.1);
+  -primary-color: #7e57c2;
+  -primary-light: #b39ddb;
+  -primary-dark: #5e35b1;
+  -secondary-color: #ede7f6;
+  -accent-color: #d1c4e9;
+  -text-color: #263238;
+  -light-text: #ffffff;
+  -error-color: #ef5350;
+  -success-color: #66bb6a;
+  -warning-color: #ffa726;
+  -card-shadow: rgba(0, 0, 0, 0.1);
 }
 
 /* Font chữ */
 * {
-    -fx-font-family: 'Segoe UI', Roboto, sans-serif;
+  -fx-font-family: "Segoe UI", Roboto, sans-serif;
 }
 
 /* Nút bấm */
 .button {
-    -fx-background-radius: 25;
-    -fx-background-color: -primary-color;
-    -fx-text-fill: -light-text;
-    -fx-font-weight: bold;
-    -fx-padding: 10 20;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, -card-shadow, 5, 0, 0, 2);
+  -fx-background-radius: 25;
+  -fx-background-color: -primary-color;
+  -fx-text-fill: -light-text;
+  -fx-font-weight: bold;
+  -fx-padding: 10 20;
+  -fx-cursor: hand;
+  -fx-effect: dropshadow(three-pass-box, -card-shadow, 5, 0, 0, 2);
 }
 
 .button:hover {
-    -fx-background-color: -primary-light;
+  -fx-background-color: -primary-light;
 }
 
 .button:pressed {
-    -fx-background-color: -primary-dark;
+  -fx-background-color: -primary-dark;
 }
 
 /* Panel */
 .card {
-    -fx-background-radius: 12;
-    -fx-background-color: white;
-    -fx-effect: dropshadow(three-pass-box, -card-shadow, 15, 0, 0, 0);
-    -fx-padding: 20;
+  -fx-background-radius: 12;
+  -fx-background-color: white;
+  -fx-effect: dropshadow(three-pass-box, -card-shadow, 15, 0, 0, 0);
+  -fx-padding: 20;
 }
 
 /* Sidebar */
 .sidebar {
-    -fx-background-color: white;
-    -fx-effect: dropshadow(three-pass-box, -card-shadow, 15, 0, 0, 0);
+  -fx-background-color: white;
+  -fx-effect: dropshadow(three-pass-box, -card-shadow, 15, 0, 0, 0);
 }
 
 .sidebar-button {
-    -fx-background-radius: 8;
-    -fx-background-color: transparent;
-    -fx-text-fill: -text-color;
-    -fx-padding: 12 20;
-    -fx-alignment: CENTER_LEFT;
+  -fx-background-radius: 8;
+  -fx-background-color: transparent;
+  -fx-text-fill: -text-color;
+  -fx-padding: 12 20;
+  -fx-alignment: CENTER_LEFT;
 }
 
 .sidebar-button:hover {
-    -fx-background-color: #F5F5F5;
+  -fx-background-color: #f5f5f5;
 }
 
 .sidebar-button:selected {
-    -fx-background-color: -primary-color;
-    -fx-text-fill: -light-text;
+  -fx-background-color: -primary-color;
+  -fx-text-fill: -light-text;
 }
 
 /* Bảng */
 .table-view {
-    -fx-background-radius: 0;
-    -fx-border-radius: 0;
-    -fx-border-color: #E0E0E0;
+  -fx-background-radius: 0;
+  -fx-border-radius: 0;
+  -fx-border-color: #e0e0e0;
 }
 
 .table-column {
-    -fx-text-fill: #ffff;
+  -fx-text-fill: #ffff;
 }
 .table-view .column-header {
-    -fx-background-color: -primary-color;
-    -fx-text-fill: -light-text;
-    -fx-font-weight: bold;
+  -fx-background-color: -primary-color;
+  -fx-text-fill: -light-text;
+  -fx-font-weight: bold;
 }
 
 /* Input */
-.text-field, .combo-box, .date-picker {
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-border-color: #E0E0E0;
+.text-field,
+.combo-box,
+.date-picker {
+  -fx-background-radius: 12;
+  -fx-border-radius: 12;
+  -fx-border-color: #e0e0e0;
+}
+
+/* Style cho GridPane chứa form nhập liệu */
+.form-grid-pane {
+  -fx-background-color: white; /* Đặt màu nền là trắng */
+  /* -fx-background-radius: 8; */ /* Bạn có thể bỏ comment nếu muốn bo góc nhẹ */
 }

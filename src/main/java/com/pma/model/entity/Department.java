@@ -201,6 +201,10 @@ public class Department {
         return this.departmentName;
     }
 
+    public void setName(String newName) {
+        this.departmentName = newName;
+    }
+
     // --- Lưu ý quan trọng về quản lý quan hệ hai chiều ---
     // Để các helper methods hoạt động chính xác và an toàn nhất, lớp Doctor nên:
     // 1. Có phương thức `setDepartment(Department department)`

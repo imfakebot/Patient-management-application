@@ -17,26 +17,26 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Entity đại diện cho bảng Diseases trong cơ sở dữ liệu.
- * Lưu trữ thông tin chuẩn hóa về các loại bệnh (ví dụ: theo ICD).
- * Phiên bản tối ưu, sử dụng Lombok, equals/hashCode chuẩn, FetchType.LAZY,
- * và helper methods quản lý quan hệ hai chiều.
+ * Entity đại diện cho bảng Diseases trong cơ sở dữ liệu. Lưu trữ thông tin
+ * chuẩn hóa về các loại bệnh (ví dụ: theo ICD). Phiên bản tối ưu, sử dụng
+ * Lombok, equals/hashCode chuẩn, FetchType.LAZY, và helper methods quản lý quan
+ * hệ hai chiều.
  */
 @Getter
 @Setter
 // Luôn exclude collection LAZY khỏi toString
-@ToString(exclude = { "diagnoses" })
+@ToString(exclude = {"diagnoses"})
 @NoArgsConstructor // Bắt buộc cho JPA
 @Entity
 @Table(name = "Diseases", uniqueConstraints = {
-        // Ràng buộc UNIQUE cho disease_name
-        @UniqueConstraint(name = "UQ_Diseases_DiseaseName", columnNames = { "disease_name" })
+    // Ràng buộc UNIQUE cho disease_name
+    @UniqueConstraint(name = "UQ_Diseases_DiseaseName", columnNames = {"disease_name"})
 })
 public class Disease {
 
     /**
-     * Khóa chính: Mã bệnh (ví dụ: mã ICD-10). Kiểu VARCHAR(20).
-     * Đây là assigned identifier, giá trị phải được cung cấp khi tạo entity.
+     * Khóa chính: Mã bệnh (ví dụ: mã ICD-10). Kiểu VARCHAR(20). Đây là assigned
+     * identifier, giá trị phải được cung cấp khi tạo entity.
      */
     @Id // Đánh dấu là khóa chính
     @Column(name = "disease_code", nullable = false, updatable = false, length = 20)
@@ -71,15 +71,14 @@ public class Disease {
     private LocalDateTime updatedAt;
 
     // --- Mối quan hệ OneToMany (Phía không sở hữu - Inverse Side) ---
-
     /**
-     * Danh sách các chẩn đoán liên quan đến loại bệnh này.
-     * 'mappedBy = "disease"' trỏ tới trường 'disease' trong lớp Diagnosis.
-     * Xóa Disease không nên xóa Diagnoses (DB không có ON DELETE CASCADE).
-     * Chỉ cascade PERSIST/MERGE là an toàn nếu cần.
+     * Danh sách các chẩn đoán liên quan đến loại bệnh này. 'mappedBy =
+     * "disease"' trỏ tới trường 'disease' trong lớp Diagnosis. Xóa Disease
+     * không nên xóa Diagnoses (DB không có ON DELETE CASCADE). Chỉ cascade
+     * PERSIST/MERGE là an toàn nếu cần.
      */
     @OneToMany(mappedBy = "disease", // Liên kết với trường 'disease' trong Entity Diagnosis
-            cascade = { CascadeType.PERSIST, CascadeType.MERGE }, // Cascade an toàn: Lưu/Cập nhật
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}, // Cascade an toàn: Lưu/Cập nhật
             fetch = FetchType.LAZY, // Bắt buộc LAZY
             orphanRemoval = false // Không tự xóa Diagnosis con mồ côi
     )
@@ -87,10 +86,10 @@ public class Disease {
     private Set<Diagnosis> diagnoses = new HashSet<>(); // Khởi tạo sẵn
 
     // --- Helper methods quản lý quan hệ hai chiều an toàn ---
-
     /**
-     * Thêm một chẩn đoán vào danh sách liên quan đến bệnh này và đồng bộ hai chiều.
-     * 
+     * Thêm một chẩn đoán vào danh sách liên quan đến bệnh này và đồng bộ hai
+     * chiều.
+     *
      * @param diagnosis Chẩn đoán cần thêm (không được null).
      */
     public void addDiagnosis(Diagnosis diagnosis) {
@@ -108,8 +107,9 @@ public class Disease {
     }
 
     /**
-     * Xóa một chẩn đoán khỏi danh sách liên quan đến bệnh này và đồng bộ hai chiều.
-     * 
+     * Xóa một chẩn đoán khỏi danh sách liên quan đến bệnh này và đồng bộ hai
+     * chiều.
+     *
      * @param diagnosis Chẩn đoán cần xóa (không được null).
      */
     public void removeDiagnosis(Diagnosis diagnosis) {
@@ -126,11 +126,10 @@ public class Disease {
     }
 
     // --- Phương thức nội bộ (package-private) để Diagnosis gọi lại ---
-
     /**
      * Thêm Diagnosis vào collection nội bộ. Chỉ nên được gọi bởi
      * Diagnosis.setDisease().
-     * 
+     *
      * @param diagnosis Diagnosis cần thêm.
      */
     void addDiagnosisInternal(Diagnosis diagnosis) {
@@ -143,7 +142,7 @@ public class Disease {
     /**
      * Xóa Diagnosis khỏi collection nội bộ. Chỉ nên được gọi bởi
      * Diagnosis.setDisease(null).
-     * 
+     *
      * @param diagnosis Diagnosis cần xóa.
      */
     void removeDiagnosisInternal(Diagnosis diagnosis) {
@@ -154,7 +153,7 @@ public class Disease {
 
     /**
      * Cung cấp một view chỉ đọc (unmodifiable) của danh sách chẩn đoán.
-     * 
+     *
      * @return Một Set chỉ đọc chứa các chẩn đoán liên quan đến bệnh này.
      */
     public Set<Diagnosis> getDiagnosesView() {
@@ -163,21 +162,23 @@ public class Disease {
 
     // --- equals() và hashCode() chuẩn cho JPA/Hibernate ---
     // Đặc biệt cho assigned identifier (String)
-
     @Override
     public final boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null)
+        }
+        if (o == null) {
             return false;
+        }
         Class<?> oEffectiveClass = o instanceof HibernateProxy
                 ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
                 : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass)
+        if (thisEffectiveClass != oEffectiveClass) {
             return false;
+        }
         Disease disease = (Disease) o;
         // So sánh dựa trên diseaseCode nếu nó đã được gán (khác null và không rỗng)
         // Đối với assigned ID, đây là cách so sánh an toàn nhất.
@@ -194,9 +195,8 @@ public class Disease {
                 : this.getClass()).hashCode();
     }
 
-    public Object getId() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getId'");
+    public String getId() {
+        return this.diseaseCode;
     }
 
     // --- Lưu ý về Helper Methods ---
