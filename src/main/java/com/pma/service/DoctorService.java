@@ -76,15 +76,15 @@ public class DoctorService {
                 });
 
         // Kiểm tra trùng lặp các trường UNIQUE
-        doctorRepository.findByPhone(doctor.getPhone()).ifPresent(existing -> {
+        doctorRepository.findByPhone(doctor.getPhone()).ifPresent(_ -> {
             log.warn("Doctor creation failed. Phone number already exists: {}", doctor.getPhone());
             throw new IllegalArgumentException("Phone number '" + doctor.getPhone() + "' is already registered.");
         });
-        doctorRepository.findByEmail(doctor.getEmail()).ifPresent(existing -> {
+        doctorRepository.findByEmail(doctor.getEmail()).ifPresent(_ -> {
             log.warn("Doctor creation failed. Email already exists: {}", doctor.getEmail());
             throw new IllegalArgumentException("Email '" + doctor.getEmail() + "' is already registered.");
         });
-        doctorRepository.findByMedicalLicense(doctor.getMedicalLicense()).ifPresent(existing -> {
+        doctorRepository.findByMedicalLicense(doctor.getMedicalLicense()).ifPresent(_ -> {
             log.warn("Doctor creation failed. Medical license already exists: {}", doctor.getMedicalLicense());
             throw new IllegalArgumentException(
                     "Medical license '" + doctor.getMedicalLicense() + "' is already registered.");
