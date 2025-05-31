@@ -50,7 +50,6 @@ module com.pma {
     opens com.pma.config to spring.beans, spring.context, spring.core; // Mở cho Spring để xử lý cấu hình
     opens com.pma.service to spring.beans, spring.context, spring.aop, spring.core, spring.security.core; // Mở cho Spring
     opens com.pma.repository to spring.data.commons, spring.data.jpa, spring.beans; // Mở cho Spring Data
-    opens com.pma.admin to spring.core, spring.beans, spring.context, javafx.fxml;
     // opens com.pma.security;
 
     // === EXPORTS ===

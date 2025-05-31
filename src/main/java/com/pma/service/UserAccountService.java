@@ -3,6 +3,7 @@ package com.pma.service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -26,8 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pma.model.entity.Doctor;
 import com.pma.model.entity.Patient;
 import com.pma.model.entity.UserAccount;
-import com.pma.model.enums.UserRole;
 import com.pma.model.enums.PasswordResetInitiationResult;
+import com.pma.model.enums.UserRole;
 import com.pma.repository.DoctorRepository;
 import com.pma.repository.PatientRepository;
 import com.pma.repository.UserAccountRepository;
@@ -534,5 +535,38 @@ public class UserAccountService implements UserDetailsService {
             log.error("Failed to send password reset email to {} for user {}: {}", emailAddress, user.getUsername(), e.getMessage(), e);
             return PasswordResetInitiationResult.EMAIL_SEND_FAILURE;
         }
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<UserAccount> findAll() {
+        log.info("Fetching all user accounts.");
+        List<UserAccount> accounts = userAccountRepository.findAll();
+        log.info("Found {} user accounts.", accounts.size());
+        return accounts;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public void save(UserAccount userAccount) {
+        log.info("Attempting to save user account for username: {}", userAccount.getUsername());
+        // NOTE: If password can be updated through this method,
+        // ensure it's encoded if it's a new password.
+        // Currently, AdminManageUserAccountsController does not handle password updates.
+        // If userAccount.getPasswordHash() is already encoded or not being changed,
+        // this direct save is fine.
+        UserAccount savedAccount = userAccountRepository.save(userAccount);
+        log.info("Successfully saved user account with id: {} for username: {}", savedAccount.getUserId(), savedAccount.getUsername());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public void delete(UUID userId) {
+        log.warn("Attempting to DELETE user account with id: {}", userId);
+        if (!userAccountRepository.existsById(userId)) {
+            log.error("Deletion failed. UserAccount not found with id: {}", userId);
+            throw new EntityNotFoundException("UserAccount not found with id: " + userId);
+        }
+        // Consider implications: deleting a user account might orphan related entities
+        // or cause issues if foreign keys are not set to NULL or cascade.
+        userAccountRepository.deleteById(userId);
+        log.info("Successfully deleted user account with id: {}", userId);
     }
 }

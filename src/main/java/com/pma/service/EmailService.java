@@ -4,9 +4,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatter;
 
 import com.pma.model.entity.Appointment;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -281,6 +281,177 @@ public class EmailService {
             future.completeExceptionally(
                     new RuntimeException("Failed to send password reset email to " + recipientEmail
                             + ". Please check mail server configuration or network.", e));
+            return future;
+        }
+    }
+
+    /**
+     * Gửi email thông báo thông tin tài khoản mới cho người dùng (ví dụ: bệnh
+     * nhân). Email này chứa tên đăng nhập và mật khẩu được tạo tự động.
+     *
+     * @param recipientEmail Email của người nhận.
+     * @param recipientName Tên của người nhận (để cá nhân hóa email).
+     * @param username Tên đăng nhập mới.
+     * @param rawPassword Mật khẩu mới (chưa băm).
+     * @return Future<Void> để theo dõi việc gửi email bất đồng bộ.
+     */
+    @Async
+    public Future<Void> sendNewAccountCredentials(String recipientEmail, String recipientName, String username, String rawPassword) {
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            log.warn("Cannot send new account credentials. Invalid recipient email for user: {}", username);
+            return CompletableFuture.completedFuture(null);
+        }
+        if (rawPassword == null || rawPassword.isBlank()) {
+            log.warn("Cannot send new account credentials. Raw password is blank for user: {}", username);
+            // Không nên gửi email nếu không có mật khẩu
+            return CompletableFuture.completedFuture(null);
+        }
+
+        try {
+            log.info("Preparing new account credentials email for user: {} to {}", username, recipientEmail);
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmailAddress);
+            message.setTo(recipientEmail);
+            message.setSubject("Thông tin tài khoản của bạn tại Hệ thống PMA");
+            message.setText(String.format("""
+                                          Chào %s,
+                                          
+                                          Tài khoản của bạn tại Hệ thống Quản lý (PMA) đã được tạo.
+                                          Dưới đây là thông tin đăng nhập của bạn:
+                                          
+                                          Tên đăng nhập: %s
+                                          Mật khẩu: %s
+                                          
+                                          \u26a0\ufe0f Quan trọng:
+                                          - Vì lý do bảo mật, vui lòng đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
+                                          - Không chia sẻ thông tin tài khoản này với bất kỳ ai.
+                                          
+                                          Trân trọng,
+                                          Đội ngũ Hệ thống PMA""",
+                    recipientName,
+                    username,
+                    rawPassword
+            ));
+
+            mailSender.send(message);
+            log.info("Successfully sent new account credentials email to user: {}", username);
+            return CompletableFuture.completedFuture(null);
+        } catch (MailException e) {
+            log.error("Failed to send new account credentials email to user: {} at {}: {}", username, recipientEmail, e.getMessage(), e);
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            future.completeExceptionally(new RuntimeException("Failed to send new account credentials email to " + recipientEmail, e));
+            return future;
+        }
+    }
+
+    /**
+     * Gửi email thông báo thông tin tài khoản mới cho bác sĩ. Email này chứa
+     * tên đăng nhập và mật khẩu được tạo tự động.
+     *
+     * @param recipientEmail Email của bác sĩ.
+     * @param recipientName Tên của bác sĩ (để cá nhân hóa email).
+     * @param username Tên đăng nhập mới.
+     * @param rawPassword Mật khẩu mới (chưa băm).
+     * @return Future<Void> để theo dõi việc gửi email bất đồng bộ.
+     */
+    @Async
+    public Future<Void> sendNewDoctorAccountCredentials(String recipientEmail, String recipientName, String username, String rawPassword) {
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            log.warn("Cannot send new doctor account credentials. Invalid recipient email for doctor: {}", username);
+            return CompletableFuture.completedFuture(null);
+        }
+        if (rawPassword == null || rawPassword.isBlank()) {
+            log.warn("Cannot send new doctor account credentials. Raw password is blank for doctor: {}", username);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        try {
+            log.info("Preparing new account credentials email for doctor: {} to {}", username, recipientEmail);
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmailAddress);
+            message.setTo(recipientEmail);
+            message.setSubject("Thông tin tài khoản Bác sĩ của bạn tại Hệ thống PMA");
+            message.setText(String.format("""
+                                          Chào Bác sĩ %s,
+                                          
+                                          Tài khoản bác sĩ của bạn tại Hệ thống Quản lý (PMA) đã được tạo.
+                                          Dưới đây là thông tin đăng nhập của bạn:
+                                          
+                                          Tên đăng nhập: %s
+                                          Mật khẩu: %s
+                                          
+                                          \u26a0\ufe0f Quan trọng:
+                                          - Vì lý do bảo mật, vui lòng đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
+                                          - Không chia sẻ thông tin tài khoản này với bất kỳ ai.
+                                          
+                                          Trân trọng,
+                                          Đội ngũ Hệ thống PMA""",
+                    recipientName, // Sử dụng tên bác sĩ
+                    username,
+                    rawPassword
+            ));
+
+            mailSender.send(message);
+            log.info("Successfully sent new account credentials email to doctor: {}", username);
+            return CompletableFuture.completedFuture(null);
+        } catch (MailException e) {
+            log.error("Failed to send new account credentials email to doctor: {} at {}: {}", username, recipientEmail, e.getMessage(), e);
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            future.completeExceptionally(new RuntimeException("Failed to send new account credentials email to " + recipientEmail, e));
+            return future;
+        }
+    }
+
+    /**
+     * Gửi email thông báo tài khoản đã bị xóa.
+     *
+     * @param recipientEmail Email của người nhận.
+     * @param recipientName Tên của người nhận.
+     * @param accountType Loại tài khoản (ví dụ: "Bệnh nhân", "Bác sĩ").
+     * @param adminUsername Tên của quản trị viên đã thực hiện hành động xóa (có thể là "Quản trị viên hệ thống" nếu không có thông tin cụ thể).
+     * @return Future<Void> để theo dõi việc gửi email bất đồng bộ.
+     */
+    @Async
+    public Future<Void> sendAccountDeletionNotification(String recipientEmail, String recipientName, String accountType, String adminUsername) {
+        if (recipientEmail == null || recipientEmail.isBlank()) {
+            log.warn("Cannot send account deletion notification. Invalid recipient email for {} formerly known as {}.", accountType, recipientName);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        String effectiveAdminName = (adminUsername != null && !adminUsername.isBlank()) ? adminUsername : "Quản trị viên hệ thống";
+
+        try {
+            log.info("Preparing account deletion notification email for {} {} to {}", accountType, recipientName, recipientEmail);
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmailAddress);
+            message.setTo(recipientEmail);
+            message.setSubject("Thông báo Xóa Tài khoản - Hệ thống PMA");
+            message.setText(String.format("""
+                                          Chào %s,
+                                          
+                                          Chúng tôi xin thông báo tài khoản %s của bạn tại Hệ thống Quản lý (PMA) đã bị xóa.
+                                          
+                                          Tài khoản của bạn đã được %s xóa khỏi hệ thống.
+                                          
+                                          Nếu bạn có bất kỳ thắc mắc nào hoặc cho rằng đây là một sự nhầm lẫn, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.
+                                          
+                                          Trân trọng,
+                                          Đội ngũ Hệ thống PMA""",
+                    recipientName,
+                    accountType.toLowerCase(), // "bệnh nhân" hoặc "bác sĩ"
+                    effectiveAdminName
+            ));
+
+            mailSender.send(message);
+            log.info("Successfully sent account deletion notification email to {} for former {} {}", recipientEmail, accountType, recipientName);
+            return CompletableFuture.completedFuture(null);
+        } catch (MailException e) {
+            log.error("Failed to send account deletion notification email to {} for former {} {}: {}", recipientEmail, accountType, recipientName, e.getMessage(), e);
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            future.completeExceptionally(new RuntimeException("Failed to send account deletion notification email to " + recipientEmail, e));
             return future;
         }
     }

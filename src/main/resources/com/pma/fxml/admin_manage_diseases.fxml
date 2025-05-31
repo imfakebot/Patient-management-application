@@ -17,7 +17,7 @@
 
 <BorderPane stylesheets="@../css/modern-style.css"
     xmlns="http://javafx.com/javafx/23.0.1"
-    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.admin.AdminManageDiseasesController">
+    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.admin.AdminManageDiseasesController">
     <left>
         <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
             <padding>
@@ -74,6 +74,17 @@
                         <RowConstraints />
                     </rowConstraints>
                 </GridPane>
+                <!-- Search box with center alignment -->
+                <HBox spacing="10.0" alignment="CENTER">
+                    <Label text="Tìm kiếm:" />
+                    <TextField fx:id="searchField" promptText="Nhập mã hoặc tên bệnh..." prefWidth="300.0">
+                        <HBox.margin>
+                            <Insets right="10.0" />
+                        </HBox.margin>
+                    </TextField>
+                    <Button fx:id="searchButton" text="Tìm" onAction="#handleSearch" />
+                    <Button fx:id="clearSearchButton" text="Xóa tìm kiếm" onAction="#clearSearch" />
+                </HBox>
                 <TableView fx:id="diseasesTable" prefHeight="400.0">
                     <columns>
                         <TableColumn fx:id="diseaseCodeColumn" prefWidth="100.0" text="Mã bệnh" />

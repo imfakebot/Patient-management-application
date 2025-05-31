@@ -1,16 +1,13 @@
 package com.pma.service; // Đảm bảo đúng package
 
-import com.pma.model.entity.Department; // Import Department nếu cần xử lý liên kết
-import com.pma.model.entity.Doctor; // Import Entity Doctor
-import com.pma.model.entity.UserAccount; // Import UserAccount nếu cần xử lý liên kết
-import com.pma.repository.DepartmentRepository; // Import để lấy Department
-import com.pma.repository.DoctorRepository; // Import Repository Doctor
-import com.pma.repository.UserAccountRepository; // Import nếu cần xử lý UserAccount
-import jakarta.persistence.EntityNotFoundException; // Exception chuẩn
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import java.util.List; // Import Department nếu cần xử lý liên kết
+import java.util.Optional; // Import Entity Doctor
+import java.util.UUID; // Import UserAccount nếu cần xử lý liên kết
+
+import org.slf4j.Logger; // Import để lấy Department
+import org.slf4j.LoggerFactory; // Import Repository Doctor
+import org.springframework.beans.factory.annotation.Autowired; // Import nếu cần xử lý UserAccount
+import org.springframework.dao.DataIntegrityViolationException; // Exception chuẩn
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,10 +15,15 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import com.pma.model.entity.Department;
+import com.pma.model.entity.Doctor;
+import com.pma.model.entity.UserAccount;
+import com.pma.repository.DepartmentRepository;
+import com.pma.repository.DoctorRepository;
+import com.pma.model.enums.UserRole;
+import com.pma.repository.UserAccountRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Lớp Service cho việc quản lý các nghiệp vụ liên quan đến Doctor.
@@ -34,27 +36,32 @@ public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final DepartmentRepository departmentRepository; // Cần để gán Department
     private final UserAccountRepository userAccountRepository; // Cần nếu quản lý UserAccount ở đây
+    private final UserAccountService userAccountService; // Thêm UserAccountService
+    private final EmailService emailService; // Thêm EmailService
 
     @Autowired
     public DoctorService(DoctorRepository doctorRepository,
             DepartmentRepository departmentRepository,
-            UserAccountRepository userAccountRepository) {
+            UserAccountRepository userAccountRepository,
+            UserAccountService userAccountService,
+            EmailService emailService) {
         this.doctorRepository = doctorRepository;
         this.departmentRepository = departmentRepository;
         this.userAccountRepository = userAccountRepository;
+        this.userAccountService = userAccountService;
+        this.emailService = emailService;
     }
 
     /**
-     * Tạo mới một bác sĩ.
-     * Kiểm tra trùng lặp phone, email, medicalLicense.
-     * Yêu cầu departmentId phải hợp lệ.
+     * Tạo mới một bác sĩ. Kiểm tra trùng lặp phone, email, medicalLicense. Yêu
+     * cầu departmentId phải hợp lệ.
      *
-     * @param doctor       Đối tượng Doctor chứa thông tin cần tạo (ID nên là null).
+     * @param doctor Đối tượng Doctor chứa thông tin cần tạo (ID nên là null).
      * @param departmentId UUID của Department mà bác sĩ sẽ thuộc về.
      * @return Doctor đã được lưu.
-     * @throws EntityNotFoundException  nếu departmentId không tồn tại.
-     * @throws IllegalArgumentException nếu phone, email, hoặc medicalLicense đã tồn
-     *                                  tại.
+     * @throws EntityNotFoundException nếu departmentId không tồn tại.
+     * @throws IllegalArgumentException nếu phone, email, hoặc medicalLicense đã
+     * tồn tại.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Doctor createDoctor(Doctor doctor, UUID departmentId) {
@@ -152,16 +159,15 @@ public class DoctorService {
     }
 
     /**
-     * Cập nhật thông tin của một bác sĩ.
-     * Cho phép thay đổi khoa (department).
+     * Cập nhật thông tin của một bác sĩ. Cho phép thay đổi khoa (department).
      *
-     * @param id              UUID của Doctor cần cập nhật.
-     * @param doctorDetails   Đối tượng chứa thông tin mới.
-     * @param newDepartmentId (Optional) UUID của khoa mới, nếu cần thay đổi. Null
-     *                        nếu không đổi khoa.
+     * @param id UUID của Doctor cần cập nhật.
+     * @param doctorDetails Đối tượng chứa thông tin mới.
+     * @param newDepartmentId (Optional) UUID của khoa mới, nếu cần thay đổi.
+     * Null nếu không đổi khoa.
      * @return Doctor đã được cập nhật.
-     * @throws EntityNotFoundException  nếu không tìm thấy Doctor hoặc Department
-     *                                  (nếu newDepartmentId được cung cấp).
+     * @throws EntityNotFoundException nếu không tìm thấy Doctor hoặc Department
+     * (nếu newDepartmentId được cung cấp).
      * @throws IllegalArgumentException nếu phone/email/license mới bị trùng.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
@@ -197,20 +203,27 @@ public class DoctorService {
         }
 
         // --- Cập nhật các trường khác ---
-        if (doctorDetails.getFullName() != null)
+        if (doctorDetails.getFullName() != null) {
             existingDoctor.setFullName(doctorDetails.getFullName());
-        if (doctorDetails.getDateOfBirth() != null)
+        }
+        if (doctorDetails.getDateOfBirth() != null) {
             existingDoctor.setDateOfBirth(doctorDetails.getDateOfBirth());
-        if (doctorDetails.getGender() != null)
+        }
+        if (doctorDetails.getGender() != null) {
             existingDoctor.setGender(doctorDetails.getGender());
-        if (doctorDetails.getSpecialty() != null)
+        }
+        if (doctorDetails.getSpecialty() != null) {
             existingDoctor.setSpecialty(doctorDetails.getSpecialty());
-        if (doctorDetails.getYearsOfExperience() != null)
+        }
+        if (doctorDetails.getYearsOfExperience() != null) {
             existingDoctor.setYearsOfExperience(doctorDetails.getYearsOfExperience());
-        if (doctorDetails.getSalary() != null)
+        }
+        if (doctorDetails.getSalary() != null) {
             existingDoctor.setSalary(doctorDetails.getSalary());
-        if (doctorDetails.getStatus() != null)
+        }
+        if (doctorDetails.getStatus() != null) {
             existingDoctor.setStatus(doctorDetails.getStatus());
+        }
 
         // --- Cập nhật Department nếu có yêu cầu ---
         if (newDepartmentId != null && (existingDoctor.getDepartment() == null
@@ -230,14 +243,11 @@ public class DoctorService {
     }
 
     /**
-     * Xóa một bác sĩ theo ID.
-     * **LƯU Ý:** Việc xóa Doctor có thể làm các Foreign Key trong Appointment,
-     * MedicalRecord, Prescription
-     * bị set thành NULL (do ON DELETE SET NULL hoặc ON DELETE NO ACTION/RESTRICT ở
-     * DB)
-     * hoặc gây lỗi nếu có ràng buộc khác. Cần kiểm tra nghiệp vụ cẩn thận.
-     * Nếu Doctor có UserAccount liên kết (với CascadeType.ALL), UserAccount cũng sẽ
-     * bị xóa.
+     * Xóa một bác sĩ theo ID. **LƯU Ý:** Việc xóa Doctor có thể làm các Foreign
+     * Key trong Appointment, MedicalRecord, Prescription bị set thành NULL (do
+     * ON DELETE SET NULL hoặc ON DELETE NO ACTION/RESTRICT ở DB) hoặc gây lỗi
+     * nếu có ràng buộc khác. Cần kiểm tra nghiệp vụ cẩn thận. Nếu Doctor có
+     * UserAccount liên kết (với CascadeType.ALL), UserAccount cũng sẽ bị xóa.
      *
      * @param id UUID của Doctor cần xóa.
      * @throws EntityNotFoundException nếu không tìm thấy Doctor.
@@ -248,14 +258,30 @@ public class DoctorService {
                 "Attempting to DELETE doctor with id: {}. This might set related foreign keys to NULL or delete associated UserAccount.",
                 id);
         // Kiểm tra sự tồn tại
-        if (!doctorRepository.existsById(id)) {
-            log.error("Deletion failed. Doctor not found with id: {}", id);
-            throw new EntityNotFoundException("Doctor not found with id: " + id);
-        }
+        // Lấy thông tin bác sĩ TRƯỚC KHI XÓA để gửi email
+        Doctor doctorToDelete = getDoctorById(id); // Ném EntityNotFoundException nếu không tồn tại
+
+        String doctorEmail = doctorToDelete.getEmail();
+        String doctorFullName = doctorToDelete.getFullName();
+
         try {
             // Việc xóa UserAccount (nếu cascade=ALL) sẽ diễn ra tự động ở đây
-            doctorRepository.deleteById(id);
-            log.info("Successfully deleted doctor with id: {}", id);
+            doctorRepository.deleteById(doctorToDelete.getDoctorId());
+            log.info("Successfully deleted doctor with id: {}", doctorToDelete.getDoctorId());
+
+            // Gửi email thông báo sau khi xóa thành công
+            if (doctorEmail != null && !doctorEmail.isBlank()) {
+                String adminUsername = "Quản trị viên"; // Placeholder
+                try {
+                    emailService.sendAccountDeletionNotification(doctorEmail, doctorFullName, "Bác sĩ", adminUsername);
+                    log.info("Requested to send account deletion notification to former doctor: {}", doctorEmail);
+                } catch (Exception ex) {
+                    log.error("Failed to send deletion notification email to doctor {}: {}", doctorEmail, ex.getMessage());
+                }
+            } else {
+                log.warn("Doctor {} (ID: {}) did not have an email. Deletion notification not sent.", doctorFullName, id);
+            }
+
         } catch (DataIntegrityViolationException e) {
             // Bắt lỗi nếu có ràng buộc khóa ngoại khác ngăn cản việc xóa
             log.error(
@@ -266,7 +292,6 @@ public class DoctorService {
         }
     }
 
-    // --- Các phương thức tiện ích hoặc tìm kiếm khác ---
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Optional<Doctor> findDoctorByEmail(String email) {
         log.debug("Searching for doctor by email: {}", email);
@@ -277,6 +302,75 @@ public class DoctorService {
     public List<Doctor> findDoctorsBySpecialty(String specialty) {
         log.debug("Searching for doctors by specialty: {}", specialty);
         return doctorRepository.findBySpecialtyIgnoreCase(specialty);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<Doctor> findAll() {
+        log.info("Fetching all doctors via findAll()");
+        List<Doctor> doctors = doctorRepository.findAll();
+        log.info("Found {} doctors via findAll()", doctors.size());
+        return doctors;
+    }
+
+    /**
+     * Tạo bác sĩ mới, tạo tài khoản người dùng liên kết và gửi email thông tin
+     * tài khoản.
+     *
+     * @param doctorData Thông tin bác sĩ (chưa có ID).
+     * @param departmentId ID của Department mà bác sĩ sẽ thuộc về.
+     * @param username Tên đăng nhập cho tài khoản.
+     * @param rawPassword Mật khẩu gốc (chưa băm).
+     * @return Doctor đã được tạo và lưu, kèm theo tài khoản.
+     * @throws IllegalArgumentException nếu thông tin không hợp lệ hoặc username
+     * đã tồn tại.
+     * @throws EntityNotFoundException nếu departmentId không tồn tại hoặc có
+     * lỗi không mong muốn.
+     */
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public Doctor createDoctorWithAccountAndSendCredentials(Doctor doctorData, UUID departmentId, String username, String rawPassword) {
+        log.info("Attempting to create doctor '{}' with new user account '{}' in department '{}'",
+                doctorData.getFullName(), username, departmentId);
+
+        // Bước 1: Tạo Doctor (bao gồm validation trùng phone/email/license và gán department)
+        Doctor savedDoctor = createDoctor(doctorData, departmentId);
+        log.info("Doctor {} created successfully with ID: {}", savedDoctor.getFullName(), savedDoctor.getDoctorId());
+
+        // Bước 2: Tạo UserAccount
+        UserAccount newUserAccount = new UserAccount();
+        newUserAccount.setUsername(username);
+        newUserAccount.setPasswordHash(rawPassword); // UserAccountService sẽ băm mật khẩu này
+        newUserAccount.setRole(UserRole.DOCTOR);
+        // UserAccountService.createUserAccount sẽ tự động set active=true
+
+        UserAccount createdAccount = userAccountService.createUserAccount(newUserAccount);
+        log.info("UserAccount {} created successfully for Doctor ID: {}", createdAccount.getUsername(), savedDoctor.getDoctorId());
+
+        // Bước 3: Liên kết UserAccount với Doctor
+        userAccountService.linkDoctorToUserAccount(createdAccount.getUserId(), savedDoctor.getDoctorId());
+        log.info("Successfully linked UserAccount {} to Doctor {}", createdAccount.getUserId(), savedDoctor.getDoctorId());
+
+        // Bước 4: Gửi email thông tin tài khoản
+        if (savedDoctor.getEmail() != null && !savedDoctor.getEmail().isBlank()) {
+            try {
+                emailService.sendNewDoctorAccountCredentials(
+                        savedDoctor.getEmail(),
+                        savedDoctor.getFullName(), // Gửi tên đầy đủ của bác sĩ
+                        createdAccount.getUsername(),
+                        rawPassword // Gửi mật khẩu gốc
+                );
+                log.info("Requested to send new account credentials email to doctor: {}", savedDoctor.getEmail());
+            } catch (Exception ex) {
+                log.error("Failed to send new account credentials email to doctor {}: {}", savedDoctor.getEmail(), ex.getMessage());
+                // Không throw lại để không rollback transaction chính
+            }
+        } else {
+            log.warn("Doctor {} (ID: {}) does not have an email. Cannot send account credentials.",
+                    savedDoctor.getFullName(), savedDoctor.getDoctorId());
+        }
+
+        // Gán lại UserAccount vào Doctor để trả về (nếu cần thông tin UserAccount ngay)
+        savedDoctor.setUserAccount(createdAccount); // Giả sử UserAccount được set 2 chiều
+        return savedDoctor;
     }
 
     // --- Các phương thức quản lý UserAccount có thể đặt ở UserAccountService ---

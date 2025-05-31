@@ -1,25 +1,28 @@
-package com.pma.service; // Đảm bảo đúng package
+package com.pma.service;
 
-import com.pma.model.entity.Patient; // Import Entity Patient
-import com.pma.model.entity.UserAccount; // Import nếu cần xử lý liên kết UserAccount
-import com.pma.repository.PatientRepository; // Import Repository Patient
-import com.pma.repository.UserAccountRepository; // Import nếu cần kiểm tra UserAccount
-import jakarta.persistence.EntityNotFoundException; // Exception chuẩn
-import org.slf4j.Logger;
+import java.util.List; // Import Entity Patient
+import java.util.Objects; // Import nếu cần xử lý liên kết UserAccount
+import java.util.Optional; // Import Repository Patient
+import java.util.UUID; // Import nếu cần kiểm tra UserAccount
+
+import org.slf4j.Logger; // Exception chuẩn
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException; // Có thể cần cho lỗi UNIQUE
-import org.springframework.data.domain.Page; // Cho phân trang
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page; // Có thể cần cho lỗi UNIQUE
 import org.springframework.data.domain.Pageable; // Cho phân trang
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Service; // Cho phân trang
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import com.pma.model.entity.Patient;
+import com.pma.model.entity.UserAccount;
+import com.pma.repository.PatientRepository;
+import com.pma.model.enums.UserRole;
+import com.pma.repository.UserAccountRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Lớp Service cho việc quản lý các nghiệp vụ liên quan đến Patient.
@@ -31,16 +34,20 @@ public class PatientService {
 
     private final PatientRepository patientRepository;
     private final UserAccountRepository userAccountRepository; // Inject nếu cần kiểm tra/liên kết UserAccount
+    private final UserAccountService userAccountService; // Thêm UserAccountService
+    private final EmailService emailService; // Thêm EmailService
 
     @Autowired
-    public PatientService(PatientRepository patientRepository, UserAccountRepository userAccountRepository) {
+    public PatientService(PatientRepository patientRepository, UserAccountRepository userAccountRepository, UserAccountService userAccountService, EmailService emailService) {
         this.patientRepository = patientRepository;
         this.userAccountRepository = userAccountRepository;
+        this.userAccountService = userAccountService;
+        this.emailService = emailService;
     }
 
     /**
-     * Đăng ký hoặc tạo mới một bệnh nhân.
-     * Kiểm tra trùng lặp số điện thoại và email trước khi lưu.
+     * Đăng ký hoặc tạo mới một bệnh nhân. Kiểm tra trùng lặp số điện thoại và
+     * email trước khi lưu.
      *
      * @param patient Đối tượng Patient chứa thông tin cần tạo.
      * @return Patient đã được lưu.
@@ -52,14 +59,14 @@ public class PatientService {
 
         // --- Validation ---
         // Kiểm tra trùng số điện thoại
-        patientRepository.findByPhone(patient.getPhone()).ifPresent(existing -> {
+        patientRepository.findByPhone(patient.getPhone()).ifPresent(_ -> {
             log.warn("Registration failed. Phone number already exists: {}", patient.getPhone());
             throw new IllegalArgumentException("Phone number '" + patient.getPhone() + "' is already registered.");
         });
 
         // Kiểm tra trùng email (nếu email được cung cấp)
         if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
-            patientRepository.findByEmail(patient.getEmail()).ifPresent(existing -> {
+            patientRepository.findByEmail(patient.getEmail()).ifPresent(_ -> {
                 log.warn("Registration failed. Email already exists: {}", patient.getEmail());
                 throw new IllegalArgumentException("Email '" + patient.getEmail() + "' is already registered.");
             });
@@ -92,7 +99,8 @@ public class PatientService {
     }
 
     /**
-     * Lấy danh sách tất cả bệnh nhân (có thể cần phân trang cho ứng dụng thực tế).
+     * Lấy danh sách tất cả bệnh nhân (có thể cần phân trang cho ứng dụng thực
+     * tế).
      *
      * @return List các Patient.
      */
@@ -107,8 +115,8 @@ public class PatientService {
     /**
      * Lấy danh sách bệnh nhân có phân trang và sắp xếp.
      *
-     * @param pageable Đối tượng chứa thông tin phân trang (số trang, kích thước,
-     *                 sắp xếp).
+     * @param pageable Đối tượng chứa thông tin phân trang (số trang, kích
+     * thước, sắp xếp).
      * @return Page chứa danh sách Patient cho trang yêu cầu.
      */
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -121,15 +129,16 @@ public class PatientService {
     }
 
     /**
-     * Cập nhật thông tin cơ bản của bệnh nhân.
-     * Không cập nhật các collection liên quan ở đây (nên có service riêng).
+     * Cập nhật thông tin cơ bản của bệnh nhân. Không cập nhật các collection
+     * liên quan ở đây (nên có service riêng).
      *
-     * @param id             UUID của Patient cần cập nhật.
+     * @param id UUID của Patient cần cập nhật.
      * @param patientDetails Đối tượng chứa thông tin mới (ví dụ: tên, địa chỉ,
-     *                       phone, email...).
+     * phone, email...).
      * @return Patient đã được cập nhật.
-     * @throws EntityNotFoundException  nếu không tìm thấy Patient.
-     * @throws IllegalArgumentException nếu phone/email mới bị trùng với người khác.
+     * @throws EntityNotFoundException nếu không tìm thấy Patient.
+     * @throws IllegalArgumentException nếu phone/email mới bị trùng với người
+     * khác.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Patient updatePatientDetails(UUID id, Patient patientDetails) {
@@ -177,17 +186,22 @@ public class PatientService {
             existingPatient.setGender(patientDetails.getGender());
         }
         // Cập nhật các trường địa chỉ, thông tin y tế, liên hệ khẩn cấp... tương tự
-        if (patientDetails.getAddressLine1() != null)
+        if (patientDetails.getAddressLine1() != null) {
             existingPatient.setAddressLine1(patientDetails.getAddressLine1());
-        if (patientDetails.getAddressLine2() != null)
+        }
+        if (patientDetails.getAddressLine2() != null) {
             existingPatient.setAddressLine2(patientDetails.getAddressLine2());
-        if (patientDetails.getCity() != null)
+        }
+        if (patientDetails.getCity() != null) {
             existingPatient.setCity(patientDetails.getCity());
+        }
         // ... (thêm các trường khác) ...
-        if (patientDetails.getBloodType() != null)
+        if (patientDetails.getBloodType() != null) {
             existingPatient.setBloodType(patientDetails.getBloodType());
-        if (patientDetails.getAllergies() != null)
+        }
+        if (patientDetails.getAllergies() != null) {
             existingPatient.setAllergies(patientDetails.getAllergies());
+        }
         // ...
 
         // Transaction commit sẽ tự động lưu thay đổi vào DB
@@ -196,12 +210,11 @@ public class PatientService {
     }
 
     /**
-     * Xóa một bệnh nhân theo ID.
-     * **CẢNH BÁO:** Do cấu hình CascadeType.ALL và orphanRemoval=true trong
-     * Patient,
-     * việc xóa Patient cũng sẽ xóa TẤT CẢ các bản ghi Appointment, MedicalRecord,
-     * Prescription, Bill, và UserAccount liên quan đến bệnh nhân này.
-     * Hãy đảm bảo đây là hành vi mong muốn hoặc thay đổi cấu hình cascade.
+     * Xóa một bệnh nhân theo ID. **CẢNH BÁO:** Do cấu hình CascadeType.ALL và
+     * orphanRemoval=true trong Patient, việc xóa Patient cũng sẽ xóa TẤT CẢ các
+     * bản ghi Appointment, MedicalRecord, Prescription, Bill, và UserAccount
+     * liên quan đến bệnh nhân này. Hãy đảm bảo đây là hành vi mong muốn hoặc
+     * thay đổi cấu hình cascade.
      *
      * @param id UUID của Patient cần xóa.
      * @throws EntityNotFoundException nếu không tìm thấy Patient.
@@ -212,13 +225,32 @@ public class PatientService {
                 "Attempting to DELETE patient with id: {} AND ALL ASSOCIATED DATA (Appointments, Records, Prescriptions, Bills, UserAccount) due to CascadeType.ALL!",
                 id);
         // Kiểm tra sự tồn tại trước khi xóa để có exception rõ ràng hơn
-        if (!patientRepository.existsById(id)) {
-            log.error("Deletion failed. Patient not found with id: {}", id);
-            throw new EntityNotFoundException("Patient not found with id: " + id);
-        }
+        // Lấy thông tin bệnh nhân TRƯỚC KHI XÓA để gửi email
+        Patient patientToDelete = getPatientById(id); // Ném EntityNotFoundException nếu không tồn tại
+
+        String patientEmail = patientToDelete.getEmail();
+        String patientFullName = patientToDelete.getFullName();
+
         try {
-            patientRepository.deleteById(id);
-            log.info("Successfully deleted patient with id: {}", id);
+            patientRepository.deleteById(patientToDelete.getPatientId()); // Hoặc patientRepository.delete(patientToDelete);
+            log.info("Successfully deleted patient with id: {}", patientToDelete.getPatientId());
+
+            // Gửi email thông báo sau khi xóa thành công
+            if (patientEmail != null && !patientEmail.isBlank()) {
+                // Trong môi trường thực tế, bạn có thể muốn lấy tên admin đang đăng nhập
+                // Ví dụ: String adminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+                // Hiện tại, chúng ta sẽ dùng một placeholder.
+                String adminUsername = "Quản trị viên"; // Placeholder, có thể truyền từ controller nếu cần
+                try {
+                    emailService.sendAccountDeletionNotification(patientEmail, patientFullName, "Bệnh nhân", adminUsername);
+                    log.info("Requested to send account deletion notification to former patient: {}", patientEmail);
+                } catch (Exception ex) {
+                    log.error("Failed to send deletion notification email to patient {}: {}", patientEmail, ex.getMessage());
+                }
+            } else {
+                log.warn("Patient {} (ID: {}) did not have an email. Deletion notification not sent.", patientFullName, id);
+            }
+
         } catch (DataIntegrityViolationException e) {
             // Mặc dù cascade ALL, vẫn có thể có ràng buộc khác hoặc lỗi không mong muốn
             log.error("Data integrity violation during deletion of patient id: {}. Error: {}", id, e.getMessage());
@@ -227,8 +259,13 @@ public class PatientService {
         }
     }
 
-    // --- Các phương thức tiện ích khác ---
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public Optional<Patient> findPatientByEmail(String email) {
+        log.debug("Searching for patient by email: {}", email);
+        return patientRepository.findByEmail(email);
+    }
 
+    // --- Các phương thức tiện ích khác ---
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Optional<Patient> findPatientByPhone(String phone) {
         log.debug("Searching for patient by phone: {}", phone);
@@ -236,15 +273,76 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public Optional<Patient> findPatientByEmail(String email) {
-        log.debug("Searching for patient by email: {}", email);
-        return patientRepository.findByEmail(email);
-    }
-
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Patient> searchPatientsByName(String nameFragment) {
         log.debug("Searching for patients with name containing: {}", nameFragment);
         return patientRepository.findByFullNameContainingIgnoreCase(nameFragment);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<Patient> findAll() {
+        log.info("Fetching all patients via findAll()");
+        List<Patient> patients = patientRepository.findAll();
+        log.info("Found {} patients via findAll()", patients.size());
+        return patients;
+    }
+
+    /**
+     * Tạo bệnh nhân mới, tạo tài khoản người dùng liên kết và gửi email thông
+     * tin tài khoản.
+     *
+     * @param patientData Thông tin bệnh nhân (chưa có ID).
+     * @param username Tên đăng nhập cho tài khoản.
+     * @param rawPassword Mật khẩu gốc (chưa băm).
+     * @return Patient đã được tạo và lưu, kèm theo tài khoản.
+     * @throws IllegalArgumentException nếu thông tin không hợp lệ hoặc username
+     * đã tồn tại.
+     * @throws EntityNotFoundException nếu có lỗi không mong muốn.
+     */
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public Patient createPatientWithAccountAndSendCredentials(Patient patientData, String username, String rawPassword) {
+        log.info("Attempting to create patient '{}' with new user account '{}'", patientData.getFullName(), username);
+
+        // Bước 1: Đăng ký bệnh nhân (bao gồm validation trùng phone/email của bệnh nhân)
+        Patient savedPatient = registerPatient(patientData); // registerPatient đã xử lý validation trùng phone/email
+        log.info("Patient {} registered successfully with ID: {}", savedPatient.getFullName(), savedPatient.getPatientId());
+
+        // Bước 2: Tạo UserAccount
+        UserAccount newUserAccount = new UserAccount();
+        newUserAccount.setUsername(username);
+        newUserAccount.setPasswordHash(rawPassword); // UserAccountService sẽ băm mật khẩu này
+        newUserAccount.setRole(UserRole.PATIENT);
+        // UserAccountService.createUserAccount sẽ tự động set active=true
+
+        UserAccount createdAccount = userAccountService.createUserAccount(newUserAccount);
+        log.info("UserAccount {} created successfully for Patient ID: {}", createdAccount.getUsername(), savedPatient.getPatientId());
+
+        // Bước 3: Liên kết UserAccount với Patient
+        userAccountService.linkPatientToUserAccount(createdAccount.getUserId(), savedPatient.getPatientId());
+        log.info("Successfully linked UserAccount {} to Patient {}", createdAccount.getUserId(), savedPatient.getPatientId());
+
+        // Bước 4: Gửi email thông tin tài khoản
+        if (savedPatient.getEmail() != null && !savedPatient.getEmail().isBlank()) {
+            try {
+                emailService.sendNewAccountCredentials(
+                        savedPatient.getEmail(),
+                        savedPatient.getFullName(),
+                        createdAccount.getUsername(),
+                        rawPassword // Gửi mật khẩu gốc
+                );
+                log.info("Requested to send new account credentials email to patient: {}", savedPatient.getEmail());
+            } catch (Exception ex) {
+                log.error("Failed to send new account credentials email to patient {}: {}", savedPatient.getEmail(), ex.getMessage());
+                // Không ném lại exception để không rollback transaction chính
+            }
+        } else {
+            log.warn("Patient {} (ID: {}) does not have an email. Cannot send account credentials.",
+                    savedPatient.getFullName(), savedPatient.getPatientId());
+        }
+
+        // Gán lại UserAccount vào Patient để trả về (nếu cần thông tin UserAccount ngay)
+        // Hoặc bạn có thể fetch lại Patient nếu UserAccount được load LAZY
+        savedPatient.setUserAccount(createdAccount); // Giả sử UserAccount được set 2 chiều
+        return savedPatient;
     }
 
     // --- Có thể thêm các phương thức để quản lý liên kết UserAccount ---
@@ -284,5 +382,4 @@ public class PatientService {
      * }
      * }
      */
-
 }

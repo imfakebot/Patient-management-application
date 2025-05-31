@@ -99,9 +99,13 @@ public class MedicineService {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public Page<Medicine> getAllMedicines(Pageable pageable) {
         log.info("Fetching medicines with pagination: {}", pageable);
-        Page<Medicine> medicinePage = medicineRepository.findAll(pageable);
-        log.info("Found {} medicines on page {}/{}", medicinePage.getNumberOfElements(), pageable.getPageNumber(),
-                medicinePage.getTotalPages());
+        Page<Medicine> medicinePage = medicineRepository.findAll(pageable); // Spring Data JPA handles Unpaged correctly here
+
+        if (pageable.isPaged()) {
+            log.info("Found {} medicines on page {}/{}", medicinePage.getNumberOfElements(), pageable.getPageNumber(), medicinePage.getTotalPages());
+        } else {
+            log.info("Found {} medicines (unpaged request)", medicinePage.getNumberOfElements());
+        }
         return medicinePage;
     }
 

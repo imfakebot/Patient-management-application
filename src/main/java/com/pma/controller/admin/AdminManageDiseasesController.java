@@ -30,30 +30,53 @@ public class AdminManageDiseasesController implements Initializable {
 
     private static final Logger log = LoggerFactory.getLogger(AdminManageDiseasesController.class);
 
-    @FXML private VBox sidebar;
-    @FXML private Button adminViewRevenueButton;
-    @FXML private Button adminManageDoctorsButton;
-    @FXML private Button adminManagePatientsButton;
-    @FXML private Button adminManageDepartmentsButton;
-    @FXML private Button adminManageMedicinesButton;
-    @FXML private Button adminManageUserAccountsButton;
-    @FXML private Button adminManageDiseasesButton;
+    @FXML
+    private VBox sidebar;
+    @FXML
+    private Button adminViewRevenueButton;
+    @FXML
+    private Button adminManageDoctorsButton;
+    @FXML
+    private Button adminManagePatientsButton;
+    @FXML
+    private Button adminManageDepartmentsButton;
+    @FXML
+    private Button adminManageMedicinesButton;
+    @FXML
+    private Button adminManageUserAccountsButton;
+    @FXML
+    private Button adminManageDiseasesButton;
 
-    @FXML private TextField diseaseCodeField;
-    @FXML private TextField diseaseNameField;
-    @FXML private TextArea descriptionField;
+    @FXML
+    private TextField diseaseCodeField;
+    @FXML
+    private TextField diseaseNameField;
+    @FXML
+    private TextArea descriptionField;
+    @FXML
+    private TextField searchField;
 
-    @FXML private Button addButton;
-    @FXML private Button updateButton;
-    @FXML private Button deleteButton;
-    @FXML private Button clearButton;
+    @FXML
+    private Button addButton;
+    @FXML
+    private Button updateButton;
+    @FXML
+    private Button deleteButton;
+    @FXML
+    private Button clearButton;
 
-    @FXML private TableView<Disease> diseasesTable;
-    @FXML private TableColumn<Disease, String> diseaseCodeColumn;
-    @FXML private TableColumn<Disease, String> diseaseNameColumn;
-    @FXML private TableColumn<Disease, String> descriptionColumn;
-    @FXML private TableColumn<Disease, LocalDateTime> createdAtColumn;
-    @FXML private TableColumn<Disease, LocalDateTime> updatedAtColumn;
+    @FXML
+    private TableView<Disease> diseasesTable;
+    @FXML
+    private TableColumn<Disease, String> diseaseCodeColumn;
+    @FXML
+    private TableColumn<Disease, String> diseaseNameColumn;
+    @FXML
+    private TableColumn<Disease, String> descriptionColumn;
+    @FXML
+    private TableColumn<Disease, LocalDateTime> createdAtColumn;
+    @FXML
+    private TableColumn<Disease, LocalDateTime> updatedAtColumn;
 
     private final UIManager uiManager;
     private final DiseaseService diseaseService; // Inject service
@@ -130,7 +153,9 @@ public class AdminManageDiseasesController implements Initializable {
     @FXML
     void addDisease(ActionEvent event) {
         log.info("Add Disease button clicked.");
-        if (!validateInput(false)) return;
+        if (!validateInput(false)) {
+            return;
+        }
 
         Disease newDisease = new Disease();
         newDisease.setDiseaseCode(diseaseCodeField.getText().trim());
@@ -160,8 +185,9 @@ public class AdminManageDiseasesController implements Initializable {
             DialogUtil.showWarningAlert("Chưa chọn Bệnh", "Vui lòng chọn một bệnh để cập nhật.");
             return;
         }
-        if (!validateInput(true)) return; // Mã bệnh không cần validate khi update vì nó không đổi
-
+        if (!validateInput(true)) {
+            return; // Mã bệnh không cần validate khi update vì nó không đổi
+        }
         Disease diseaseToUpdate = new Disease(); // Tạo đối tượng mới để truyền vào service
         // diseaseCode không được cập nhật, nó là khóa chính
         diseaseToUpdate.setDiseaseName(diseaseNameField.getText().trim());
@@ -214,8 +240,8 @@ public class AdminManageDiseasesController implements Initializable {
                 DialogUtil.showErrorAlert("Không tìm thấy", "Không tìm thấy bệnh để xóa. Có thể đã bị xóa.");
                 loadDiseasesData();
             } catch (DataIntegrityViolationException e) {
-                 log.error("Cannot delete disease due to existing references: {}", selectedDisease.getDiseaseCode(), e);
-                 DialogUtil.showErrorAlert("Không thể Xóa", "Không thể xóa bệnh này do có các dữ liệu liên quan (ví dụ: trong chẩn đoán).");
+                log.error("Cannot delete disease due to existing references: {}", selectedDisease.getDiseaseCode(), e);
+                DialogUtil.showErrorAlert("Không thể Xóa", "Không thể xóa bệnh này do có các dữ liệu liên quan (ví dụ: trong chẩn đoán).");
             } catch (Exception e) {
                 log.error("Error deleting disease: {}", e.getMessage(), e);
                 DialogUtil.showExceptionDialog("Lỗi Hệ thống", "Không thể xóa bệnh.", "Vui lòng thử lại sau.", e);
@@ -234,11 +260,65 @@ public class AdminManageDiseasesController implements Initializable {
     }
 
     // Sidebar navigation methods
-    @FXML void loadAdminViewRevenue(ActionEvent event) { uiManager.switchToAdminViewRevenue(); }
-    @FXML void loadAdminManageDoctors(ActionEvent event) { uiManager.switchToAdminManageDoctors(); }
-    @FXML void loadAdminManagePatients(ActionEvent event) { uiManager.switchToAdminManagePatients(); }
-    @FXML void loadAdminManageDepartments(ActionEvent event) { uiManager.switchToAdminManageDepartments(); }
-    @FXML void loadAdminManageMedicines(ActionEvent event) { uiManager.switchToAdminManageMedicines(); }
-    @FXML void loadAdminManageUserAccounts(ActionEvent event) { uiManager.switchToAdminManageUserAccounts(); }
-    @FXML void loadAdminManageDiseases(ActionEvent event) { loadDiseasesData(); /* Already on this screen, refresh data */ }
+    @FXML
+    void loadAdminViewRevenue(ActionEvent event) {
+        uiManager.switchToAdminViewRevenue();
+    }
+
+    @FXML
+    void loadAdminManageDoctors(ActionEvent event) {
+        uiManager.switchToAdminManageDoctors();
+    }
+
+    @FXML
+    void loadAdminManagePatients(ActionEvent event) {
+        uiManager.switchToAdminManagePatients();
+    }
+
+    @FXML
+    void loadAdminManageDepartments(ActionEvent event) {
+        uiManager.switchToAdminManageDepartments();
+    }
+
+    @FXML
+    void loadAdminManageMedicines(ActionEvent event) {
+        uiManager.switchToAdminManageMedicines();
+    }
+
+    @FXML
+    void loadAdminManageUserAccounts(ActionEvent event) {
+        uiManager.switchToAdminManageUserAccounts();
+    }
+
+    @FXML
+    void loadAdminManageDiseases(ActionEvent event) {
+        loadDiseasesData();
+        /* Already on this screen, refresh data */ }
+
+    @FXML
+    private void handleSearch(ActionEvent event) {
+        filterDiseases(searchField.getText());
+    }
+
+    @FXML
+    private void clearSearch(ActionEvent event) {
+        searchField.clear();
+        loadDiseasesData(); // Reset to show all diseases
+    }
+
+    private void filterDiseases(String searchText) {
+        if (searchText == null || searchText.trim().isEmpty()) {
+            loadDiseasesData();
+            return;
+        }
+
+        String searchLower = searchText.toLowerCase().trim();
+        ObservableList<Disease> allDiseases = diseasesTable.getItems();
+        ObservableList<Disease> filteredList = allDiseases.filtered(disease
+                -> disease.getDiseaseCode().toLowerCase().contains(searchLower)
+                || disease.getDiseaseName().toLowerCase().contains(searchLower)
+        );
+
+        diseasesTable.setItems(filteredList);
+    }
 }

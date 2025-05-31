@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Random;
 import java.util.UUID;
 
 @Component
@@ -188,22 +189,38 @@ public class AdminManagePatientsController implements Initializable {
     }
 
     private void loadPatientsData() {
-        // Ví dụ: patientList.setAll(patientService.findAll());
         log.info("Đang tải dữ liệu bệnh nhân...");
-        try {
-            List<Patient> patients = patientService.getAllPatients();
+
+        javafx.concurrent.Task<List<Patient>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Patient> call() throws Exception {
+                return patientService.getAllPatients(); // Chạy trên luồng nền
+            }
+        };
+
+        loadTask.setOnSucceeded(event -> {
+            List<Patient> patients = loadTask.getValue();
             patientList.setAll(patients);
             log.info("Đã tải {} bệnh nhân.", patients.size());
-        } catch (Exception e) {
+        });
+
+        loadTask.setOnFailed(event -> {
+            Throwable e = loadTask.getException();
             log.error("Lỗi khi tải dữ liệu bệnh nhân: {}", e.getMessage(), e);
-            DialogUtil.showErrorAlert("Lỗi tải dữ liệu", "Không thể tải danh sách bệnh nhân. Vui lòng thử lại.");
+            DialogUtil.showErrorAlert("Lỗi tải dữ liệu",
+                    "Không thể tải danh sách bệnh nhân. Vui lòng thử lại.");
             patientList.clear();
-        }
+        });
+
+        // Start the background task
+        Thread loadThread = new Thread(loadTask);
+        loadThread.setDaemon(true); // Set as daemon thread
+        loadThread.start();
     }
 
     private void populateForm(Patient patient) {
         if (patient != null) {
-            fullNameField1.setText(patient.getFullName());
+            fullNameField1.setText(patient.getFullName() != null ? patient.getFullName() : "");
             dateOfBirthPicker1.setValue(patient.getDateOfBirth());
             genderCombo1.setValue(patient.getGender() != null ? patient.getGender().name() : null);
             phoneField1.setText(patient.getPhone());
@@ -211,14 +228,14 @@ public class AdminManagePatientsController implements Initializable {
             addressLine1Field1.setText(patient.getAddressLine1());
             addressLine2Field1.setText(patient.getAddressLine2());
             cityField1.setText(patient.getCity());
-            postalCodeField1.setText(patient.getPostalCode());
-            countryField1.setText(patient.getCountry());
+            postalCodeField1.setText(patient.getPostalCode() != null ? patient.getPostalCode() : "");
+            countryField1.setText(patient.getCountry() != null ? patient.getCountry() : "");
             bloodTypeCombo1.setValue(patient.getBloodType());
-            allergiesField1.setText(patient.getAllergies());
-            medicalHistoryField1.setText(patient.getMedicalHistory());
-            insuranceNumberField1.setText(patient.getInsuranceNumber());
-            emergencyContactNameField1.setText(patient.getEmergencyContactName());
-            emergencyContactPhoneField1.setText(patient.getEmergencyContactPhone());
+            allergiesField1.setText(patient.getAllergies() != null ? patient.getAllergies() : "");
+            medicalHistoryField1.setText(patient.getMedicalHistory() != null ? patient.getMedicalHistory() : "");
+            insuranceNumberField1.setText(patient.getInsuranceNumber() != null ? patient.getInsuranceNumber() : "");
+            emergencyContactNameField1.setText(patient.getEmergencyContactName() != null ? patient.getEmergencyContactName() : "");
+            emergencyContactPhoneField1.setText(patient.getEmergencyContactPhone() != null ? patient.getEmergencyContactPhone() : "");
         } else {
             clearForm(null); // Hoặc clearForm();
         }
@@ -234,13 +251,24 @@ public class AdminManagePatientsController implements Initializable {
         Patient newPatient = new Patient();
         setPatientFromForm(newPatient);
 
+        // Tạo username và mật khẩu ngẫu nhiên cho tài khoản mới
+        String username = newPatient.getEmail(); // Sử dụng email làm username
+        if (username == null || username.trim().isEmpty()) {
+            DialogUtil.showErrorAlert("Lỗi dữ liệu", "Email bệnh nhân không được để trống để tạo tài khoản.");
+            log.warn("Thêm bệnh nhân thất bại: Email trống, không thể tạo username.");
+            return;
+        }
+        String rawPassword = generateRandomPassword(12); // Tạo mật khẩu ngẫu nhiên 12 ký tự
+
         try {
-            Patient registeredPatient = patientService.registerPatient(newPatient);
+            // Gọi service để tạo bệnh nhân, tài khoản và gửi email
+            Patient registeredPatient = patientService.createPatientWithAccountAndSendCredentials(newPatient, username, rawPassword);
+
             log.info("Đã thêm bệnh nhân mới: {}", registeredPatient.getFullName());
             // Thêm trực tiếp bệnh nhân vừa đăng ký vào ObservableList
             // Điều này hiệu quả hơn là tải lại toàn bộ danh sách
             if (registeredPatient != null) { // Đảm bảo service trả về đối tượng hợp lệ
-                patientList.add(registeredPatient);
+                patientList.add(0, registeredPatient); // Thêm vào đầu danh sách để dễ thấy
                 patientsTable.getSelectionModel().select(registeredPatient); // Tùy chọn: chọn hàng vừa thêm
             }
             DialogUtil.showSuccessAlert("Thành công", "Đã thêm bệnh nhân mới thành công.");
@@ -336,7 +364,7 @@ public class AdminManagePatientsController implements Initializable {
     }
 
     private void setPatientFromForm(Patient patient) {
-        patient.setFullName(fullNameField1.getText().trim());
+        patient.setFullName(fullNameField1.getText() != null ? fullNameField1.getText().trim() : "");
         patient.setDateOfBirth(dateOfBirthPicker1.getValue());
         String genderString = genderCombo1.getValue();
         if (genderString != null) {
@@ -349,32 +377,52 @@ public class AdminManagePatientsController implements Initializable {
         } else {
             patient.setGender(null);
         }
-        patient.setPhone(phoneField1.getText().trim());
-        patient.setEmail(emailField1.getText().trim());
-        patient.setAddressLine1(addressLine1Field1.getText().trim());
-        patient.setAddressLine2(addressLine2Field1.getText().trim());
-        patient.setCity(cityField1.getText().trim());
-        patient.setPostalCode(postalCodeField1.getText().trim());
-        patient.setCountry(countryField1.getText().trim());
+        patient.setPhone(phoneField1.getText() != null ? phoneField1.getText().trim() : "");
+        patient.setEmail(emailField1.getText() != null ? emailField1.getText().trim() : "");
+        patient.setAddressLine1(addressLine1Field1.getText() != null ? addressLine1Field1.getText().trim() : "");
+        patient.setAddressLine2(addressLine2Field1.getText() != null ? addressLine2Field1.getText().trim() : "");
+        patient.setCity(cityField1.getText() != null ? cityField1.getText().trim() : "");
+        patient.setPostalCode(postalCodeField1.getText() != null ? postalCodeField1.getText().trim() : "");
+        patient.setCountry(countryField1.getText() != null ? countryField1.getText().trim() : "");
         patient.setBloodType(bloodTypeCombo1.getValue());
-        patient.setAllergies(allergiesField1.getText().trim());
-        patient.setMedicalHistory(medicalHistoryField1.getText().trim());
-        patient.setInsuranceNumber(insuranceNumberField1.getText().trim());
-        patient.setEmergencyContactName(emergencyContactNameField1.getText().trim());
-        patient.setEmergencyContactPhone(emergencyContactPhoneField1.getText().trim());
+        patient.setAllergies(allergiesField1.getText() != null ? allergiesField1.getText().trim() : "");
+        patient.setMedicalHistory(medicalHistoryField1.getText() != null ? medicalHistoryField1.getText().trim() : "");
+        patient.setInsuranceNumber(insuranceNumberField1.getText() != null ? insuranceNumberField1.getText().trim() : "");
+        patient.setEmergencyContactName(emergencyContactNameField1.getText() != null ? emergencyContactNameField1.getText().trim() : "");
+        patient.setEmergencyContactPhone(emergencyContactPhoneField1.getText() != null ? emergencyContactPhoneField1.getText().trim() : "");
     }
 
     private boolean validateInput() {
-        // Thêm các kiểm tra chi tiết hơn ở đây
-        if (fullNameField1.getText().trim().isEmpty()
+        StringBuilder errors = new StringBuilder();
+
+        if ((fullNameField1.getText() == null || fullNameField1.getText().trim().isEmpty())
                 || dateOfBirthPicker1.getValue() == null
                 || genderCombo1.getValue() == null
-                || phoneField1.getText().trim().isEmpty()
-                || emailField1.getText().trim().isEmpty()) {
-            DialogUtil.showWarningAlert("Thiếu thông tin", "Vui lòng điền đầy đủ các trường bắt buộc: Họ tên, Ngày sinh, Giới tính, Số điện thoại, Email.");
+                || (phoneField1.getText() == null || phoneField1.getText().trim().isEmpty())
+                || (emailField1.getText() == null || emailField1.getText().trim().isEmpty())) {
+            errors.append("- Vui lòng điền đầy đủ các trường bắt buộc: Họ tên, Ngày sinh, Giới tính, Số điện thoại, Email.\n");
+        }
+
+        // Kiểm tra định dạng số điện thoại
+        String phone = phoneField1.getText();
+        if (phone != null && !phone.trim().isEmpty() && !phone.trim().matches("^0\\d{9,10}$")) {
+            errors.append("- Số điện thoại không hợp lệ (ví dụ: 0912345678).\n");
+        }
+
+        // Kiểm tra định dạng email
+        String email = emailField1.getText();
+        if (email != null && !email.trim().isEmpty() && !email.trim().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            errors.append("- Email không hợp lệ.\n");
+        }
+
+        if (dateOfBirthPicker1.getValue() != null && dateOfBirthPicker1.getValue().isAfter(LocalDate.now())) {
+            errors.append("- Ngày sinh không thể là một ngày trong tương lai.\n");
+        }
+
+        if (errors.length() > 0) {
+            DialogUtil.showWarningAlert("Dữ liệu không hợp lệ", errors.toString());
             return false;
         }
-        // Kiểm tra định dạng email, phone...
         return true;
     }
 
@@ -436,5 +484,20 @@ public class AdminManagePatientsController implements Initializable {
     @FXML
     private void loadAdminManageDiseases(ActionEvent event) {
         uiManager.switchToAdminManageDiseases();
+    }
+
+    /**
+     * Tạo một mật khẩu ngẫu nhiên.
+     * @param length Độ dài của mật khẩu.
+     * @return Mật khẩu ngẫu nhiên.
+     */
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

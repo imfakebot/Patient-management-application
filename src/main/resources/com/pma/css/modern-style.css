@@ -75,9 +75,9 @@
   -fx-border-color: #e0e0e0;
 }
 
-.table-column {
+/* .table-column {
   -fx-text-fill: #ffff;
-}
+} */
 .table-view .column-header {
   -fx-background-color: -primary-color;
   -fx-text-fill: -light-text;

@@ -43,33 +43,39 @@
       </VBox>
    </left>
    <center>
-      <VBox spacing="15.0" styleClass="card">
+      <!-- VBox cha cho toàn bộ nội dung trung tâm -->
+      <VBox spacing="15.0" styleClass="card" VBox.vgrow="ALWAYS">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
          <Label styleClass="title-label" text="Quản lý Bệnh nhân" />
-         <ScrollPane hbarPolicy="NEVER" hmax="0.0">
+
+         <!-- ScrollPane cho Form (GridPane) -->
+         <!-- VBox.vgrow="NEVER" hoặc SOMETIMES để form không chiếm quá nhiều không gian nếu không cần -->
+         <ScrollPane VBox.vgrow="NEVER" fitToWidth="true">
             <content>
-               <GridPane alignment="TOP_CENTER" hgap="20.0" maxWidth="-Infinity" vgap="10.0" styleClass="form-grid-pane">
+               <GridPane alignment="TOP_CENTER" hgap="20.0" styleClass="form-grid-pane" vgap="10.0">
                   <padding>
                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                   </padding>
+                  <!-- maxWidth="-Infinity" đã được bỏ vì ScrollPane sẽ quản lý chiều rộng nếu cần -->
+                  <!-- Các ColumnConstraints và RowConstraints với percentWidth/Height="0.0" có nghĩa là kích thước dựa trên nội dung -->
                   <columnConstraints>
-                     <ColumnConstraints percentWidth="0.0" />
-                     <ColumnConstraints percentWidth="0.0" />
-                     <ColumnConstraints percentWidth="0.0" />
-                     <ColumnConstraints percentWidth="0.0" />
+                     <ColumnConstraints />
+                     <ColumnConstraints />
+                     <ColumnConstraints />
+                     <ColumnConstraints />
                   </columnConstraints>
                   <rowConstraints>
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
-                     <RowConstraints percentHeight="0.0" />
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
                   </rowConstraints>
                   <children>
                      <Label text="Họ và Tên:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -91,13 +97,15 @@
                      <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                      <TextField fx:id="emailField1" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                      <Label text="Địa chỉ 1:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                     <TextArea fx:id="addressLine1Field1" maxHeight="100.0" prefHeight="150.0" prefWidth="400.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                     <TextArea fx:id="addressLine1Field1" prefHeight="70.0" prefWidth="300.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                      <Label text="Địa chỉ 2:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                     <TextArea fx:id="addressLine2Field1" maxHeight="100.0" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                     <TextArea fx:id="addressLine2Field1" prefHeight="70.0" prefWidth="300.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
                      <Label text="Thành phố/Tỉnh:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                      <TextField fx:id="cityField1" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                     <Label text="Mã bưu điện:" GridPane.columnIndex="2" />
-                     <TextField fx:id="postalCodeField1" GridPane.columnIndex="3" />
+                     <Label text="Mã bưu điện:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                     <!-- Di chuyển Mã bưu điện lên để cân đối -->
+                     <TextField fx:id="postalCodeField1" GridPane.columnIndex="3" GridPane.rowIndex="0" />
                      <Label text="Quốc gia:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
                      <TextField fx:id="countryField1" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                      <Label text="Nhóm máu:" GridPane.columnIndex="2" GridPane.rowIndex="3" />
@@ -115,17 +123,19 @@
                            </FXCollections>
                         </items>
                      </ComboBox>
-                     <Label text="Dị ứng:" GridPane.columnIndex="2" GridPane.rowIndex="6" />
-                     <TextArea fx:id="allergiesField1" maxHeight="100.0" maxWidth="400.0" GridPane.columnIndex="3" GridPane.rowIndex="6" />
-                     <Label text="Tiền sử bệnh:" GridPane.columnIndex="2" GridPane.rowIndex="5" />
-                     <TextArea fx:id="medicalHistoryField1" maxHeight="100.0" maxWidth="400.0" prefWidth="400.0" GridPane.columnIndex="3" GridPane.rowIndex="5" />
                      <Label text="Số bảo hiểm:" GridPane.columnIndex="2" GridPane.rowIndex="4" />
                      <TextField fx:id="insuranceNumberField1" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="4" />
-                     <Label text="Liên hệ khẩn cấp:" GridPane.rowIndex="7" />
+                     <Label text="Tiền sử bệnh:" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+                     <TextArea fx:id="medicalHistoryField1" prefHeight="70.0" prefWidth="300.0" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+                     <Label text="Dị ứng:" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                     <TextArea fx:id="allergiesField1" prefHeight="70.0" prefWidth="300.0" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+
+                     <Label text="Liên hệ khẩn cấp:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
                      <TextField fx:id="emergencyContactNameField1" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                      <Label text="SĐT liên hệ khẩn cấp:" GridPane.columnIndex="2" GridPane.rowIndex="7" />
                      <TextField fx:id="emergencyContactPhoneField1" minWidth="178.0" GridPane.columnIndex="3" GridPane.rowIndex="7" />
-                     <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+
+                     <HBox spacing="10.0" alignment="CENTER_LEFT" GridPane.columnSpan="4" GridPane.rowIndex="8">
                         <padding>
                            <Insets top="10.0" />
                         </padding>
@@ -140,38 +150,42 @@
                </GridPane>
             </content>
          </ScrollPane>
-         <ScrollPane vbarPolicy="NEVER" vmax="0.0">
+
+         <!-- ScrollPane cho TableView -->
+         <!-- VBox.vgrow="ALWAYS" để ScrollPane này chiếm không gian dọc còn lại -->
+         <!-- fitToHeight="true" để TableView bên trong cố gắng lấp đầy chiều cao của ScrollPane -->
+         <ScrollPane VBox.vgrow="ALWAYS" fitToHeight="true" fitToWidth="true">
             <content>
-               <VBox spacing="20.0">
-                  <TableView fx:id="patientsTable">
-                     <columns>
-                        <TableColumn fx:id="fullNameColumn" prefWidth="150.0" text="Họ và Tên" />
-                        <TableColumn fx:id="dateOfBirthColumn" prefWidth="100.0" text="Ngày sinh" />
-                        <TableColumn fx:id="genderColumn" prefWidth="80.0" text="Giới tính" />
-                        <TableColumn fx:id="phoneColumn" prefWidth="100.0" text="Số điện thoại" />
-                        <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
-                        <TableColumn fx:id="addressLine1Column" prefWidth="150.0" text="Địa chỉ 1" />
-                        <TableColumn fx:id="addressLine2Column" prefWidth="150.0" text="Địa chỉ 2" />
-                        <TableColumn fx:id="cityColumn" prefWidth="100.0" text="Thành phố" />
-                        <TableColumn fx:id="stateProvinceColumn" prefWidth="100.0" text="Tỉnh/TP" />
-                        <TableColumn fx:id="postalCodeColumn" prefWidth="80.0" text="Mã bưu điện" />
-                        <TableColumn fx:id="countryColumn" prefWidth="100.0" text="Quốc gia" />
-                        <TableColumn fx:id="bloodTypeColumn" prefWidth="80.0" text="Nhóm máu" />
-                        <TableColumn fx:id="allergiesColumn" prefWidth="200.0" text="Dị ứng" />
-                        <TableColumn fx:id="medicalHistoryColumn" prefWidth="200.0" text="Tiền sử bệnh" />
-                        <TableColumn fx:id="insuranceNumberColumn" prefWidth="100.0" text="Số bảo hiểm" />
-                        <TableColumn fx:id="emergencyContactNameColumn" prefWidth="150.0" text="Liên hệ khẩn cấp" />
-                        <TableColumn fx:id="emergencyContactPhoneColumn" prefWidth="100.0" text="SĐT khẩn cấp" />
-                        <TableColumn fx:id="createdAtColumn" prefWidth="150.0" text="Ngày tạo" />
-                        <TableColumn fx:id="updatedAtColumn" prefWidth="150.0" text="Ngày cập nhật" />
-                     </columns>
-                  </TableView>
-               </VBox>
+               <!-- TableView là con trực tiếp của content trong ScrollPane -->
+               <TableView fx:id="patientsTable">
+                  <columns>
+                     <TableColumn fx:id="fullNameColumn" prefWidth="150.0" text="Họ và Tên" />
+                     <TableColumn fx:id="dateOfBirthColumn" prefWidth="100.0" text="Ngày sinh" />
+                     <TableColumn fx:id="genderColumn" prefWidth="80.0" text="Giới tính" />
+                     <TableColumn fx:id="phoneColumn" prefWidth="100.0" text="Số điện thoại" />
+                     <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
+                     <TableColumn fx:id="addressLine1Column" prefWidth="150.0" text="Địa chỉ 1" />
+                     <TableColumn fx:id="addressLine2Column" prefWidth="150.0" text="Địa chỉ 2" />
+                     <TableColumn fx:id="cityColumn" prefWidth="100.0" text="Thành phố" />
+                     <TableColumn fx:id="stateProvinceColumn" prefWidth="100.0" text="Tỉnh/TP" />
+                     <TableColumn fx:id="postalCodeColumn" prefWidth="80.0" text="Mã bưu điện" />
+                     <TableColumn fx:id="countryColumn" prefWidth="100.0" text="Quốc gia" />
+                     <TableColumn fx:id="bloodTypeColumn" prefWidth="80.0" text="Nhóm máu" />
+                     <TableColumn fx:id="allergiesColumn" prefWidth="200.0" text="Dị ứng" />
+                     <TableColumn fx:id="medicalHistoryColumn" prefWidth="200.0" text="Tiền sử bệnh" />
+                     <TableColumn fx:id="insuranceNumberColumn" prefWidth="100.0" text="Số bảo hiểm" />
+                     <TableColumn fx:id="emergencyContactNameColumn" prefWidth="150.0" text="Liên hệ khẩn cấp" />
+                     <TableColumn fx:id="emergencyContactPhoneColumn" prefWidth="100.0" text="SĐT khẩn cấp" />
+                     <TableColumn fx:id="createdAtColumn" prefWidth="150.0" text="Ngày tạo" />
+                     <TableColumn fx:id="updatedAtColumn" prefWidth="150.0" text="Ngày cập nhật" />
+                  </columns>
+               </TableView>
             </content>
          </ScrollPane>
-         <BorderPane.margin>
+         <!-- BorderPane.margin có vẻ không cần thiết nếu VBox đã có padding -->
+         <!-- <BorderPane.margin>
             <Insets left="-15.0" />
-         </BorderPane.margin>
+         </BorderPane.margin> -->
       </VBox>
    </center>
    <padding>

@@ -1,33 +1,40 @@
 package com.pma.controller.admin;
 
-import com.pma.model.entity.Medicine; // Giả định bạn có entity này
-import com.pma.service.MedicineService; // Giả định bạn có service này
+import java.math.BigDecimal; // Giả định bạn có entity này
+import java.net.URL; // Giả định bạn có service này
+import java.time.LocalDateTime;
+import java.util.ResourceBundle;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+
+import com.pma.model.entity.Medicine;
+import com.pma.model.enums.MedicineStatus;
+import com.pma.service.MedicineService;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
+
+import jakarta.persistence.EntityNotFoundException;
 import javafx.collections.FXCollections;
-import com.pma.model.enums.MedicineStatus;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Component;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import jakarta.persistence.EntityNotFoundException;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -76,6 +83,13 @@ public class AdminManageMedicinesController implements Initializable {
     @FXML
     private Button clearButton;
 
+    // Pagination Controls (Assume these are added in FXML)
+    @FXML
+    private Button previousPageButton;
+    @FXML
+    private Button nextPageButton;
+    @FXML
+    private Label pageInfoLabel;
     @FXML
     private TableView<Medicine> medicinesTable;
     @FXML
@@ -104,17 +118,24 @@ public class AdminManageMedicinesController implements Initializable {
     private static final ObservableList<String> STATUS_OPTIONS
             = FXCollections.observableArrayList("Available", "Unavailable", "Discontinued");
 
+    // Pagination state
+    private int currentPage = 0;
+    private final int pageSize = 20; // Or make this configurable
+    private int totalPages = 0;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         log.info("Initializing AdminManageMedicinesController");
         statusCombo.setItems(STATUS_OPTIONS);
         setupTableColumns();
-        loadMedicinesData();
+        loadMedicinesDataForCurrentPage(); // Load initial page
 
         medicinesTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> {
+                (_, _, newSelection) -> {
                     if (newSelection != null) {
                         populateForm(newSelection);
+                        updateButton.setDisable(false);
+                        deleteButton.setDisable(false);
                     } else {
                         clearForm(null);
                     }
@@ -122,6 +143,7 @@ public class AdminManageMedicinesController implements Initializable {
         log.info("AdminManageMedicinesController initialized successfully");
     }
 
+   
     private void setupTableColumns() {
         medicineNameColumn.setCellValueFactory(new PropertyValueFactory<>("medicineName"));
         manufacturerColumn.setCellValueFactory(new PropertyValueFactory<>("manufacturer"));
@@ -135,22 +157,30 @@ public class AdminManageMedicinesController implements Initializable {
         medicinesTable.setItems(medicineObservableList);
     }
 
-    private void loadMedicinesData() {
+    private void loadMedicinesDataForCurrentPage() {
         try {
-            log.debug("Loading medicines data...");
-            // Provide Pageable.unpaged() to fetch all medicines
-            // If your medicineService.getAllMedicines(Pageable) returns Page<Medicine>,
-            // you would use:
-            // List<Medicine> medicines = medicineService.getAllMedicines(Pageable.unpaged()).getContent();
-            // Assuming here it returns List<Medicine> directly for simplicity based on current code.
-            List<Medicine> medicines = medicineService.getAllMedicines(Pageable.unpaged()).getContent();
-            medicineObservableList.setAll(medicines);
-            log.info("Loaded {} medicines.", medicines.size());
+            log.debug("Loading medicines data for page: {} with page size: {}", currentPage, pageSize);
+            Pageable pageRequest = PageRequest.of(currentPage, pageSize);
+            Page<Medicine> medicinePage = medicineService.getAllMedicines(pageRequest);
+
+            medicineObservableList.setAll(medicinePage.getContent());
+            totalPages = medicinePage.getTotalPages();
+
+            log.info("Loaded {} medicines for page {}/{}. Total medicines: {}",
+                    medicinePage.getNumberOfElements(),
+                    currentPage + 1, // Display 1-based page number
+                    totalPages,
+                    medicinePage.getTotalElements());
+
+            updatePaginationControls();
         } catch (Exception e) {
             log.error("Error loading medicines data: {}", e.getMessage(), e);
             DialogUtil.showErrorAlert("Lỗi tải dữ liệu", "Không thể tải danh sách thuốc.");
             medicineObservableList.clear();
+            totalPages = 0;
+            updatePaginationControls(); // Update controls even on error
         }
+        clearForm(null); // Clear form and selection after loading
     }
 
     private void populateForm(Medicine medicine) {
@@ -162,7 +192,24 @@ public class AdminManageMedicinesController implements Initializable {
             priceField.setText(medicine.getPrice() != null ? medicine.getPrice().toString() : "");
             stockQuantityField.setText(String.valueOf(medicine.getStockQuantity()));
             statusCombo.setValue(medicine.getStatus() != null ? medicine.getStatus().name() : null);
+            updateButton.setDisable(false);
+            deleteButton.setDisable(false);
+        } else {
+            clearForm(null);
         }
+    }
+
+    private void updatePaginationControls() {
+        if (pageInfoLabel != null) {
+            pageInfoLabel.setText(String.format("Trang %d / %d", currentPage + 1, Math.max(totalPages, 1)));
+        }
+        if (previousPageButton != null) {
+            previousPageButton.setDisable(currentPage <= 0);
+        }
+        if (nextPageButton != null) {
+            nextPageButton.setDisable(currentPage >= totalPages - 1);
+        }
+        // Disable add/update/delete if no data or no selection
     }
 
     private boolean validateInput() {
@@ -235,7 +282,7 @@ public class AdminManageMedicinesController implements Initializable {
             medicinesTable.getSelectionModel().select(savedMedicine);
             DialogUtil.showSuccessAlert("Thành công", "Đã thêm thuốc mới thành công.");
             clearForm(null);
-        } catch (DataIntegrityViolationException e) {
+        } catch (IllegalArgumentException | DataIntegrityViolationException e) {
             log.error("Data integrity violation while adding medicine: {}", e.getMessage(), e);
             DialogUtil.showErrorAlert("Lỗi Trùng lặp", "Không thể thêm thuốc. Tên thuốc và nhà sản xuất có thể đã tồn tại.");
         } catch (Exception e) {
@@ -272,14 +319,14 @@ public class AdminManageMedicinesController implements Initializable {
                 medicineObservableList.set(index, updatedMedicine);
                 medicinesTable.getSelectionModel().select(updatedMedicine);
             } else {
-                loadMedicinesData(); // Fallback
+                loadMedicinesDataForCurrentPage(); // Fallback
             }
             DialogUtil.showSuccessAlert("Thành công", "Đã cập nhật thông tin thuốc thành công.");
-            clearForm(null);
+            // clearForm(null); // Form is cleared by selection listener if selection changes
         } catch (EntityNotFoundException e) {
             log.error("Medicine not found for update: {}", selectedMedicine.getMedicineId(), e);
             DialogUtil.showErrorAlert("Không tìm thấy", "Không tìm thấy thuốc để cập nhật. Có thể đã bị xóa.");
-            loadMedicinesData();
+            loadMedicinesDataForCurrentPage();
         } catch (DataIntegrityViolationException e) {
             log.error("Data integrity violation while updating medicine: {}", e.getMessage(), e);
             DialogUtil.showErrorAlert("Lỗi Trùng lặp", "Không thể cập nhật. Tên thuốc và nhà sản xuất mới có thể đã tồn tại.");
@@ -309,7 +356,7 @@ public class AdminManageMedicinesController implements Initializable {
             } catch (EntityNotFoundException e) {
                 log.error("Medicine not found for deletion: {}", selectedMedicine.getMedicineId(), e);
                 DialogUtil.showErrorAlert("Không tìm thấy", "Không tìm thấy thuốc để xóa. Có thể đã bị xóa.");
-                loadMedicinesData();
+                loadMedicinesDataForCurrentPage();
             } catch (DataIntegrityViolationException e) {
                 log.error("Cannot delete medicine due to existing references: {}", selectedMedicine.getMedicineId(), e);
                 DialogUtil.showErrorAlert("Không thể Xóa", "Không thể xóa thuốc này do có các dữ liệu liên quan (ví dụ: trong đơn thuốc).");
@@ -330,7 +377,26 @@ public class AdminManageMedicinesController implements Initializable {
         priceField.clear();
         stockQuantityField.clear();
         statusCombo.getSelectionModel().clearSelection();
+        updateButton.setDisable(true);
+        deleteButton.setDisable(true);
         medicinesTable.getSelectionModel().clearSelection();
+    }
+
+    // Event handlers for pagination buttons
+    @FXML
+    void goToPreviousPage(ActionEvent event) {
+        if (currentPage > 0) {
+            currentPage--;
+            loadMedicinesDataForCurrentPage();
+        }
+    }
+
+    @FXML
+    void goToNextPage(ActionEvent event) {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            loadMedicinesDataForCurrentPage();
+        }
     }
 
     // Sidebar navigation methods
@@ -356,7 +422,8 @@ public class AdminManageMedicinesController implements Initializable {
 
     @FXML
     void loadAdminManageMedicines(ActionEvent event) {
-        loadMedicinesData();
+        currentPage = 0; // Reset to first page when navigating to this screen
+        loadMedicinesDataForCurrentPage();
         /* Already on this screen, refresh data */ }
 
     @FXML
