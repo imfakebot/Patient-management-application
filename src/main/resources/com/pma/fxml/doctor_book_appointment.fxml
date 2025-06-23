@@ -10,7 +10,6 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -19,7 +18,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.hospital.DoctorBookAppointmentController">
+<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.DoctorBookAppointmentController">
     <left>
         <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
             <padding>
@@ -49,10 +48,8 @@
                     </padding>
                     <Label text="Bệnh nhân:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                     <ComboBox fx:id="patientCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                    <Label text="Ngày hẹn:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                    <DatePicker fx:id="appointmentDatePicker" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                    <Label text="Thời gian:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                    <TextField fx:id="appointmentTimeField" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                    <Label text="Ngày hẹn:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <DatePicker fx:id="appointmentDatePicker" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                     <Label text="Lý do:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                     <TextArea fx:id="reasonField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                     <Label text="Loại lịch hẹn:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
@@ -81,15 +78,24 @@
                             <Insets top="10.0" />
                         </padding>
                         <Button fx:id="bookButton" onAction="#bookAppointment" text="Đặt Lịch hẹn" />
-                        <Button fx:id="clearButton" onAction="#clearForm" text="Xóa Form" />
+                        <Button fx:id="deleteButton" onAction="#deleteAppointment" text="Xóa" />
+                  <Button fx:id="updateButton" onAction="#updateAppointment" text="Cập nhật" />
+                  <Button fx:id="clearButton1" onAction="#clearForm" text="Xóa Form" />
                     </HBox>
+               <HBox prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <children>
+                     <ComboBox fx:id="comboHour" prefHeight="25.0" prefWidth="0.0" />
+                     <ComboBox fx:id="comboMinute" prefHeight="25.0" prefWidth="0.0" />
+                  </children>
+               </HBox>
+               <Label text="Giờ hẹn:" GridPane.rowIndex="1" />
                     <columnConstraints>
                         <ColumnConstraints percentWidth="0.0" />
                         <ColumnConstraints />
                     </columnConstraints>
                     <rowConstraints>
                         <RowConstraints />
-                        <RowConstraints />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" />
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />

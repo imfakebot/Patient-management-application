@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="841.0" prefWidth="1284.0" stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.hospital.DoctorPrescribeController">
+<BorderPane prefHeight="841.0" prefWidth="1284.0" stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.DoctorBookAppointmentController">
     <left>
         <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
             <padding>
@@ -49,8 +49,6 @@
                     </padding>
                     <Label text="Bệnh nhân:" GridPane.columnIndex="0" />
                     <ComboBox fx:id="patientCombo" minWidth="178.0" GridPane.columnIndex="1" />
-                    <Label text="Hồ sơ y tế:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                    <ComboBox fx:id="recordCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                     <Label text="Ngày kê đơn:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                     <DatePicker fx:id="prescriptionDatePicker" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                     <Label text="Ghi chú:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
@@ -81,7 +79,8 @@
                             <Insets top="10.0" />
                         </padding>
                         <Button fx:id="prescribeButton" onAction="#prescribe" text="Kê Đơn" />
-                        <Button fx:id="clearButton" onAction="#clearForm" text="Xóa Form" />
+                        <Button fx:id="updateButton" onAction="#update" text="Cập Nhật" />
+                  <Button fx:id="clearButton" onAction="#clearForm" text="Xóa Form" />
                     </HBox>
                     <columnConstraints>
                         <ColumnConstraints percentWidth="0.0" />
