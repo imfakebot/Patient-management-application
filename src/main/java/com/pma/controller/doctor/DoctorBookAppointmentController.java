@@ -33,8 +33,8 @@ import java.util.stream.IntStream;
 import javafx.util.StringConverter;
 
 /**
- * Controller cho doctor_book_appointment.fxml.
- * Xử lý việc đặt lịch, cập nhật, xóa và xóa form cho các cuộc hẹn của bác sĩ.
+ * Controller cho doctor_book_appointment.fxml. Xử lý việc đặt lịch, cập nhật,
+ * xóa và xóa form cho các cuộc hẹn của bác sĩ.
  */
 @Controller
 public class DoctorBookAppointmentController {
@@ -123,7 +123,7 @@ public class DoctorBookAppointmentController {
     private PatientRepository patientRepository; // Giả định tồn tại
 
     private Doctor currentDoctor;
-    
+
     @Autowired
     private UIManager uiManager;
 
@@ -170,8 +170,8 @@ public class DoctorBookAppointmentController {
      * Khởi tạo các cột của TableView.
      */
     private void initializeTable() {
-        patientColumn.setCellValueFactory(cellData ->
-                new SimpleObjectProperty<>(cellData.getValue().getPatient()));
+        patientColumn.setCellValueFactory(cellData
+                -> new SimpleObjectProperty<>(cellData.getValue().getPatient()));
         patientColumn.setCellFactory(column -> new TableCell<Appointment, Patient>() {
             @Override
             protected void updateItem(Patient patient, boolean empty) {
@@ -256,7 +256,8 @@ public class DoctorBookAppointmentController {
     }
 
     /**
-     * Thiết lập listener cho việc chọn hàng trong bảng để điền dữ liệu vào form.
+     * Thiết lập listener cho việc chọn hàng trong bảng để điền dữ liệu vào
+     * form.
      */
     private void setupTableSelectionListener() {
         appointmentsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {

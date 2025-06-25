@@ -88,7 +88,7 @@ public class UIManager {
         setSceneAndMaximize("/com/pma/fxml/patient_book_appointment.fxml",
                 "PMA - Patient Book Appointment",
                 1200, 800, true,
-                (com.pma.controller.PatientBookAppointmentController controller) -> controller.initData(patientId)
+                (com.pma.controller.patient.PatientBookAppointmentController controller) -> controller.initData(patientId)
         );
     }
 

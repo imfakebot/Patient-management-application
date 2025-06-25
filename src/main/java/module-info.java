@@ -50,6 +50,8 @@ module com.pma {
     opens com.pma.config to spring.beans, spring.context, spring.core; // Mở cho Spring để xử lý cấu hình
     opens com.pma.service to spring.beans, spring.context, spring.aop, spring.core, spring.security.core; // Mở cho Spring
     opens com.pma.repository to spring.data.commons, spring.data.jpa, spring.beans; // Mở cho Spring Data
+    opens com.pma.controller.doctor to javafx.fxml, spring.beans, spring.context, spring.core; // Mở cho JavaFX và Spring
+    opens com.pma.controller.patient to javafx.fxml, spring.beans, spring.context, spring.core; // Mở cho JavaFX và Spring
     // opens com.pma.security;
 
     // === EXPORTS ===
@@ -63,5 +65,5 @@ module com.pma {
     exports com.pma.controller.admin to spring.beans, spring.context, javafx.fxml;
     // exports com.pma.dto;
     opens com.pma.util to spring.core, spring.beans, spring.context;
-    opens com.pma.controller.admin to spring.core, spring.beans, spring.context, javafx.fxml;
+    opens com.pma.controller.admin to spring.core, spring.beans, spring.context, javafx.fxml; 
 }
