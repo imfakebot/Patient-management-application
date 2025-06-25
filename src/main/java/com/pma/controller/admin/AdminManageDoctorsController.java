@@ -30,8 +30,8 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
@@ -287,7 +287,7 @@ public class AdminManageDoctorsController implements Initializable {
 
     private boolean validateInput() {
         StringBuilder errors = new StringBuilder();
-        if (fullNameField.getText() == null || fullNameField.getText().trim().isEmpty()) {
+        if (fullNameField.getText() == null || fullNameField.getText().isEmpty()) {
             errors.append("- Họ và tên không được để trống.\n");
         }
         if (dateOfBirthPicker.getValue() == null) {
@@ -362,58 +362,67 @@ public class AdminManageDoctorsController implements Initializable {
         return true;
     }
 
-    private Doctor setDoctorFromForm(Doctor doctor) {
-        doctor.setFullName(fullNameField.getText().trim());
-        doctor.setDateOfBirth(dateOfBirthPicker.getValue());
-        doctor.setGender(Gender.valueOf(genderCombo.getValue().toUpperCase())); // Chuyển sang chữ hoa để khớp Enum
-        doctor.setPhone(phoneField.getText().trim());
-        doctor.setEmail(emailField.getText().trim());
-        doctor.setSpecialty(specialtyField.getText().trim());
-        doctor.setDepartment(departmentCombo.getValue());
-        doctor.setMedicalLicense(medicalLicenseField.getText().trim());
-        if (yearsOfExperienceField.getText() != null && !yearsOfExperienceField.getText().trim().isEmpty()) {
-            doctor.setYearsOfExperience(Integer.parseInt(yearsOfExperienceField.getText().trim()));
-        } else {
-            doctor.setYearsOfExperience(null); // Hoặc 0 nếu đó là giá trị mặc định
-        }
-        if (salaryField.getText() != null && !salaryField.getText().trim().isEmpty()) {
-            doctor.setSalary(new BigDecimal(salaryField.getText().trim()));
-        } else {
-            doctor.setSalary(null); // Hoặc BigDecimal.ZERO nếu đó là giá trị mặc định
-        }
-        doctor.setStatus(DoctorStatus.valueOf(statusCombo.getValue().toUpperCase())); // Chuyển sang chữ hoa
-        return doctor;
-    }
-
     @FXML
-    private void addDoctor(ActionEvent event) {
+    public void addDoctor(ActionEvent event) { // NOSONAR
         log.info("Add Doctor button clicked.");
         if (!validateInput()) {
             return;
         }
-        Doctor newDoctor = new Doctor();
-        setDoctorFromForm(newDoctor);
-
+    
+        Department selectedDepartment = departmentCombo.getValue();
+        if (selectedDepartment == null) {
+            DialogUtil.showWarningAlert("Thiếu thông tin", "Vui lòng chọn một khoa cho bác sĩ.");
+            return;
+        }
+    
+        Doctor doctorDetails = new Doctor();
+        doctorDetails.setFullName(fullNameField.getText().trim());
+        doctorDetails.setDateOfBirth(dateOfBirthPicker.getValue());
+        doctorDetails.setGender(Gender.valueOf(genderCombo.getValue().toUpperCase()));
+        doctorDetails.setPhone(phoneField.getText().trim());
+        String email = emailField.getText().trim();
+        doctorDetails.setEmail(email);
+        doctorDetails.setSpecialty(specialtyField.getText().trim());
+        doctorDetails.setMedicalLicense(medicalLicenseField.getText().trim());
+        if (yearsOfExperienceField.getText() != null && !yearsOfExperienceField.getText().trim().isEmpty()) {
+            doctorDetails.setYearsOfExperience(Integer.parseInt(yearsOfExperienceField.getText().trim()));
+        }
+        if (salaryField.getText() != null && !salaryField.getText().trim().isEmpty()) {
+            doctorDetails.setSalary(new BigDecimal(salaryField.getText().trim()));
+        }
+        doctorDetails.setStatus(DoctorStatus.valueOf(statusCombo.getValue().toUpperCase()));
+    
+        // Lấy email làm username và tạo mật khẩu ngẫu nhiên
+        if (email.isEmpty()) {
+            DialogUtil.showErrorAlert("Lỗi dữ liệu", "Email bác sĩ không được để trống để tạo tài khoản.");
+            log.warn("Thêm bác sĩ thất bại: Email trống, không thể tạo username.");
+            return;
+        }
+        String rawPassword = generateRandomPassword(12); // Tạo mật khẩu ngẫu nhiên
+    
         try {
-            // Giả sử DoctorService.createDoctor giờ nhận departmentId riêng
-            // Hoặc DoctorService.addDoctor nhận Doctor đã có Department được set
-            // Nếu DoctorService.addDoctor(Doctor doctor) thì department đã được set trong setDoctorFromForm
-            Doctor savedDoctor = doctorService.createDoctor(newDoctor, newDoctor.getDepartment().getDepartmentId());
+            // Giả sử DoctorService có phương thức này, tương tự như PatientService
+            // Phương thức này sẽ tạo bác sĩ, tạo tài khoản người dùng và gửi email
+            Doctor savedDoctor = doctorService.createDoctorWithAccountAndSendCredentials(doctorDetails, selectedDepartment.getDepartmentId(), email, rawPassword);
+            allDoctorsMasterList.add(savedDoctor);
             doctorObservableList.add(savedDoctor);
             doctorsTable.getSelectionModel().select(savedDoctor);
             DialogUtil.showSuccessAlert("Thành công", "Đã thêm bác sĩ mới thành công.");
             clearForm(null); // Clear form after successful addition
         } catch (DataIntegrityViolationException e) {
             log.error("Data integrity violation while adding doctor: {}", e.getMessage(), e);
-            DialogUtil.showErrorAlert("Lỗi Trùng lặp", "Không thể thêm bác sĩ. Email, số điện thoại hoặc giấy phép y tế có thể đã tồn tại.");
+            DialogUtil.showErrorAlert("Lỗi Trùng lặp", "Không thể thêm bác sĩ. Email, số điện thoại hoặc giấy phép y tế có thể đã tồn tại cho bác sĩ khác.");
+        } catch (IllegalArgumentException e) { // Bắt lỗi từ service nếu có
+            log.warn("Lỗi khi thêm bác sĩ: {}", e.getMessage());
+            DialogUtil.showErrorAlert("Lỗi dữ liệu", e.getMessage());
         } catch (Exception e) {
             log.error("Error adding doctor: {}", e.getMessage(), e);
-            DialogUtil.showExceptionDialog("Lỗi Hệ thống", "Không thể thêm bác sĩ.", "Vui lòng thử lại sau.", e);
+            DialogUtil.showExceptionDialog("Lỗi Hệ thống", "Không thể thêm bác sĩ hoặc gửi email.", "Vui lòng thử lại sau.", e);
         }
     }
 
     @FXML
-    private void updateDoctor(ActionEvent event) {
+    public void updateDoctor(ActionEvent event) {
         log.info("Update Doctor button clicked.");
         Doctor selectedDoctor = doctorsTable.getSelectionModel().getSelectedItem();
         if (selectedDoctor == null) {
@@ -424,20 +433,37 @@ public class AdminManageDoctorsController implements Initializable {
             return;
         }
 
-        Doctor doctorToUpdate = new Doctor();
-        // Giữ lại ID và CreatedAt từ selectedDoctor
-        doctorToUpdate.setDoctorId(selectedDoctor.getDoctorId()); // Sửa từ setId thành setDoctorId
-        doctorToUpdate.setCreatedAt(selectedDoctor.getCreatedAt());
+        Department newDepartment = departmentCombo.getValue();
+        if (newDepartment == null) {
+            DialogUtil.showWarningAlert("Thiếu thông tin", "Vui lòng chọn một khoa cho bác sĩ.");
+            return;
+        }
 
-        setDoctorFromForm(doctorToUpdate); // Điền thông tin từ form
+        Doctor doctorDetails = new Doctor();
+        doctorDetails.setFullName(fullNameField.getText().trim());
+        doctorDetails.setDateOfBirth(dateOfBirthPicker.getValue());
+        doctorDetails.setGender(Gender.valueOf(genderCombo.getValue().toUpperCase()));
+        doctorDetails.setPhone(phoneField.getText().trim());
+        doctorDetails.setEmail(emailField.getText().trim());
+        doctorDetails.setSpecialty(specialtyField.getText().trim());
+        doctorDetails.setMedicalLicense(medicalLicenseField.getText().trim());
+        if (yearsOfExperienceField.getText() != null && !yearsOfExperienceField.getText().trim().isEmpty()) {
+            doctorDetails.setYearsOfExperience(Integer.parseInt(yearsOfExperienceField.getText().trim()));
+        }
+        if (salaryField.getText() != null && !salaryField.getText().trim().isEmpty()) {
+            doctorDetails.setSalary(new BigDecimal(salaryField.getText().trim()));
+        }
+        doctorDetails.setStatus(DoctorStatus.valueOf(statusCombo.getValue().toUpperCase()));
 
         try {
-            // Giả sử DoctorService.updateDoctor nhận ID, Doctor details, và newDepartmentId (nếu có)
-            // Nếu department không thay đổi, có thể truyền null hoặc ID của department hiện tại.
-            Doctor updatedDoctor = doctorService.updateDoctor(selectedDoctor.getDoctorId(), doctorToUpdate, doctorToUpdate.getDepartment().getDepartmentId());
-            int index = doctorObservableList.indexOf(selectedDoctor);
-            if (index != -1) {
-                doctorObservableList.set(index, updatedDoctor);
+            Doctor updatedDoctor = doctorService.updateDoctor(selectedDoctor.getDoctorId(), doctorDetails, newDepartment.getDepartmentId());
+            int masterIndex = allDoctorsMasterList.indexOf(selectedDoctor);
+            if (masterIndex != -1) {
+                allDoctorsMasterList.set(masterIndex, updatedDoctor);
+            }
+            int displayIndex = doctorObservableList.indexOf(selectedDoctor);
+            if (displayIndex != -1) {
+                doctorObservableList.set(displayIndex, updatedDoctor);
                 doctorsTable.getSelectionModel().select(updatedDoctor);
             } else {
                 refreshDoctorsTable(); // Fallback nếu không tìm thấy (hiếm khi xảy ra)
@@ -465,7 +491,7 @@ public class AdminManageDoctorsController implements Initializable {
     }
 
     @FXML
-    private void deleteDoctor(ActionEvent event) {
+    public void deleteDoctor(ActionEvent event) {
         log.info("Delete Doctor button clicked.");
         Doctor selectedDoctor = doctorsTable.getSelectionModel().getSelectedItem();
         if (selectedDoctor == null) {
@@ -478,8 +504,9 @@ public class AdminManageDoctorsController implements Initializable {
                 + "Hành động này không thể hoàn tác.");
         if (confirmed) {
             try {
-                doctorService.deleteDoctor(selectedDoctor.getDoctorId()); // Sửa từ getId thành getDoctorId
+                doctorService.deleteDoctor(selectedDoctor.getDoctorId());
                 doctorObservableList.remove(selectedDoctor);
+                allDoctorsMasterList.remove(selectedDoctor);
                 DialogUtil.showSuccessAlert("Thành công", "Đã xóa bác sĩ thành công.");
                 clearForm(null);
             } catch (EntityNotFoundException e) {
@@ -592,5 +619,20 @@ public class AdminManageDoctorsController implements Initializable {
         loadInitialDoctorsData(); // Tải lại dữ liệu gốc
         doctorObservableList.setAll(allDoctorsMasterList); // Cập nhật bảng hiển thị
         clearForm(null); // Xóa form
+    }
+
+    /**
+     * Tạo một mật khẩu ngẫu nhiên.
+     * @param length Độ dài của mật khẩu.
+     * @return Mật khẩu ngẫu nhiên.
+     */
+    private String generateRandomPassword(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

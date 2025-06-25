@@ -188,29 +188,31 @@ public class UserAccount implements UserDetails {
      * @param patient Bệnh nhân liên quan, hoặc null.
      */
     public void setPatient(Patient patient) {
-        // Nếu không có thay đổi (gán cùng một patient hoặc cả hai đều null), không làm gì cả
+        // Avoid unnecessary re-assignment
         if (Objects.equals(this.patient, patient)) {
             return;
         }
 
-        // Nếu UserAccount hiện tại đang liên kết với một Patient, hãy ngắt kết nối đó trước
-        if (this.patient != null) {
-            Patient currentAssociatedPatient = this.patient;
-            this.patient = null;
-            currentAssociatedPatient.setUserAccountInternal(null);
+        // Store current patient to break old link
+        Patient oldPatient = this.patient;
+
+        // Set new patient for this UserAccount
+        this.patient = patient;
+
+        // Break old link if it existed and is different from new one
+        if (oldPatient != null && !Objects.equals(oldPatient, patient)) {
+            oldPatient.setUserAccountInternal(null);
         }
 
-        // Nếu patient mới được cung cấp (không phải null), thiết lập liên kết mới
+        // Establish new link if new patient is not null
         if (patient != null) {
             // Kiểm tra xem patient mới này đã được liên kết với một UserAccount khác chưa
             if (patient.getUserAccount() != null && !patient.getUserAccount().equals(this)) {
                 throw new IllegalStateException(
                         "Patient " + patient.getPatientId() + " is already associated with another UserAccount.");
             }
-            this.patient = patient; // Thiết lập liên kết ở phía UserAccount
-            this.patient.setUserAccountInternal(this); // Đồng bộ ở phía Patient
+            patient.setUserAccountInternal(this);
         }
-        // Nếu patient mới là null, this.patient đã được set là null ở bước ngắt kết nối trước đó (hoặc ban đầu đã là null)
     }
 
     /**
@@ -229,29 +231,31 @@ public class UserAccount implements UserDetails {
      * @param doctor Bác sĩ liên quan, hoặc null.
      */
     public void setDoctor(Doctor doctor) {
-        // Nếu không có thay đổi, không làm gì cả
+        // Avoid unnecessary re-assignment
         if (Objects.equals(this.doctor, doctor)) {
             return;
         }
 
-        // Nếu UserAccount hiện tại đang liên kết với một Doctor, ngắt kết nối đó
-        if (this.doctor != null) {
-            Doctor currentAssociatedDoctor = this.doctor;
-            this.doctor = null;
-            currentAssociatedDoctor.setUserAccountInternal(null);
+        // Store current doctor to break old link
+        Doctor oldDoctor = this.doctor;
+
+        // Set new doctor for this UserAccount
+        this.doctor = doctor;
+
+        // Break old link if it existed and is different from new one
+        if (oldDoctor != null && !Objects.equals(oldDoctor, doctor)) {
+            oldDoctor.setUserAccountInternal(null);
         }
 
-        // Nếu doctor mới được cung cấp (không phải null), thiết lập liên kết mới
+        // Establish new link if new doctor is not null
         if (doctor != null) {
             // Kiểm tra xem doctor mới này đã được liên kết với một UserAccount khác chưa
             if (doctor.getUserAccount() != null && !doctor.getUserAccount().equals(this)) {
                 throw new IllegalStateException(
                         "Doctor " + doctor.getDoctorId() + " is already associated with another UserAccount.");
             }
-            this.doctor = doctor;
-            this.doctor.setUserAccountInternal(this); // Đồng bộ ở phía Doctor
+            doctor.setUserAccountInternal(this);
         }
-        // Nếu doctor mới là null, this.doctor đã được set là null ở bước ngắt kết nối trước đó
     }
 
     /**

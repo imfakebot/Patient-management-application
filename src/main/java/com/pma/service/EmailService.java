@@ -1,9 +1,7 @@
 package com.pma.service;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.time.Duration;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatter;
 
 import com.pma.model.entity.Appointment;
@@ -17,6 +15,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import java.util.concurrent.Future;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -78,21 +77,21 @@ public class EmailService {
             message.setFrom(fromEmailAddress);
             message.setTo(patientEmail);
             message.setSubject("Appointment Confirmation - PMA System");
-            message.setText(String.format(
-                    "Dear %s,\n\n"
-                    + "Your appointment has been successfully scheduled.\n\n"
-                    + "Appointment Details:\n"
-                    + "- Appointment ID: %s\n"
-                    + "- Doctor: %s\n"
-                    + "- Date & Time: %s\n\n"
-                    + "Please arrive on time.\n\n"
-                    + "Best regards,\n"
-                    + "PMA System",
-                    patientName,
-                    appointment.getAppointmentId(),
-                    doctorName,
-                    dateTime.format(EMAIL_DATE_TIME_FORMATTER)
-            ));
+            message.setText(String.format("""
+                                          Dear %s,
+
+                                          Your appointment has been successfully scheduled.
+
+                                          Appointment Details:
+                                          - Appointment ID: %s
+                                          - Doctor: %s
+                                          - Date & Time: %s
+
+                                          Please arrive on time.
+
+                                          Best regards,
+                                          PMA System""", patientName, appointment.getAppointmentId(), doctorName,
+                    dateTime.format(EMAIL_DATE_TIME_FORMATTER)));
 
             mailSender.send(message);
             log.info("Successfully sent scheduling confirmation email for appointment id: {}",
@@ -144,25 +143,22 @@ public class EmailService {
             message.setTo(patientEmail);
 
             message.setSubject("Appointment Cancellation Notice - PMA System");
+            message.setText(String.format("""
+                                          Dear %s,
 
-            message.setText(String.format(
-                    "Dear %s,\n\n"
-                    + "We regret to inform you that your appointment has been cancelled.\n\n"
-                    + "Appointment Details:\n"
-                    + "- Appointment ID: %s\n"
-                    + "- Doctor: %s\n"
-                    + "- Scheduled Time: %s\n"
-                    + "- Cancellation Reason: %s\n\n"
-                    + "Please contact us if you would like to reschedule.\n\n"
-                    + "Best regards,\n"
-                    + "PMA System",
-                    patientName,
-                    appointment.getAppointmentId(),
-                    doctorName,
-                    dateTime
-                            .format(EMAIL_DATE_TIME_FORMATTER),
-                    cancellationReason
-            ));
+                                          We regret to inform you that your appointment has been cancelled.
+
+                                          Appointment Details:
+                                          - Appointment ID: %s
+                                          - Doctor: %s
+                                          - Scheduled Time: %s
+                                          - Cancellation Reason: %s
+
+                                          Please contact us if you would like to reschedule.
+
+                                          Best regards,
+                                          PMA System""", patientName, appointment.getAppointmentId(), doctorName,
+                    dateTime.format(EMAIL_DATE_TIME_FORMATTER), cancellationReason));
 
             mailSender.send(message);
 
@@ -296,13 +292,13 @@ public class EmailService {
      * @return Future<Void> để theo dõi việc gửi email bất đồng bộ.
      */
     @Async
-    public Future<Void> sendNewAccountCredentials(String recipientEmail, String recipientName, String username, String rawPassword) {
+    public Future<Void> sendNewAccountCredentials(String recipientEmail, String recipientName, String username, String temporaryPassword) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             log.warn("Cannot send new account credentials. Invalid recipient email for user: {}", username);
             return CompletableFuture.completedFuture(null);
         }
-        if (rawPassword == null || rawPassword.isBlank()) {
-            log.warn("Cannot send new account credentials. Raw password is blank for user: {}", username);
+        if (temporaryPassword == null || temporaryPassword.isBlank()) {
+            log.warn("Cannot send new account credentials. Temporary password is blank for user: {}", username);
             // Không nên gửi email nếu không có mật khẩu
             return CompletableFuture.completedFuture(null);
         }
@@ -322,7 +318,7 @@ public class EmailService {
                                           
                                           Tên đăng nhập: %s
                                           Mật khẩu: %s
-                                          
+                                          (Vui lòng đổi mật khẩu này ngay sau khi đăng nhập lần đầu tiên)
                                           \u26a0\ufe0f Quan trọng:
                                           - Vì lý do bảo mật, vui lòng đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
                                           - Không chia sẻ thông tin tài khoản này với bất kỳ ai.
@@ -330,8 +326,8 @@ public class EmailService {
                                           Trân trọng,
                                           Đội ngũ Hệ thống PMA""",
                     recipientName,
-                    username,
-                    rawPassword
+                    username, // Username
+                    temporaryPassword // Temporary password
             ));
 
             mailSender.send(message);
@@ -356,13 +352,13 @@ public class EmailService {
      * @return Future<Void> để theo dõi việc gửi email bất đồng bộ.
      */
     @Async
-    public Future<Void> sendNewDoctorAccountCredentials(String recipientEmail, String recipientName, String username, String rawPassword) {
+    public Future<Void> sendNewDoctorAccountCredentials(String recipientEmail, String recipientName, String username, String temporaryPassword) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             log.warn("Cannot send new doctor account credentials. Invalid recipient email for doctor: {}", username);
             return CompletableFuture.completedFuture(null);
         }
-        if (rawPassword == null || rawPassword.isBlank()) {
-            log.warn("Cannot send new doctor account credentials. Raw password is blank for doctor: {}", username);
+        if (temporaryPassword == null || temporaryPassword.isBlank()) {
+            log.warn("Cannot send new doctor account credentials. Temporary password is blank for doctor: {}", username);
             return CompletableFuture.completedFuture(null);
         }
 
@@ -381,7 +377,7 @@ public class EmailService {
                                           
                                           Tên đăng nhập: %s
                                           Mật khẩu: %s
-                                          
+                                          (Vui lòng đổi mật khẩu này ngay sau khi đăng nhập lần đầu tiên)
                                           \u26a0\ufe0f Quan trọng:
                                           - Vì lý do bảo mật, vui lòng đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
                                           - Không chia sẻ thông tin tài khoản này với bất kỳ ai.
@@ -389,8 +385,8 @@ public class EmailService {
                                           Trân trọng,
                                           Đội ngũ Hệ thống PMA""",
                     recipientName, // Sử dụng tên bác sĩ
-                    username,
-                    rawPassword
+                    username, // Username
+                    temporaryPassword // Temporary password
             ));
 
             mailSender.send(message);

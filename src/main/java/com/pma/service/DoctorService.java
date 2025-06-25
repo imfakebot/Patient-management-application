@@ -18,9 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pma.model.entity.Department;
 import com.pma.model.entity.Doctor;
 import com.pma.model.entity.UserAccount;
+import com.pma.model.enums.UserRole;
 import com.pma.repository.DepartmentRepository;
 import com.pma.repository.DoctorRepository;
-import com.pma.model.enums.UserRole;
 import com.pma.repository.UserAccountRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -37,7 +37,7 @@ public class DoctorService {
     private final DepartmentRepository departmentRepository; // Cần để gán Department
     private final UserAccountRepository userAccountRepository; // Cần nếu quản lý UserAccount ở đây
     private final UserAccountService userAccountService; // Thêm UserAccountService
-    private final EmailService emailService; // Thêm EmailService
+    private final EmailService emailService; // Thêm EmailService 
 
     @Autowired
     public DoctorService(DoctorRepository doctorRepository,
@@ -45,11 +45,13 @@ public class DoctorService {
             UserAccountRepository userAccountRepository,
             UserAccountService userAccountService,
             EmailService emailService) {
+        // @Lazy PasswordEncoder passwordEncoder) { // If you need to inject PasswordEncoder here
         this.doctorRepository = doctorRepository;
         this.departmentRepository = departmentRepository;
         this.userAccountRepository = userAccountRepository;
         this.userAccountService = userAccountService;
         this.emailService = emailService;
+        // this.passwordEncoder = passwordEncoder; // Assign it
     }
 
     /**
@@ -124,7 +126,7 @@ public class DoctorService {
     @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     public List<Doctor> getAllDoctors() {
         log.info("Fetching all doctors");
-        List<Doctor> doctors = doctorRepository.findAll();
+        List<Doctor> doctors = doctorRepository.findAllWithDepartments(); // Sử dụng phương thức mới
         log.info("Found {} doctors", doctors.size());
         return doctors;
     }
@@ -338,9 +340,10 @@ public class DoctorService {
         // Bước 2: Tạo UserAccount
         UserAccount newUserAccount = new UserAccount();
         newUserAccount.setUsername(username);
-        newUserAccount.setPasswordHash(rawPassword); // UserAccountService sẽ băm mật khẩu này
         newUserAccount.setRole(UserRole.DOCTOR);
         // UserAccountService.createUserAccount sẽ tự động set active=true
+
+        newUserAccount.setPasswordHash(rawPassword); // This will be hashed by UserAccountService
 
         UserAccount createdAccount = userAccountService.createUserAccount(newUserAccount);
         log.info("UserAccount {} created successfully for Doctor ID: {}", createdAccount.getUsername(), savedDoctor.getDoctorId());
@@ -355,8 +358,8 @@ public class DoctorService {
                 emailService.sendNewDoctorAccountCredentials(
                         savedDoctor.getEmail(),
                         savedDoctor.getFullName(), // Gửi tên đầy đủ của bác sĩ
-                        createdAccount.getUsername(),
-                        rawPassword // Gửi mật khẩu gốc
+                        createdAccount.getUsername(), // Username
+                        rawPassword // Gửi mật khẩu tạm thời
                 );
                 log.info("Requested to send new account credentials email to doctor: {}", savedDoctor.getEmail());
             } catch (Exception ex) {
@@ -372,6 +375,5 @@ public class DoctorService {
         savedDoctor.setUserAccount(createdAccount); // Giả sử UserAccount được set 2 chiều
         return savedDoctor;
     }
-
     // --- Các phương thức quản lý UserAccount có thể đặt ở UserAccountService ---
 }

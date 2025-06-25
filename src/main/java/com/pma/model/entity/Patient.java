@@ -364,16 +364,25 @@ public class Patient {
         if (Objects.equals(this.userAccount, userAccount)) {
             return;
         }
-        // Ngắt kết nối cũ và thiết lập mới ở cả hai phía
-        UserAccount oldUserAccount = this.userAccount;
-        this.userAccount = null; // Ngắt phía này trước
-        if (oldUserAccount != null) {
-            oldUserAccount.setPatientInternal(null); // Gọi internal ở UserAccount cũ
-        }
-        this.userAccount = userAccount; // Gán phía này
-        if (userAccount != null) {
-            userAccount.setPatientInternal(this); // Gọi internal ở UserAccount mới
 
+        // Store current userAccount to break old link
+        UserAccount oldUserAccount = this.userAccount;
+
+        // Set new userAccount for this Patient
+        this.userAccount = userAccount;
+
+        // Break old link if it existed and is different from new one
+        if (oldUserAccount != null) {
+            oldUserAccount.setPatientInternal(null);
+        }
+
+        // Establish new link if new userAccount is not null
+        if (userAccount != null) {
+            // Check if the new userAccount is already linked to another Patient
+            if (userAccount.getPatient() != null && !userAccount.getPatient().equals(this)) {
+                throw new IllegalStateException("UserAccount " + userAccount.getUserId() + " is already associated with another Patient.");
+            }
+            userAccount.setPatientInternal(this);
         }
     }
 

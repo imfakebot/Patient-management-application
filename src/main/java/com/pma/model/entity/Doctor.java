@@ -279,28 +279,30 @@ public class Doctor {
      * @param userAccount Tài khoản mới, hoặc null để gỡ bỏ.
      */
     public void setUserAccount(UserAccount userAccount) {
-        // Tránh gán lại không cần thiết
+        // Avoid unnecessary re-assignment
         if (Objects.equals(this.userAccount, userAccount)) {
             return;
         }
 
-        // Nếu đang gán userAccount mới (khác null)
-        if (userAccount != null) {
-            // Nếu Doctor này đã có userAccount khác, ngắt kết nối cũ trước
-            if (this.userAccount != null) {
-                this.userAccount.setDoctorInternal(null); // Ngắt phía UserAccount cũ
-            }
-            userAccount.setDoctorInternal(this); // Thiết lập phía UserAccount mới
-        }
-        // Nếu đang gỡ bỏ userAccount (gán null)
-        else {
-            // Nếu Doctor đang có userAccount, ngắt kết nối
-            if (this.userAccount != null) {
-                this.userAccount.setDoctorInternal(null); // Ngắt phía UserAccount cũ
-            }
-        }
-        // Cập nhật tham chiếu ở phía Doctor
+        // Store current userAccount to break old link
+        UserAccount oldUserAccount = this.userAccount;
+
+        // Set new userAccount for this Doctor
         this.userAccount = userAccount;
+
+        // Break old link if it existed and is different from new one
+        if (oldUserAccount != null && !Objects.equals(oldUserAccount, userAccount)) {
+            oldUserAccount.setDoctorInternal(null);
+        }
+
+        // Establish new link if new userAccount is not null
+        if (userAccount != null) {
+            // Check if the new userAccount is already linked to another Doctor
+            if (userAccount.getDoctor() != null && !userAccount.getDoctor().equals(this)) {
+                throw new IllegalStateException("UserAccount " + userAccount.getUserId() + " is already associated with another Doctor.");
+            }
+            userAccount.setDoctorInternal(this);
+        }
     }
 
     // Internal method for UserAccount to call back

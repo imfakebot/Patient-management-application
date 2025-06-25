@@ -4,7 +4,7 @@ import com.pma.model.entity.Department; // Import Department để tìm theo kho
 import com.pma.model.entity.Doctor; // Import Entity Doctor
 import com.pma.model.enums.DoctorStatus; // Import Enum DoctorStatus
 import org.springframework.data.jpa.repository.JpaRepository;
-// import org.springframework.data.jpa.repository.Query; // Import nếu dùng @Query
+import org.springframework.data.jpa.repository.Query; // Import nếu dùng @Query
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -19,12 +19,10 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     // --- Các phương thức CRUD cơ bản được cung cấp sẵn ---
     // save, findById, findAll, deleteById, count, existsById, etc.
-
     // --- Định nghĩa các phương thức truy vấn tùy chỉnh theo quy ước đặt tên ---
-
     /**
      * Tìm bác sĩ theo số điện thoại (UNIQUE).
-     * 
+     *
      * @param phone Số điện thoại cần tìm.
      * @return Optional chứa Doctor nếu tìm thấy.
      */
@@ -32,7 +30,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     /**
      * Tìm bác sĩ theo địa chỉ email (UNIQUE).
-     * 
+     *
      * @param email Địa chỉ email cần tìm.
      * @return Optional chứa Doctor nếu tìm thấy.
      */
@@ -40,7 +38,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     /**
      * Tìm bác sĩ theo giấy phép hành nghề (UNIQUE).
-     * 
+     *
      * @param medicalLicense Mã giấy phép cần tìm.
      * @return Optional chứa Doctor nếu tìm thấy.
      */
@@ -48,7 +46,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     /**
      * Tìm danh sách bác sĩ theo chuyên khoa (không phân biệt hoa thường).
-     * 
+     *
      * @param specialty Chuyên khoa cần tìm.
      * @return Danh sách các bác sĩ phù hợp.
      */
@@ -57,7 +55,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
     /**
      * Tìm danh sách các bác sĩ thuộc về một khoa cụ thể (truyền vào đối tượng
      * Department).
-     * 
+     *
      * @param department Khoa cần tìm bác sĩ.
      * @return Danh sách các bác sĩ thuộc khoa đó.
      */
@@ -65,9 +63,9 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     /**
      * Tìm danh sách các bác sĩ thuộc về một khoa cụ thể (truyền vào ID của
-     * Department).
-     * Spring Data JPA hỗ trợ truy cập thuộc tính lồng nhau qua dấu gạch dưới (_).
-     * 
+     * Department). Spring Data JPA hỗ trợ truy cập thuộc tính lồng nhau qua dấu
+     * gạch dưới (_).
+     *
      * @param departmentId ID của khoa cần tìm bác sĩ.
      * @return Danh sách các bác sĩ thuộc khoa đó.
      */
@@ -77,16 +75,16 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     /**
      * Tìm danh sách các bác sĩ theo trạng thái làm việc.
-     * 
+     *
      * @param status Trạng thái cần lọc (sử dụng kiểu Enum).
      * @return Danh sách các bác sĩ có trạng thái tương ứng.
      */
     List<Doctor> findByStatus(DoctorStatus status);
 
     /**
-     * Tìm danh sách bác sĩ có số năm kinh nghiệm lớn hơn hoặc bằng một giá trị nào
-     * đó.
-     * 
+     * Tìm danh sách bác sĩ có số năm kinh nghiệm lớn hơn hoặc bằng một giá trị
+     * nào đó.
+     *
      * @param years Số năm kinh nghiệm tối thiểu.
      * @return Danh sách các bác sĩ phù hợp.
      */
@@ -94,9 +92,9 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     // --- Ví dụ sử dụng @Query cho truy vấn phức tạp hơn ---
     /**
-     * Tìm kiếm bác sĩ theo tên hoặc chuyên khoa chứa một từ khóa (không phân biệt
-     * hoa thường).
-     * 
+     * Tìm kiếm bác sĩ theo tên hoặc chuyên khoa chứa một từ khóa (không phân
+     * biệt hoa thường).
+     *
      * @param keyword Từ khóa tìm kiếm.
      * @return Danh sách các bác sĩ phù hợp.
      */
@@ -105,7 +103,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
      * )
      * List<Doctor> searchByNameOrSpecialty(@Param("keyword") String keyword);
      */
-
     /**
      * Counts the number of doctors associated with a specific department ID.
      *
@@ -113,4 +110,14 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
      * @return the count of doctors associated with the department.
      */
     long countByDepartment_DepartmentId(UUID departmentId);
+
+    /**
+     * Retrieves all doctors, eagerly fetching their associated Department. This
+     * helps prevent LazyInitializationException when accessing department
+     * details outside a session.
+     *
+     * @return A list of Doctor entities with their Department eagerly loaded.
+     */
+    @Query("SELECT d FROM Doctor d JOIN FETCH d.department")
+    List<Doctor> findAllWithDepartments();
 }
