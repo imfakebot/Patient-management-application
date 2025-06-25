@@ -30,46 +30,69 @@ public class PatientUpdateProfileController implements Initializable {
     private final UserAccountService userAccountService;
     private Patient currentPatient;
 
-    @FXML private Button patientBookAppointmentButton;
-    @FXML private Button patientViewPrescriptionsButton;
-    @FXML private Button patientMedicalHistoryButton;
-    @FXML private Button patientUpdateProfileButton;
-    @FXML private Button patientReviewButton;
-    @FXML private Button patientViewBillsButton;
+    @FXML
+    private Button patientBookAppointmentButton;
+    @FXML
+    private Button patientViewPrescriptionsButton;
+    @FXML
+    private Button patientMedicalHistoryButton;
+    @FXML
+    private Button patientUpdateProfileButton;
+    @FXML
+    private Button patientReviewButton;
+    @FXML
+    private Button patientViewBillsButton;
 
-    @FXML private TextField fullNameField;
-    @FXML private DatePicker dateOfBirthPicker;
-    @FXML private ComboBox<String> genderCombo;
-    @FXML private TextField phoneField;
-    @FXML private TextField emailField;
-    @FXML private TextArea addressLine1Field;
-    @FXML private TextArea addressLine2Field;
-    @FXML private TextField cityField;
-    @FXML private TextField postalCodeField;
-    @FXML private TextField countryField;
-    @FXML private ComboBox<String> bloodTypeCombo;
-    @FXML private TextArea allergiesField;
-    @FXML private TextArea medicalHistoryField;
-    @FXML private TextField insuranceNumberField;
-    @FXML private TextField emergencyContactNameField;
-    @FXML private TextField emergencyContactPhoneField;
-    @FXML private Button updateButton;
-    @FXML private Button clearButton;
+    @FXML
+    private TextField fullNameField;
+    @FXML
+    private DatePicker dateOfBirthPicker;
+    @FXML
+    private ComboBox<String> genderCombo;
+    @FXML
+    private TextField phoneField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private TextArea addressLine1Field;
+    @FXML
+    private TextArea addressLine2Field;
+    @FXML
+    private TextField cityField;
+    @FXML
+    private TextField postalCodeField;
+    @FXML
+    private TextField countryField;
+    @FXML
+    private ComboBox<String> bloodTypeCombo;
+    @FXML
+    private TextArea allergiesField;
+    @FXML
+    private TextArea medicalHistoryField;
+    @FXML
+    private TextField insuranceNumberField;
+    @FXML
+    private TextField emergencyContactNameField;
+    @FXML
+    private TextField emergencyContactPhoneField;
+    @FXML
+    private Button updateButton;
+    @FXML
+    private Button clearButton;
 
-    public PatientUpdateProfileController(PatientService patientService, 
-                                       UserAccountService userAccountService) {
+    public PatientUpdateProfileController(PatientService patientService,
+            UserAccountService userAccountService) {
         this.patientService = patientService;
         this.userAccountService = userAccountService;
     }
 
     @Autowired
     private UIManager uiManager;
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupComboBoxes();
         loadPatientData();
-        setupEventHandlers();
     }
 
     private void setupComboBoxes() {
@@ -125,11 +148,7 @@ public class PatientUpdateProfileController implements Initializable {
         emergencyContactPhoneField.setText(patient.getEmergencyContactPhone());
     }
 
-    private void setupEventHandlers() {
-        updateButton.setOnAction(event -> updateProfile());
-        clearButton.setOnAction(event -> clearForm());
-    }
-
+    @FXML
     private void updateProfile() {
         if (!validateInput()) {
             return;
@@ -145,16 +164,15 @@ public class PatientUpdateProfileController implements Initializable {
         }
     }
 
-
     private void updatePatientFromForm(Patient patient) {
         patient.setFullName(fullNameField.getText().trim());
         patient.setDateOfBirth(dateOfBirthPicker.getValue());
-        
+
         String genderString = genderCombo.getValue();
         if (genderString != null) {
             patient.setGender(Gender.valueOf(genderString.toUpperCase()));
         }
-        
+
         patient.setPhone(phoneField.getText().trim());
         patient.setEmail(emailField.getText().trim());
         patient.setAddressLine1(addressLine1Field.getText().trim());
@@ -176,23 +194,23 @@ public class PatientUpdateProfileController implements Initializable {
         if (fullNameField.getText() == null || fullNameField.getText().trim().isEmpty()) {
             errors.append("- Họ và tên không được để trống\n");
         }
-        
+
         if (dateOfBirthPicker.getValue() == null) {
             errors.append("- Ngày sinh không được để trống\n");
         } else if (dateOfBirthPicker.getValue().isAfter(LocalDate.now())) {
             errors.append("- Ngày sinh không thể là ngày trong tương lai\n");
         }
-        
+
         if (genderCombo.getValue() == null) {
             errors.append("- Giới tính không được để trống\n");
         }
-        
+
         if (phoneField.getText() == null || phoneField.getText().trim().isEmpty()) {
             errors.append("- Số điện thoại không được để trống\n");
         } else if (!phoneField.getText().trim().matches("^0\\d{9,10}$")) {
             errors.append("- Số điện thoại không hợp lệ (phải bắt đầu bằng 0 và có 10-11 số)\n");
         }
-        
+
         if (emailField.getText() == null || emailField.getText().trim().isEmpty()) {
             errors.append("- Email không được để trống\n");
         } else if (!emailField.getText().trim().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
@@ -216,13 +234,13 @@ public class PatientUpdateProfileController implements Initializable {
     private void loadPatientBookAppointment() {
         uiManager.switchToPatientBookAppointment(null);
     }
-    
+
     @FXML
     private void loadPatientViewPrescriptions() {
         uiManager.switchToPatientViewPrescriptions();
     }
-    
-    @FXML 
+
+    @FXML
     private void loadPatientMedicalHistory() {
         uiManager.switchToPatientMedicalHistory();
     }
@@ -231,12 +249,8 @@ public class PatientUpdateProfileController implements Initializable {
     private void loadPatientUpdateProfile() {
         uiManager.switchToPatientUpdateProfile();
     }
-    @FXML 
-    private void loadPatientReview() {
-        uiManager.switchToPatientReview();
-    }
 
-    @FXML 
+    @FXML
     private void loadPatientViewBills() {
         uiManager.switchToPatientViewBills();
     }

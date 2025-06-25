@@ -253,10 +253,6 @@ public class PatientViewPrescriptionsController {
     private void loadPatientUpdateProfile() {
         uiManager.switchToPatientUpdateProfile();
     }
-    @FXML 
-    private void loadPatientReview() {
-        uiManager.switchToPatientReview();
-    }
 
     @FXML 
     private void loadPatientViewBills() {

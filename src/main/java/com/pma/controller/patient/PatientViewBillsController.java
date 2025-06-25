@@ -39,34 +39,58 @@ public class PatientViewBillsController {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    @FXML private Button patientBookAppointmentButton;
-    @FXML private Button patientViewPrescriptionsButton;
-    @FXML private Button patientMedicalHistoryButton;
-    @FXML private Button patientUpdateProfileButton;
-    @FXML private Button patientReviewButton;
-    @FXML private Button patientViewBillsButton;
+    @FXML
+    private Button patientBookAppointmentButton;
+    @FXML
+    private Button patientViewPrescriptionsButton;
+    @FXML
+    private Button patientMedicalHistoryButton;
+    @FXML
+    private Button patientUpdateProfileButton;
+    @FXML
+    private Button patientReviewButton;
+    @FXML
+    private Button patientViewBillsButton;
 
-    @FXML private TableView<Bill> billsTable;
-    @FXML private TableColumn<Bill, UUID> billIdColumn;
-    @FXML private TableColumn<Bill, UUID> appointmentIdColumn;
-    @FXML private TableColumn<Bill, String> paymentStatusColumn;
-    @FXML private TableColumn<Bill, String> billDatetimeColumn;
-    @FXML private TableColumn<Bill, String> dueDateColumn;
-    @FXML private TableColumn<Bill, String> paymentDateColumn;
-    @FXML private TableColumn<Bill, String> paymentMethodColumn;
+    @FXML
+    private TableView<Bill> billsTable;
+    @FXML
+    private TableColumn<Bill, UUID> billIdColumn;
+    @FXML
+    private TableColumn<Bill, UUID> appointmentIdColumn;
+    @FXML
+    private TableColumn<Bill, String> paymentStatusColumn;
+    @FXML
+    private TableColumn<Bill, String> billDatetimeColumn;
+    @FXML
+    private TableColumn<Bill, String> dueDateColumn;
+    @FXML
+    private TableColumn<Bill, String> paymentDateColumn;
+    @FXML
+    private TableColumn<Bill, String> paymentMethodColumn;
 
-    @FXML private TableView<BillItem> billItemsTable;
-    @FXML private TableColumn<BillItem, String> itemDescriptionColumn;
-    @FXML private TableColumn<BillItem, String> itemTypeColumn;
-    @FXML private TableColumn<BillItem, Integer> quantityColumn;
-    @FXML private TableColumn<BillItem, String> unitPriceColumn;
-    @FXML private TableColumn<BillItem, String> lineTotalColumn;
+    @FXML
+    private TableView<BillItem> billItemsTable;
+    @FXML
+    private TableColumn<BillItem, String> itemDescriptionColumn;
+    @FXML
+    private TableColumn<BillItem, String> itemTypeColumn;
+    @FXML
+    private TableColumn<BillItem, Integer> quantityColumn;
+    @FXML
+    private TableColumn<BillItem, String> unitPriceColumn;
+    @FXML
+    private TableColumn<BillItem, String> lineTotalColumn;
 
-    @FXML private Pagination pagination;
+    @FXML
+    private Pagination pagination;
 
-    @Autowired private BillService billService;
-    @Autowired private UserAccountService userAccountService;
-    @Autowired private UIManager uiManager;
+    @Autowired
+    private BillService billService;
+    @Autowired
+    private UserAccountService userAccountService;
+    @Autowired
+    private UIManager uiManager;
 
     private UUID patientId;
     private final ObservableList<Bill> billList = FXCollections.observableArrayList();
@@ -90,59 +114,59 @@ public class PatientViewBillsController {
     /**
      * Khởi tạo các cột của bảng và thiết lập phân trang.
      */
-@FXML
-private void initialize() {
-    // Thiết lập các cột cho billsTable
-    billIdColumn.setCellValueFactory(cellData -> cellData.getValue().billIdProperty());
-    appointmentIdColumn.setCellValueFactory(cellData -> {
-        Bill bill = cellData.getValue();
-        Appointment appointment = bill != null ? bill.getAppointment() : null;
-        return new SimpleObjectProperty<>(
-            appointment != null && appointment.getId() != null ? appointment.getId() : null
+    @FXML
+    private void initialize() {
+        // Thiết lập các cột cho billsTable
+        billIdColumn.setCellValueFactory(cellData -> cellData.getValue().billIdProperty());
+        appointmentIdColumn.setCellValueFactory(cellData -> {
+            Bill bill = cellData.getValue();
+            Appointment appointment = bill != null ? bill.getAppointment() : null;
+            return new SimpleObjectProperty<>(
+                    appointment != null && appointment.getId() != null ? appointment.getId() : null
+            );
+        });
+        paymentStatusColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getPaymentStatus() != null ? cellData.getValue().getPaymentStatus().toString() : ""));
+        billDatetimeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getBillDatetime() != null ? cellData.getValue().getBillDatetime().format(DATE_TIME_FORMATTER) : ""));
+        dueDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getDueDate() != null ? cellData.getValue().getDueDate().format(DATE_FORMATTER) : ""));
+        paymentDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getPaymentDate() != null ? cellData.getValue().getPaymentDate().format(DATE_TIME_FORMATTER) : ""));
+        paymentMethodColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getPaymentMethod() != null ? cellData.getValue().getPaymentMethod().toString() : ""));
+
+        // Thiết lập các cột cho billItemsTable
+        itemDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("itemDescription"));
+        itemTypeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getItemType() != null ? cellData.getValue().getItemType().toString() : ""));
+        quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        unitPriceColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getUnitPrice() != null ? cellData.getValue().getUnitPrice().toString() : ""));
+        lineTotalColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
+                cellData.getValue().getLineTotal() != null ? cellData.getValue().getLineTotal().toString() : ""));
+
+        // Sự kiện khi chọn một hóa đơn từ billsTable
+        billsTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldSelection, newSelection) -> {
+                    if (newSelection != null) {
+                        loadBillItems(newSelection.getBillId());
+                    } else {
+                        billItemList.clear();
+                    }
+                }
         );
-    });
-    paymentStatusColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getPaymentStatus() != null ? cellData.getValue().getPaymentStatus().toString() : ""));
-    billDatetimeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getBillDatetime() != null ? cellData.getValue().getBillDatetime().format(DATE_TIME_FORMATTER) : ""));
-    dueDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getDueDate() != null ? cellData.getValue().getDueDate().format(DATE_FORMATTER) : ""));
-    paymentDateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getPaymentDate() != null ? cellData.getValue().getPaymentDate().format(DATE_TIME_FORMATTER) : ""));
-    paymentMethodColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getPaymentMethod() != null ? cellData.getValue().getPaymentMethod().toString() : ""));
 
-    // Thiết lập các cột cho billItemsTable
-    itemDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("itemDescription"));
-    itemTypeColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getItemType() != null ? cellData.getValue().getItemType().toString() : ""));
-    quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-    unitPriceColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getUnitPrice() != null ? cellData.getValue().getUnitPrice().toString() : ""));
-    lineTotalColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-        cellData.getValue().getLineTotal() != null ? cellData.getValue().getLineTotal().toString() : ""));
+        // Thiết lập phân trang
+        pagination.setPageCount(1);
+        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+            currentPage = newIndex.intValue();
+            loadBills();
+        });
 
-    // Sự kiện khi chọn một hóa đơn từ billsTable
-    billsTable.getSelectionModel().selectedItemProperty().addListener(
-        (obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                loadBillItems(newSelection.getBillId());
-            } else {
-                billItemList.clear();
-            }
-        }
-    );
-
-    // Thiết lập phân trang
-    pagination.setPageCount(1);
-    pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
-        currentPage = newIndex.intValue();
-        loadBills();
-    });
-
-    billsTable.setItems(billList);
-    billItemsTable.setItems(billItemList);
-}
+        billsTable.setItems(billList);
+        billItemsTable.setItems(billItemList);
+    }
 
     /**
      * Tải danh sách hóa đơn của bệnh nhân với phân trang.
@@ -193,7 +217,7 @@ private void initialize() {
     private void loadPatientBookAppointment() {
         uiManager.switchToPatientBookAppointment(null);
     }
-    
+
     @FXML
     private void loadPatientViewPrescriptions() {
         uiManager.switchToPatientViewPrescriptions();
@@ -208,12 +232,9 @@ private void initialize() {
     private void loadPatientUpdateProfile() {
         uiManager.switchToPatientUpdateProfile();
     }
-    @FXML 
-    private void loadPatientReview() {
-        uiManager.switchToPatientReview();
-    }
 
-    @FXML 
+ 
+   @FXML 
     private void loadPatientViewBills() {
         uiManager.switchToPatientViewBills();
     }

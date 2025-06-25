@@ -34,7 +34,6 @@
             <Button fx:id="patientViewPrescriptionsButton" onAction="#loadPatientViewPrescriptions" styleClass="sidebar-button" text="Xem Đơn thuốc" />
             <Button fx:id="patientMedicalHistoryButton" onAction="#loadPatientMedicalHistory" styleClass="sidebar-button" text="Lịch sử Y tế" />
             <Button fx:id="patientUpdateProfileButton" onAction="#loadPatientUpdateProfile" style="-fx-background-color: -accent-color;" styleClass="sidebar-button" text="Cập nhật Hồ sơ" />
-            <Button fx:id="patientReviewButton" onAction="#loadPatientReview" styleClass="sidebar-button" text="Gửi Đánh giá" />
             <Button fx:id="patientViewBillsButton" onAction="#loadPatientViewBills" styleClass="sidebar-button" text="Xem Hóa đơn" />
         </VBox>
     </left>

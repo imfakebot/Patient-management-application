@@ -322,11 +322,6 @@ public class PatientBookAppointmentController {
     }
     
     @FXML 
-    private void loadPatientReview() {
-        uiManager.switchToPatientReview();
-    }
-
-    @FXML 
     private void loadPatientViewBills() {
         uiManager.switchToPatientViewBills();
     }

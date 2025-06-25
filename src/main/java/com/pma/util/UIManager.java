@@ -107,11 +107,6 @@ public class UIManager {
         setSceneAndMaximize("/com/pma/fxml/patient_update_profile.fxml", "PMA - Patient UpdateProfile", 1200, 800, true, null);
     }
 
-    public void switchToPatientReview() {
-        log.info("Switching to Patient Review Screen");
-        setSceneAndMaximize("/com/pma/fxml/patient_review.fxml", "PMA - Patient Review", 1200, 800, true, null);
-    }
-
     public void switchToPatientViewBills() {
         log.info("Switching to Patient View Bills Screen");
         setSceneAndMaximize("/com/pma/fxml/patient_view_bills.fxml", "PMA - Patient ViewBills", 1200, 800, true, null);
