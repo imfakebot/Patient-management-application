@@ -66,7 +66,7 @@ public class DoctorBookAppointmentController {
     private DatePicker appointmentDatePicker;
 
     @FXML
-    private TextField reasonField;
+    private TextArea reasonField;
 
     @FXML
     private ComboBox<String> appointmentTypeComboBox;
@@ -199,17 +199,24 @@ public class DoctorBookAppointmentController {
             String username = authentication.getName();
             userAccountService.findByUsername(username).ifPresent(userAccount -> {
                 if (userAccount.getDoctor() != null) {
-                    currentDoctor = userAccount.getDoctor();
-                    log.info("Đã tải thông tin bác sĩ: {}", currentDoctor.getFullName());
+                    // userAccount.getDoctor() trả về một proxy được tải lười (lazy-loaded).
+                    // Việc truy cập các thuộc tính của nó (như getFullName) bên ngoài một giao dịch (transaction)
+                    // sẽ gây ra LazyInitializationException.
+                    // Do đó, chúng ta cần lấy ID và tải lại đối tượng Doctor đầy đủ.
+                    UUID doctorId = userAccount.getDoctor().getDoctorId();
+                    this.currentDoctor = doctorService.findById(doctorId).orElse(null);
+
+                    if (this.currentDoctor != null) {
+                        log.info("Đã tải thông tin bác sĩ: {}", this.currentDoctor.getFullName());
+                    } else {
+                        log.error("Không tìm thấy bác sĩ với ID: {}", doctorId);
+                        DialogUtil.showErrorAlert("Lỗi", "Không thể tải thông tin chi tiết của bác sĩ.");
+                    }
                 } else {
                     log.error("Không có bác sĩ nào liên kết với người dùng: {}", username);
                     DialogUtil.showErrorAlert("Lỗi", "Không có bác sĩ nào liên kết với người dùng hiện tại.");
                 }
             });
-        }
-        if (currentDoctor == null) {
-            log.error("Không thể tải thông tin bác sĩ");
-            DialogUtil.showErrorAlert("Lỗi", "Không thể tải thông tin bác sĩ.");
         }
     }
 

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pma.model.entity.Department;
 import com.pma.model.entity.Doctor;
+import com.pma.model.entity.Patient;
 import com.pma.model.entity.UserAccount;
 import com.pma.model.enums.UserRole;
 import com.pma.repository.DepartmentRepository;
@@ -376,4 +377,17 @@ public class DoctorService {
         return savedDoctor;
     }
     // --- Các phương thức quản lý UserAccount có thể đặt ở UserAccountService ---
+
+    /**
+     * Tìm một bác sĩ theo ID và trả về một Optional.
+     *
+     * @param doctorId UUID của bác sĩ cần tìm.
+     * @return Optional chứa Doctor nếu tìm thấy, ngược lại trả về Optional
+     * rỗng.
+     */
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public Optional<Doctor> findById(UUID doctorId) {
+        log.debug("Finding doctor by id: {}", doctorId);
+        return doctorRepository.findById(doctorId);
+    }
 }

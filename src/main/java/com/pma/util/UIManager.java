@@ -74,8 +74,8 @@ public class UIManager {
     }
 
     public void switchToDoctorDashboard() {
-        log.info("Switching to Doctor Dashboard Screen");
-        setSceneAndMaximize("/com/pma/fxml/dashboard.fxml", "PMA - Dashboard", 1200, 800, true, null);
+        log.info("Switching to Doctor Book Appoiment Screen");
+        setSceneAndMaximize("/com/pma/fxml/doctor_book_appointment.fxml", "PMA - Appointment", 1200, 800, true, null);
     }
 
     public void switchToAdminDashboard() {
