@@ -23,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
+import com.pma.service.PatientService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -121,6 +122,9 @@ public class DoctorBookAppointmentController {
 
     @Autowired
     private PatientRepository patientRepository; // Giả định tồn tại
+
+    @Autowired
+    private PatientService patientService; // Thêm dòng này để tiêm PatientService
 
     private Doctor currentDoctor;
 
@@ -402,7 +406,12 @@ public class DoctorBookAppointmentController {
         }
 
         Appointment appointment = new Appointment();
-        appointment.setPatient(patientComboBox.getValue());
+        // Lấy Patient từ ComboBox (đây là một detached entity)
+        Patient selectedPatient = patientComboBox.getValue();
+        // Tải lại Patient từ service để đảm bảo nó là một managed entity trong transaction hiện tại
+        // Điều này cho phép truy cập các collection lazy-loaded của Patient.
+        Patient managedPatient = patientService.getPatientById(selectedPatient.getPatientId());
+        appointment.setPatient(managedPatient);
         appointment.setDoctor(currentDoctor);
         LocalDate date = appointmentDatePicker.getValue();
         LocalTime time = LocalTime.of(
