@@ -92,24 +92,35 @@ public class UIManager {
         );
     }
 
-    public void switchToPatientViewPrescriptions() {
-        log.info("Switching to Patient View Prescriptions Screen");
-        setSceneAndMaximize("/com/pma/fxml/patient_view_prescriptions.fxml", "PMA - Patient View Prescriptions", 1200, 800, true, null);
+    public void switchToPatientViewPrescriptions(UUID patientId) {
+        log.info("Switching to Patient View Prescriptions Screen for patient ID: {}", patientId);
+        setSceneAndMaximize("/com/pma/fxml/patient_view_prescriptions.fxml",
+                "PMA - Patient View Prescriptions", 1200, 800, true,
+                (com.pma.controller.patient.PatientViewPrescriptionsController controller) -> controller.initData(patientId)
+        );
     }
 
-    public void switchToPatientMedicalHistory() {
-        log.info("Switching to Patient Medical History Screen");
-        setSceneAndMaximize("/com/pma/fxml/patient_medical_history.fxml", "PMA - Patient Medical History", 1200, 800, true, null);
+    public void switchToPatientMedicalHistory(UUID patientId) {
+        log.info("Switching to Patient Medical History Screen for patient ID: {}", patientId);
+        setSceneAndMaximize("/com/pma/fxml/patient_medical_history.fxml",
+                "PMA - Patient Medical History",
+                1200, 800, true,
+                (com.pma.controller.patient.PatientMedicalHistoryController controller) -> controller.initData(patientId)
+        );
     }
 
-    public void switchToPatientUpdateProfile() {
+    public void switchToPatientUpdateProfile(UUID patientId) {
         log.info("Switching to Patient Update Profile Screen");
-        setSceneAndMaximize("/com/pma/fxml/patient_update_profile.fxml", "PMA - Patient UpdateProfile", 1200, 800, true, null);
+        setSceneAndMaximize("/com/pma/fxml/patient_update_profile.fxml", "PMA - Patient UpdateProfile", 1200, 800, true,
+                (com.pma.controller.patient.PatientUpdateProfileController controller) -> controller.initData(patientId)
+        );
     }
 
-    public void switchToPatientViewBills() {
+    public void switchToPatientViewBills(UUID patientId) {
         log.info("Switching to Patient View Bills Screen");
-        setSceneAndMaximize("/com/pma/fxml/patient_view_bills.fxml", "PMA - Patient ViewBills", 1200, 800, true, null);
+        setSceneAndMaximize("/com/pma/fxml/patient_view_bills.fxml", "PMA - Patient ViewBills", 1200, 800, true,
+                (com.pma.controller.patient.PatientViewBillsController controller) -> controller.initData(patientId)
+        );
     }
 
     public void switchToDoctorViewPatients() {
@@ -443,22 +454,34 @@ public class UIManager {
                 .anyMatch(ga -> "ROLE_DOCTOR".equals(ga.getAuthority()))) {
             log.info("User {} is DOCTOR, navigating to doctor dashboard.", username);
             switchToDoctorDashboard();
-        } else if (authentication.getAuthorities().stream()
-                .anyMatch(ga -> "ROLE_PATIENT".equals(ga.getAuthority()))) {
+        } else if (authentication.getAuthorities().stream().anyMatch(ga -> "ROLE_PATIENT".equals(ga.getAuthority()))) {
             log.info("User {} is PATIENT, navigating to patient dashboard.", username);
-            switchToPatientDashboard();
+            // Sau khi UserAccount triển khai UserDetails và CustomUserDetailsService được sử dụng,
+            // principal sẽ là một instance của UserAccount entity của chúng ta. Nếu không, cần kiểm tra lại cấu hình Spring Security.
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof com.pma.model.entity.UserAccount userAccount) {
+                if (userAccount.getPatient() != null) {
+                    switchToPatientDashboard(userAccount.getPatient().getPatientId());
+                } else {
+                    log.error("User {} is a PATIENT but has no associated patient profile. Principal type: {}", username, principal.getClass().getName());
+                    DialogUtil.showErrorAlert("Lỗi Tài Khoản", "Tài khoản của bạn không được liên kết với hồ sơ bệnh nhân.");
+                    DialogUtil.showErrorAlert("Lỗi Đăng Nhập", "Không thể xác định thông tin bệnh nhân từ tài khoản của bạn.");
+                    switchToLoginScreen();
+                }
+            } else {
+                log.error("Principal for user {} is not of expected type com.pma.model.entity.UserAccount. Actual type: {}. This indicates a misconfiguration in UserDetailsService.", username, principal.getClass().getName());
+                DialogUtil.showErrorAlert("Lỗi Cấu Hình Hệ Thống", "Không thể truy xuất thông tin chi tiết người dùng. Vui lòng liên hệ quản trị viên.");
+                switchToLoginScreen();
+            }
         } else {
             log.warn("User {} has no recognized role or no specific dashboard. Navigating to default main dashboard.", username);
             switchToLoginScreen(); // Fallback to login or a default screen if no role matches
         }
     }
 
-    // private void switchToSignup() { // This method was defined but not implemented
-    //     throw new UnsupportedOperationException("Unimplemented method 'switchToSignup'");
-    // }
-    private void switchToPatientDashboard() {
+    private void switchToPatientDashboard(UUID patientId) {
         log.info("Switching to Patient Dashboard Screen");
-        setSceneAndMaximize("/com/pma/fxml/patient_book_appointment.fxml", "PMA - Patient Appointment", 1200, 800, true, null);
+        switchToPatientBookAppointment(patientId);
     }
 
     public void switchToForgotPasswordScreen() {

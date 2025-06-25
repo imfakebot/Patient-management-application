@@ -2,16 +2,13 @@ package com.pma.controller.patient;
 
 import com.pma.model.entity.Appointment;
 import com.pma.model.entity.Doctor;
-import com.pma.model.entity.Patient;
 import com.pma.model.enums.AppointmentStatus;
 import com.pma.service.AppointmentService;
 import com.pma.repository.DoctorRepository;
-import com.pma.repository.PatientRepository;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.slf4j.Logger;
@@ -23,25 +20,33 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Bộ điều khiển cho giao diện patient_book_appointment.fxml.
- * Xử lý logic để bệnh nhân đặt lịch hẹn, bao gồm chọn bác sĩ, ngày giờ, lý do và loại cuộc hẹn.
+ * Bộ điều khiển cho giao diện patient_book_appointment.fxml. Xử lý logic để
+ * bệnh nhân đặt lịch hẹn, bao gồm chọn bác sĩ, ngày giờ, lý do và loại cuộc
+ * hẹn.
  */
 @Component
 public class PatientBookAppointmentController {
 
     private static final Logger log = LoggerFactory.getLogger(PatientBookAppointmentController.class);
 
-    @FXML private Button patientBookAppointmentButton;
-    @FXML private Button patientViewPrescriptionsButton;
-    @FXML private Button patientMedicalHistoryButton;
-    @FXML private Button patientUpdateProfileButton;
-    @FXML private Button patientReviewButton;
-    @FXML private Button patientViewBillsButton;
+    @FXML
+    private Button patientBookAppointmentButton;
+    @FXML
+    private Button patientViewPrescriptionsButton;
+    @FXML
+    private Button patientMedicalHistoryButton;
+    @FXML
+    private Button patientUpdateProfileButton;
+    @FXML
+    private Button patientReviewButton;
+    @FXML
+    private Button patientViewBillsButton;
 
     @FXML
     private ComboBox<Doctor> doctorCombo; // Hộp chọn bác sĩ
@@ -77,9 +82,6 @@ public class PatientBookAppointmentController {
     private DoctorRepository doctorRepository;
 
     @Autowired
-    private PatientRepository patientRepository;
-
-    @Autowired
     private UIManager uiManager;
 
     private UUID patientId;
@@ -108,28 +110,23 @@ public class PatientBookAppointmentController {
         doctorCombo.setItems(doctorList);
         doctorCombo.setPromptText("Chọn Bác sĩ");
         // Tùy chỉnh hiển thị tên và chuyên khoa của bác sĩ
-        doctorCombo.setCellFactory(param -> new ListCell<Doctor>() {
+        doctorCombo.setCellFactory(_ -> createDoctorListCell());
+        doctorCombo.setButtonCell(createDoctorListCell());
+    }
+
+    /**
+     * Tạo một ListCell để hiển thị thông tin bác sĩ trong ComboBox.
+     *
+     * @return một ListCell đã được cấu hình.
+     */
+    private ListCell<Doctor> createDoctorListCell() {
+        return new ListCell<>() {
             @Override
             protected void updateItem(Doctor doctor, boolean empty) {
                 super.updateItem(doctor, empty);
-                if (empty || doctor == null) {
-                    setText(null);
-                } else {
-                    setText(doctor.getFullName() + " (" + doctor.getSpecialty() + ")");
-                }
+                setText(empty || doctor == null ? null : doctor.getFullName() + " (" + doctor.getSpecialty() + ")");
             }
-        });
-        doctorCombo.setButtonCell(new ListCell<Doctor>() {
-            @Override
-            protected void updateItem(Doctor doctor, boolean empty) {
-                super.updateItem(doctor, empty);
-                if (empty || doctor == null) {
-                    setText(null);
-                } else {
-                    setText(doctor.getFullName() + " (" + doctor.getSpecialty() + ")");
-                }
-            }
-        });
+        };
     }
 
     /**
@@ -165,7 +162,7 @@ public class PatientBookAppointmentController {
      * Khởi tạo bộ chọn ngày, vô hiệu hóa các ngày trong quá khứ.
      */
     private void khoiTaoDatePicker() {
-        appointmentDatePicker.setDayCellFactory(picker -> new DateCell() {
+        appointmentDatePicker.setDayCellFactory(_ -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
@@ -177,26 +174,27 @@ public class PatientBookAppointmentController {
     /**
      * Khởi tạo bảng hiển thị các cuộc hẹn sắp tới của bệnh nhân.
      */
+    @SuppressWarnings("unchecked")
     private void khoiTaoAppointmentsTable() {
         // Định nghĩa các cột cho bảng
         TableColumn<Appointment, String> doctorColumn = new TableColumn<>("Bác sĩ");
         doctorColumn.setCellValueFactory(cellData -> {
             Doctor doctor = cellData.getValue().getDoctor();
             return new javafx.beans.property.SimpleStringProperty(
-                doctor != null ? doctor.getFullName() : "Chưa phân công");
+                    doctor != null ? doctor.getFullName() : "Chưa phân công");
         });
 
         TableColumn<Appointment, LocalDateTime> dateTimeColumn = new TableColumn<>("Ngày & Giờ");
-        dateTimeColumn.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getAppointmentDatetime()));
+        dateTimeColumn.setCellValueFactory(cellData
+                -> new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getAppointmentDatetime()));
 
         TableColumn<Appointment, String> typeColumn = new TableColumn<>("Loại");
-        typeColumn.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAppointmentType()));
+        typeColumn.setCellValueFactory(cellData
+                -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAppointmentType()));
 
         TableColumn<Appointment, String> statusColumn = new TableColumn<>("Trạng thái");
-        statusColumn.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStatus().toString()));
+        statusColumn.setCellValueFactory(cellData
+                -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStatus().toString()));
 
         appointmentsTable.getColumns().addAll(doctorColumn, dateTimeColumn, typeColumn, statusColumn);
 
@@ -204,8 +202,8 @@ public class PatientBookAppointmentController {
         List<Appointment> upcomingAppointments = appointmentService.getAppointmentsByPatient(patientId,
                 org.springframework.data.domain.PageRequest.of(0, 100)).getContent()
                 .stream()
-                .filter(app -> app.getStatus() == AppointmentStatus.Scheduled &&
-                        app.getAppointmentDatetime().isAfter(LocalDateTime.now()))
+                .filter(app -> app.getStatus() == AppointmentStatus.Scheduled
+                && app.getAppointmentDatetime().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
         appointmentsTable.setItems(FXCollections.observableArrayList(upcomingAppointments));
     }
@@ -213,67 +211,37 @@ public class PatientBookAppointmentController {
     /**
      * Xử lý sự kiện khi nhấn nút đặt lịch hẹn.
      *
-     * @param event Sự kiện ActionEvent từ nút đặt lịch.
      */
     @FXML
-    private void bookAppointment(ActionEvent event) {
+    private void bookAppointment() {
         try {
-            // Kiểm tra đầu vào
+            Optional<String> validationError = getValidationError();
+            if (validationError.isPresent()) {
+                DialogUtil.showErrorAlert("Lỗi Nhập Liệu", validationError.get());
+                return;
+            }
+
             Doctor selectedDoctor = doctorCombo.getValue();
-            LocalDate appointmentDate = appointmentDatePicker.getValue();
-            String hour = comboHour.getValue();
-            String minute = comboMinute.getValue();
-            String reason = reasonField.getText();
-            String appointmentType = appointmentTypeCombo.getValue();
-
-            if (selectedDoctor == null) {
-                DialogUtil.showErrorAlert("Lỗi Nhập Liệu", "Vui lòng chọn bác sĩ.");
-                return;
-            }
-            if (appointmentDate == null) {
-                DialogUtil.showErrorAlert("Lỗi Nhập Liệu", "Vui lòng chọn ngày hẹn.");
-                return;
-            }
-            if (hour == null || minute == null) {
-                DialogUtil.showErrorAlert("Lỗi Nhập Liệu", "Vui lòng chọn giờ và phút hợp lệ.");
-                return;
-            }
-            if (reason == null || reason.trim().isEmpty()) {
-                DialogUtil.showErrorAlert("Lỗi Nhập Liệu", "Vui lòng cung cấp lý do cho cuộc hẹn.");
-                return;
-            }
-            if (appointmentType == null) {
-                DialogUtil.showErrorAlert("Lỗi Nhập Liệu", "Vui lòng chọn loại cuộc hẹn.");
-                return;
-            }
-
-            // Phân tích thời gian
-            LocalTime appointmentTime = LocalTime.parse(hour + ":" + minute);
-            LocalDateTime appointmentDateTime = LocalDateTime.of(appointmentDate, appointmentTime);
-
-            if (appointmentDateTime.isBefore(LocalDateTime.now())) {
-                DialogUtil.showErrorAlert("Lỗi Nhập Liệu", "Ngày và giờ hẹn phải ở tương lai.");
-                return;
-            }
+            LocalDateTime appointmentDateTime = getAppointmentDateTimeFromForm();
 
             // Tạo đối tượng Appointment
             Appointment appointment = new Appointment();
             appointment.setAppointmentDatetime(appointmentDateTime);
-            appointment.setReason(reason);
-            appointment.setAppointmentType(appointmentType);
+            appointment.setReason(reasonField.getText().trim());
+            appointment.setAppointmentType(appointmentTypeCombo.getValue());
             appointment.setStatus(AppointmentStatus.Scheduled);
 
             // Đặt lịch hẹn
             Appointment savedAppointment = appointmentService.scheduleAppointment(appointment, patientId, selectedDoctor.getDoctorId());
 
-            DialogUtil.showSuccessAlert("Thành Công", "Đặt lịch hẹn thành công vào " +
-                    savedAppointment.getAppointmentDatetime() + " với Bác sĩ " + selectedDoctor.getFullName());
+            DialogUtil.showSuccessAlert("Thành Công", "Đặt lịch hẹn thành công vào "
+                    + savedAppointment.getAppointmentDatetime() + " với Bác sĩ " + selectedDoctor.getFullName());
 
             // Làm mới bảng lịch hẹn
             khoiTaoAppointmentsTable();
 
             // Xóa form
-            clearForm(null);
+            clearForm();
 
         } catch (IllegalArgumentException e) {
             log.warn("Đặt lịch hẹn thất bại: {}", e.getMessage());
@@ -286,12 +254,51 @@ public class PatientBookAppointmentController {
     }
 
     /**
+     * Xác thực dữ liệu nhập vào từ form đặt lịch hẹn.
+     *
+     * @return một Optional chứa thông báo lỗi nếu có, ngược lại là Optional
+     * rỗng.
+     */
+    private Optional<String> getValidationError() {
+        if (doctorCombo.getValue() == null) {
+            return Optional.of("Vui lòng chọn bác sĩ.");
+        }
+        if (appointmentDatePicker.getValue() == null) {
+            return Optional.of("Vui lòng chọn ngày hẹn.");
+        }
+        if (comboHour.getValue() == null || comboMinute.getValue() == null) {
+            return Optional.of("Vui lòng chọn giờ và phút hợp lệ.");
+        }
+        if (reasonField.getText() == null || reasonField.getText().trim().isEmpty()) {
+            return Optional.of("Vui lòng cung cấp lý do cho cuộc hẹn.");
+        }
+        if (appointmentTypeCombo.getValue() == null) {
+            return Optional.of("Vui lòng chọn loại cuộc hẹn.");
+        }
+
+        if (getAppointmentDateTimeFromForm().isBefore(LocalDateTime.now())) {
+            return Optional.of("Ngày và giờ hẹn phải ở tương lai.");
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Lấy LocalDateTime từ các trường chọn ngày và giờ trên form.
+     *
+     * @return LocalDateTime được tạo từ form.
+     */
+    private LocalDateTime getAppointmentDateTimeFromForm() {
+        LocalDate appointmentDate = appointmentDatePicker.getValue();
+        LocalTime appointmentTime = LocalTime.parse(comboHour.getValue() + ":" + comboMinute.getValue());
+        return LocalDateTime.of(appointmentDate, appointmentTime);
+    }
+
+    /**
      * Xử lý sự kiện khi nhấn nút xóa form để đặt lại các trường nhập liệu.
      *
-     * @param event Sự kiện ActionEvent từ nút xóa.
      */
     @FXML
-    private void clearForm(ActionEvent event) {
+    private void clearForm() {
         doctorCombo.getSelectionModel().clearSelection();
         appointmentDatePicker.setValue(null);
         comboHour.getSelectionModel().clearSelection();
@@ -303,27 +310,52 @@ public class PatientBookAppointmentController {
 
     @FXML
     private void loadPatientBookAppointment() {
+        if (patientId == null) {
+            log.warn("Cannot switch to Book Appointment screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
         uiManager.switchToPatientBookAppointment(patientId);
     }
-    
+
     @FXML
     private void loadPatientViewPrescriptions() {
-        uiManager.switchToPatientViewPrescriptions();
+        if (patientId == null) {
+            log.warn("Cannot switch to View Prescriptions screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientViewPrescriptions(patientId);
     }
 
-    @FXML 
+    @FXML
     private void loadPatientMedicalHistory() {
-        uiManager.switchToPatientMedicalHistory();
+        if (patientId == null) {
+            log.warn("Cannot switch to Medical History screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientMedicalHistory(patientId);
     }
 
     @FXML
     private void loadPatientUpdateProfile() {
-        uiManager.switchToPatientUpdateProfile();
+        if (patientId == null) {
+            log.warn("Cannot switch to Update Profile screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientUpdateProfile(patientId);
     }
-    
-    @FXML 
+
+    @FXML
     private void loadPatientViewBills() {
-        uiManager.switchToPatientViewBills();
+        if (patientId == null) {
+            log.warn("Cannot switch to View Bills screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientViewBills(patientId);
     }
 
 }

@@ -1,16 +1,23 @@
 package com.pma.model.entity; // <-- THAY ĐỔI PACKAGE NẾU CẦN
 
-import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+
 import java.util.Objects;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.pma.model.enums.UserRole;
 
-import jakarta.persistence.Column; // Cần cho equals/hashCode chuẩn
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,7 +43,7 @@ import lombok.ToString;
 @Setter
 // Exclude các quan hệ để tránh lỗi LAZY / vòng lặp
 @ToString(exclude = {"patient", "doctor"})
-@NoArgsConstructor // Bắt buộc cho JPA
+@NoArgsConstructor // Bắt buộc cho JPA và UserDetails
 @Entity
 @Table(name = "UserAccounts", uniqueConstraints = {
     // Ràng buộc UNIQUE từ schema
@@ -54,7 +61,7 @@ import lombok.ToString;
     @Index(name = "IX_UserAccounts_patient_id_filtered", columnList = "patient_id"), // Chỉ mục thông thường
     @Index(name = "IX_UserAccounts_doctor_id_filtered", columnList = "doctor_id") // Chỉ mục thông thường
 })
-public class UserAccount {
+public class UserAccount implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) // Phù hợp UNIQUEIDENTIFIER + DEFAULT
@@ -356,4 +363,46 @@ public class UserAccount {
     // Unique Index.
     // Yêu cầu các lớp Patient và Doctor phải có phương thức internal
     // `setUserAccountInternal`.
+
+    // --- UserDetails interface methods ---
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (role == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        // Implement logic if you have account expiration, otherwise always true
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        // Locked if lockoutUntil is in the future
+        return lockoutUntil == null || lockoutUntil.isBefore(LocalDateTime.now());
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        // Implement logic if you have credential expiration, otherwise always true
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return active;
+    }
 }

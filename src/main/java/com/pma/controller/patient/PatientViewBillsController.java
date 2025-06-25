@@ -1,10 +1,8 @@
 package com.pma.controller.patient;
 
-import com.pma.model.entity.Appointment;
 import com.pma.model.entity.Bill;
 import com.pma.model.entity.BillItem;
 import com.pma.service.BillService;
-import com.pma.service.UserAccountService;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
 
@@ -23,11 +21,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import com.pma.model.entity.Appointment;
 
 /**
  * Controller cho màn hình xem hóa đơn của bệnh nhân.
@@ -88,8 +85,6 @@ public class PatientViewBillsController {
     @Autowired
     private BillService billService;
     @Autowired
-    private UserAccountService userAccountService;
-    @Autowired
     private UIManager uiManager;
 
     private UUID patientId;
@@ -97,19 +92,6 @@ public class PatientViewBillsController {
     private final ObservableList<BillItem> billItemList = FXCollections.observableArrayList();
     private int currentPage = 0;
     private final int pageSize = 10;
-
-    public void initData(String username) {
-        userAccountService.findByUsername(username).ifPresent(user -> {
-            if (user.getPatient() == null) {
-                log.error("User {} is not linked to a patient", username);
-                DialogUtil.showErrorAlert("Lỗi", "Không tìm thấy bệnh nhân", "Tài khoản không liên kết với bệnh nhân.");
-                return;
-            }
-            this.patientId = user.getPatient().getPatientId();
-            initialize();
-            loadBills();
-        });
-    }
 
     /**
      * Khởi tạo các cột của bảng và thiết lập phân trang.
@@ -148,7 +130,7 @@ public class PatientViewBillsController {
 
         // Sự kiện khi chọn một hóa đơn từ billsTable
         billsTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> {
+                (_, _, newSelection) -> {
                     if (newSelection != null) {
                         loadBillItems(newSelection.getBillId());
                     } else {
@@ -158,14 +140,28 @@ public class PatientViewBillsController {
         );
 
         // Thiết lập phân trang
-        pagination.setPageCount(1);
-        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
-            currentPage = newIndex.intValue();
-            loadBills();
-        });
+        if (pagination != null) {
+            pagination.setPageCount(1);
+            pagination.currentPageIndexProperty().addListener((_, _, newIndex) -> {
+                currentPage = newIndex.intValue();
+                loadBills();
+            });
+        } else {
+            log.warn("Pagination FXML element with fx:id='pagination' was not found. Pagination will not be available.");
+        }
 
         billsTable.setItems(billList);
         billItemsTable.setItems(billItemList);
+    }
+
+    /**
+     * Khởi tạo dữ liệu cho controller với ID của bệnh nhân.
+     *
+     * @param patientId ID của bệnh nhân.
+     */
+    public void initData(UUID patientId) {
+        this.patientId = patientId;
+        loadBills();
     }
 
     /**
@@ -180,7 +176,9 @@ public class PatientViewBillsController {
             Pageable pageable = PageRequest.of(currentPage, pageSize);
             Page<Bill> billPage = billService.getBillsByPatient(patientId, pageable);
             billList.setAll(billPage.getContent());
-            pagination.setPageCount(billPage.getTotalPages());
+            if (pagination != null) {
+                pagination.setPageCount(billPage.getTotalPages() > 0 ? billPage.getTotalPages() : 1);
+            }
             log.info("Loaded {} bills for patient ID: {}, page: {}", billPage.getNumberOfElements(), patientId, currentPage);
         } catch (Exception e) {
             log.error("Failed to load bills for patient ID: {}", patientId, e);
@@ -215,27 +213,51 @@ public class PatientViewBillsController {
 
     @FXML
     private void loadPatientBookAppointment() {
-        uiManager.switchToPatientBookAppointment(null);
+        if (patientId == null) {
+            log.warn("Cannot switch to Book Appointment screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientBookAppointment(patientId);
     }
 
     @FXML
     private void loadPatientViewPrescriptions() {
-        uiManager.switchToPatientViewPrescriptions();
+        if (patientId == null) {
+            log.warn("Cannot switch to View Prescriptions screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientViewPrescriptions(patientId);
     }
 
     @FXML
     private void loadPatientMedicalHistory() {
-        uiManager.switchToPatientMedicalHistory();
+        if (patientId == null) {
+            log.warn("Cannot switch to Medical History screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientMedicalHistory(patientId);
     }
 
     @FXML
     private void loadPatientUpdateProfile() {
-        uiManager.switchToPatientUpdateProfile();
+        if (patientId == null) {
+            log.warn("Cannot switch to Update Profile screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientUpdateProfile(patientId);
     }
 
- 
-   @FXML 
+    @FXML
     private void loadPatientViewBills() {
-        uiManager.switchToPatientViewBills();
+        if (patientId == null) {
+            log.warn("Cannot switch to View Bills screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientViewBills(patientId);
     }
 }

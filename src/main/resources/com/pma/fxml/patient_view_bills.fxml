@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
@@ -35,8 +36,8 @@
                 <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
             <Label styleClass="title-label" text="Xem Hóa đơn" />
-            <VBox spacing="20.0">
-                <TableView fx:id="billsTable" prefHeight="300.0">
+            <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+                <TableView fx:id="billsTable" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="billIdColumn" prefWidth="100.0" text="Mã Hóa đơn" />
                         <TableColumn fx:id="appointmentIdColumn" prefWidth="100.0" text="Mã Lịch hẹn" />
@@ -50,7 +51,9 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                     </columnResizePolicy>
                 </TableView>
-                <TableView fx:id="billItemsTable" prefHeight="300.0">
+                <Pagination fx:id="pagination" />
+                <Label styleClass="sub-title-label" text="Chi tiết Hóa đơn" />
+                <TableView fx:id="billItemsTable" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="itemDescriptionColumn" prefWidth="150.0" text="Mô tả" />
                         <TableColumn fx:id="itemTypeColumn" prefWidth="100.0" text="Loại" />

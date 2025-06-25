@@ -1,33 +1,35 @@
 package com.pma.controller.patient;
 
+import java.net.URL;
+import java.time.LocalDate;
+import java.util.ResourceBundle;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.pma.model.entity.Patient;
 import com.pma.model.enums.Gender;
 import com.pma.service.PatientService;
 import com.pma.service.UserAccountService;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
+
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-
-import java.net.URL;
-import java.time.LocalDate;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
 @Component
 public class PatientUpdateProfileController implements Initializable {
 
     private static final Logger log = LoggerFactory.getLogger(PatientUpdateProfileController.class);
-
     private final PatientService patientService;
-    private final UserAccountService userAccountService;
     private Patient currentPatient;
 
     @FXML
@@ -80,10 +82,8 @@ public class PatientUpdateProfileController implements Initializable {
     @FXML
     private Button clearButton;
 
-    public PatientUpdateProfileController(PatientService patientService,
-            UserAccountService userAccountService) {
+    public PatientUpdateProfileController(PatientService patientService) {
         this.patientService = patientService;
-        this.userAccountService = userAccountService;
     }
 
     @Autowired
@@ -92,41 +92,26 @@ public class PatientUpdateProfileController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupComboBoxes();
-        loadPatientData();
+    }
+
+    /**
+     * Khởi tạo dữ liệu cho controller với ID của bệnh nhân.
+     *
+     * @param patientId ID của bệnh nhân.
+     */
+    public void initData(UUID patientId) {
+        try {
+            this.currentPatient = patientService.getPatientById(patientId);
+            populateForm(currentPatient);
+        } catch (Exception e) {
+            log.error("Lỗi khi tải dữ liệu bệnh nhân với ID: {}", patientId, e);
+            DialogUtil.showErrorAlert("Lỗi", "Không thể tải thông tin bệnh nhân");
+        }
     }
 
     private void setupComboBoxes() {
         genderCombo.getItems().addAll("Male", "Female", "Other");
         bloodTypeCombo.getItems().addAll("A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-");
-    }
-
-    private void loadPatientData() {
-        try {
-            UUID patientId = getCurrentPatientId();
-            if (patientId != null) {
-                currentPatient = patientService.getPatientById(patientId);
-                populateForm(currentPatient);
-            }
-        } catch (Exception e) {
-            log.error("Lỗi khi tải dữ liệu bệnh nhân", e);
-            DialogUtil.showErrorAlert("Lỗi", "Không thể tải thông tin bệnh nhân");
-        }
-    }
-
-    private UUID getCurrentPatientId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            String username = authentication.getName();
-            return userAccountService.findByUsername(username)
-                    .map(userAccount -> {
-                        if (userAccount.getPatient() != null) {
-                            return userAccount.getPatient().getPatientId();
-                        }
-                        return null;
-                    })
-                    .orElse(null);
-        }
-        return null;
     }
 
     private void populateForm(Patient patient) {
@@ -232,26 +217,51 @@ public class PatientUpdateProfileController implements Initializable {
 
     @FXML
     private void loadPatientBookAppointment() {
-        uiManager.switchToPatientBookAppointment(null);
+        if (currentPatient != null) {
+            uiManager.switchToPatientBookAppointment(currentPatient.getPatientId());
+        } else {
+            log.warn("Cannot switch to Book Appointment screen because currentPatient is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+        }
     }
 
     @FXML
     private void loadPatientViewPrescriptions() {
-        uiManager.switchToPatientViewPrescriptions();
+        if (currentPatient != null) {
+            uiManager.switchToPatientViewPrescriptions(currentPatient.getPatientId());
+        } else {
+            log.warn("Cannot switch to View Prescriptions screen because currentPatient is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+        }
     }
 
     @FXML
     private void loadPatientMedicalHistory() {
-        uiManager.switchToPatientMedicalHistory();
+        if (currentPatient != null) {
+            uiManager.switchToPatientMedicalHistory(currentPatient.getPatientId());
+        } else {
+            log.warn("Cannot switch to Medical History screen because currentPatient is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+        }
     }
 
     @FXML
     private void loadPatientUpdateProfile() {
-        uiManager.switchToPatientUpdateProfile();
+        if (currentPatient != null) {
+            uiManager.switchToPatientUpdateProfile(currentPatient.getPatientId());
+        } else {
+            log.warn("Cannot switch to Update Profile screen because currentPatient is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+        }
     }
 
     @FXML
     private void loadPatientViewBills() {
-        uiManager.switchToPatientViewBills();
+        if (currentPatient != null) {
+            uiManager.switchToPatientViewBills(currentPatient.getPatientId());
+        } else {
+            log.warn("Cannot switch to View Bills screen because currentPatient is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+        }
     }
 }

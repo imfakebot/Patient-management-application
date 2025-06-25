@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.pma.service.UserAccountService;
 
+import com.pma.service.CustomUserDetailsService;
+
 /**
  * Cấu hình Spring Security cho ứng dụng Desktop. Tập trung vào Authentication
  * Provider và Method Security. KHÔNG cấu hình HttpSecurity hay
@@ -28,7 +30,7 @@ public class SecurityConfig {
 
     @Autowired
     @Lazy
-    private UserAccountService userAccountService; // UserAccountService của bạn phải implement UserDetailsService
+    private CustomUserDetailsService customUserDetailsService; // Sử dụng CustomUserDetailsService đã được tạo
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -38,8 +40,8 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         // Trả về instance của UserAccountService đã được inject.
-        // UserAccountService cần implement interface UserDetailsService của Spring Security.
-        return userAccountService;
+        // CustomUserDetailsService đã implement interface UserDetailsService của Spring Security.
+        return customUserDetailsService;
     }
 
     @Bean

@@ -2,11 +2,7 @@ package com.pma.controller.patient;
 
 import com.pma.model.entity.Prescription;
 import com.pma.model.entity.PrescriptionDetail;
-import com.pma.model.entity.UserAccount;
-import com.pma.model.entity.Patient;
 import com.pma.repository.PrescriptionRepository;
-import com.pma.repository.PrescriptionDetailRepository;
-import com.pma.repository.UserAccountRepository;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
 import javafx.collections.FXCollections;
@@ -19,8 +15,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -29,52 +23,60 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Controller cho màn hình xem danh sách đơn thuốc của bệnh nhân (patient_view_prescriptions.fxml).
- * Hiển thị danh sách đơn thuốc và chi tiết thuốc khi bệnh nhân chọn một đơn thuốc.
- */
+ * Controller cho màn hình xem danh sách đơn thuốc của bệnh nhân
+ * (patient_view_prescriptions.fxml). Hiển thị danh sách đơn thuốc và chi tiết
+ * thuốc khi bệnh nhân chọn một đơn thuốc.
+ *
+ * */
 @Component
 public class PatientViewPrescriptionsController {
 
     // Đối tượng Logger để ghi log hoạt động của controller
     private static final Logger log = LoggerFactory.getLogger(PatientViewPrescriptionsController.class);
 
-    @FXML private Button patientBookAppointmentButton;
-    @FXML private Button patientViewPrescriptionsButton;
-    @FXML private Button patientMedicalHistoryButton;
-    @FXML private Button patientUpdateProfileButton;
-    @FXML private Button patientReviewButton;
-    @FXML private Button patientViewBillsButton;
+    @FXML
+    private Button patientBookAppointmentButton;
+    @FXML
+    private Button patientViewPrescriptionsButton;
+    @FXML
+    private Button patientMedicalHistoryButton;
+    @FXML
+    private Button patientUpdateProfileButton;
+    @FXML
+    private Button patientReviewButton;
+    @FXML
+    private Button patientViewBillsButton;
 
     @FXML
     private TableView<Prescription> prescriptionsTable;
-    
+
     @FXML
     private TableColumn<Prescription, LocalDate> prescriptionDateColumn;
-    
+
     @FXML
     private TableColumn<Prescription, String> doctorColumn;
-    
+
     @FXML
     private TableColumn<Prescription, String> notesColumn;
-    
+
     @FXML
     private TableColumn<Prescription, String> statusColumn;
 
     @FXML
     private TableView<PrescriptionDetail> prescriptionDetailsTable;
-    
+
     @FXML
     private TableColumn<PrescriptionDetail, String> medicineColumn;
-    
+
     @FXML
     private TableColumn<PrescriptionDetail, Integer> quantityColumn;
-    
+
     @FXML
     private TableColumn<PrescriptionDetail, BigDecimal> unitPriceColumn;
-    
+
     @FXML
     private TableColumn<PrescriptionDetail, String> dosageColumn;
-    
+
     @FXML
     private TableColumn<PrescriptionDetail, String> instructionsColumn;
 
@@ -82,26 +84,32 @@ public class PatientViewPrescriptionsController {
     private PrescriptionRepository prescriptionRepository;
 
     @Autowired
-    private PrescriptionDetailRepository prescriptionDetailRepository;
-
-    @Autowired
-    private UserAccountRepository userAccountRepository;
-
-    @Autowired
     private UIManager uiManager;
 
-    private ObservableList<Prescription> prescriptionList = FXCollections.observableArrayList();
-    
-    private ObservableList<PrescriptionDetail> prescriptionDetailList = FXCollections.observableArrayList();
+    private final ObservableList<Prescription> prescriptionList = FXCollections.observableArrayList();
+
+    private final ObservableList<PrescriptionDetail> prescriptionDetailList = FXCollections.observableArrayList();
+
+    private UUID patientId;
 
     /**
-     * Khởi tạo controller, thiết lập các cột của bảng và tải danh sách đơn thuốc.
+     * Khởi tạo controller, thiết lập các cột của bảng và tải danh sách đơn
+     * thuốc.
      */
     @FXML
     public void initialize() {
         log.info("Khởi tạo PatientViewPrescriptionsController");
         setupPrescriptionsTable();
         setupPrescriptionDetailsTable();
+    }
+
+    /**
+     * Khởi tạo dữ liệu cho controller với ID của bệnh nhân.
+     *
+     * @param patientId ID của bệnh nhân.
+     */
+    public void initData(UUID patientId) {
+        this.patientId = patientId;
         loadPrescriptions();
     }
 
@@ -111,36 +119,36 @@ public class PatientViewPrescriptionsController {
     private void setupPrescriptionsTable() {
         // Gán giá trị cho cột ngày kê đơn từ thuộc tính prescriptionDate
         prescriptionDateColumn.setCellValueFactory(new PropertyValueFactory<>("prescriptionDate"));
-        
+
         // Gán giá trị cho cột bác sĩ, lấy tên từ Doctor.fullName, xử lý trường hợp null
         doctorColumn.setCellValueFactory(cellData -> {
-            String doctorName = cellData.getValue().getDoctor() != null 
-                ? cellData.getValue().getDoctor().getFullName() 
-                : "Không xác định";
+            String doctorName = cellData.getValue().getDoctor() != null
+                    ? cellData.getValue().getDoctor().getFullName()
+                    : "Không xác định";
             return new javafx.beans.property.SimpleStringProperty(doctorName);
         });
-        
+
         // Gán giá trị cho cột ghi chú từ thuộc tính notes
         notesColumn.setCellValueFactory(new PropertyValueFactory<>("notes"));
-        
+
         // Gán giá trị cho cột trạng thái từ thuộc tính status (PrescriptionStatus)
-        statusColumn.setCellValueFactory(cellData -> 
-            new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().getStatus().toString()
-            ));
+        statusColumn.setCellValueFactory(cellData
+                -> new javafx.beans.property.SimpleStringProperty(
+                        cellData.getValue().getStatus().toString()
+                ));
 
         // Gán danh sách đơn thuốc vào bảng
         prescriptionsTable.setItems(prescriptionList);
 
         // Thêm listener để cập nhật bảng chi tiết khi chọn một đơn thuốc
         prescriptionsTable.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    loadPrescriptionDetails(newSelection.getPrescriptionId());
-                } else {
-                    prescriptionDetailList.clear();
-                }
-            });
+                (_, _, newSelection) -> {
+                    if (newSelection != null) {
+                        loadPrescriptionDetails(newSelection.getPrescriptionId());
+                    } else {
+                        prescriptionDetailList.clear();
+                    }
+                });
     }
 
     /**
@@ -148,22 +156,22 @@ public class PatientViewPrescriptionsController {
      */
     private void setupPrescriptionDetailsTable() {
         // Gán giá trị cho cột tên thuốc, lấy từ Medicine.medicineName, xử lý trường hợp null
-        medicineColumn.setCellValueFactory(cellData -> 
-            new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().getMedicine() != null 
-                ? cellData.getValue().getMedicine().getMedicineName() 
-                : "Không xác định"
-            ));
-        
+        medicineColumn.setCellValueFactory(cellData
+                -> new javafx.beans.property.SimpleStringProperty(
+                        cellData.getValue().getMedicine() != null
+                        ? cellData.getValue().getMedicine().getMedicineName()
+                        : "Không xác định"
+                ));
+
         // Gán giá trị cho cột số lượng từ thuộc tính quantity
         quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-        
+
         // Gán giá trị cho cột đơn giá từ thuộc tính unitPrice
         unitPriceColumn.setCellValueFactory(new PropertyValueFactory<>("unitPrice"));
-        
+
         // Gán giá trị cho cột liều lượng từ thuộc tính dosage
         dosageColumn.setCellValueFactory(new PropertyValueFactory<>("dosage"));
-        
+
         // Gán giá trị cho cột hướng dẫn sử dụng từ thuộc tính instructions
         instructionsColumn.setCellValueFactory(new PropertyValueFactory<>("instructions"));
 
@@ -175,87 +183,95 @@ public class PatientViewPrescriptionsController {
      * Tải danh sách đơn thuốc của bệnh nhân hiện tại từ cơ sở dữ liệu.
      */
     private void loadPrescriptions() {
+        if (patientId == null) {
+            log.error("Patient ID is null. Cannot load prescriptions.");
+            DialogUtil.showErrorAlert("Lỗi Dữ liệu", "Không thể tải đơn thuốc vì thiếu thông tin bệnh nhân.");
+            return;
+        }
         try {
-            // Lấy thông tin xác thực từ Spring Security
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication == null || !authentication.isAuthenticated()) {
-                log.error("Không tìm thấy người dùng được xác thực.");
-                DialogUtil.showErrorAlert("Lỗi xác thực", "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
-                uiManager.switchToLoginScreen();
-                return;
-            }
-
-            // Lấy tên đăng nhập từ thông tin xác thực
-            String username = authentication.getName();
-            log.info("Tải đơn thuốc cho người dùng: {}", username);
-
-            // Tìm UserAccount từ tên đăng nhập
-            UserAccount userAccount = userAccountRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản người dùng cho tên đăng nhập: " + username));
-
-            // Lấy thông tin bệnh nhân từ UserAccount
-            Patient patient = userAccount.getPatient();
-            if (patient == null) {
-                log.error("Không tìm thấy bệnh nhân cho người dùng: {}", username);
-                DialogUtil.showErrorAlert("Lỗi dữ liệu", "Không tìm thấy thông tin bệnh nhân cho tài khoản này.");
-                return;
-            }
-
-            // Lấy ID bệnh nhân và truy vấn danh sách đơn thuốc
-            UUID patientId = patient.getPatientId();
+            log.info("Tải đơn thuốc cho bệnh nhân có ID: {}", patientId);
             List<Prescription> prescriptions = prescriptionRepository.findByPatient_PatientId(patientId);
             prescriptionList.setAll(prescriptions);
 
             // Hiển thị thông báo nếu không có đơn thuốc
             if (prescriptions.isEmpty()) {
                 DialogUtil.showInfoAlert("Thông báo", "Bạn chưa có đơn thuốc nào.");
+            } else {
+                // Tự động chọn đơn thuốc đầu tiên để hiển thị chi tiết
+                prescriptionsTable.getSelectionModel().selectFirst();
             }
 
         } catch (Exception e) {
-            log.error("Lỗi khi tải danh sách đơn thuốc cho người dùng.", e);
-            DialogUtil.showExceptionDialog("Lỗi tải dữ liệu", "Không thể tải danh sách đơn thuốc.", 
-                "Vui lòng thử lại sau.", e);
+            log.error("Lỗi khi tải danh sách đơn thuốc cho patientId: {}", patientId, e);
+            DialogUtil.showExceptionDialog("Lỗi tải dữ liệu", "Không thể tải danh sách đơn thuốc.",
+                    "Vui lòng thử lại sau.", e);
         }
     }
 
     /**
      * Tải chi tiết đơn thuốc dựa trên ID đơn thuốc.
+     *
      * @param prescriptionId ID của đơn thuốc.
      */
     private void loadPrescriptionDetails(UUID prescriptionId) {
         try {
-            // Truy vấn danh sách chi tiết đơn thuốc theo prescriptionId
-            List<PrescriptionDetail> details = prescriptionDetailRepository.findByPrescription_PrescriptionId(prescriptionId);
-            prescriptionDetailList.setAll(details);
+            // Lấy toàn bộ thông tin đơn thuốc, bao gồm cả chi tiết
+            Prescription prescription = prescriptionRepository.findById(prescriptionId).orElseThrow();
+            prescriptionDetailList.setAll(prescription.getPrescriptionDetailsView());
         } catch (Exception e) {
             log.error("Lỗi khi tải chi tiết đơn thuốc cho prescriptionId: {}", prescriptionId, e);
-            DialogUtil.showExceptionDialog("Lỗi tải dữ liệu", "Không thể tải chi tiết đơn thuốc.", 
-                "Vui lòng thử lại sau.", e);
+            DialogUtil.showExceptionDialog("Lỗi tải dữ liệu", "Không thể tải chi tiết đơn thuốc.",
+                    "Vui lòng thử lại sau.", e);
         }
     }
 
     @FXML
     private void loadPatientBookAppointment() {
-        uiManager.switchToPatientBookAppointment(null);
-    }
-    
-    @FXML
-    private void loadPatientViewPrescriptions() {
-        uiManager.switchToPatientViewPrescriptions();
+        if (this.patientId == null) {
+            log.warn("Cannot switch to Book Appointment screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientBookAppointment(this.patientId);
     }
 
-    @FXML 
+    @FXML
+    private void loadPatientViewPrescriptions() {
+        if (this.patientId == null) {
+            log.warn("Cannot switch to View Prescriptions screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientViewPrescriptions(this.patientId);
+    }
+
+    @FXML
     private void loadPatientMedicalHistory() {
-        uiManager.switchToPatientMedicalHistory();
+        if (this.patientId == null) {
+            log.warn("Cannot switch to Medical History screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientMedicalHistory(this.patientId);
     }
 
     @FXML
     private void loadPatientUpdateProfile() {
-        uiManager.switchToPatientUpdateProfile();
+        if (this.patientId == null) {
+            log.warn("Cannot switch to Update Profile screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientUpdateProfile(this.patientId);
     }
 
-    @FXML 
+    @FXML
     private void loadPatientViewBills() {
-        uiManager.switchToPatientViewBills();
+        if (this.patientId == null) {
+            log.warn("Cannot switch to View Bills screen because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        uiManager.switchToPatientViewBills(this.patientId);
     }
 }

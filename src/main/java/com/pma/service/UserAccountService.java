@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,7 +41,7 @@ import jakarta.persistence.EntityNotFoundException;
  * thực.
  */
 @Service
-public class UserAccountService implements UserDetailsService {
+public class UserAccountService {
 
     private static final Logger log = LoggerFactory.getLogger(UserAccountService.class);
 
@@ -70,30 +67,6 @@ public class UserAccountService implements UserDetailsService {
         this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
-    }
-
-    @Override
-    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.debug("Attempting to load user by username: {}", username);
-
-        UserAccount userAccount = userAccountRepository.findByUsername(username)
-                .orElseThrow(() -> {
-                    log.warn("Username not found: {}", username);
-                    return new UsernameNotFoundException("User not found with username: " + username);
-                });
-
-        log.info("User found: {}. Loading details...", username);
-
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userAccount.getRole().name());
-
-        return new User(userAccount.getUsername(),
-                userAccount.getPasswordHash(),
-                userAccount.isActive(),
-                true,
-                true,
-                userAccount.getLockoutUntil() == null || userAccount.getLockoutUntil().isBefore(LocalDateTime.now()),
-                Collections.singletonList(authority));
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)

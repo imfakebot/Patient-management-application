@@ -34,19 +34,6 @@ public class PatientMedicalHistoryController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @FXML
-    private Button patientBookAppointmentButton;
-    @FXML
-    private Button patientViewPrescriptionsButton;
-    @FXML
-    private Button patientMedicalHistoryButton;
-    @FXML
-    private Button patientUpdateProfileButton;
-    @FXML
-    private Button patientReviewButton;
-    @FXML
-    private Button patientViewBillsButton;
-
-    @FXML
     private TableView<MedicalRecord> medicalRecordsTable;
 
     @FXML
@@ -196,26 +183,43 @@ public class PatientMedicalHistoryController {
 
     @FXML
     private void loadPatientBookAppointment() {
-        uiManager.switchToPatientBookAppointment(patientId);
+        navigateToPatientScreen(uiManager::switchToPatientBookAppointment);
     }
 
     @FXML
     private void loadPatientViewPrescriptions() {
-        uiManager.switchToPatientViewPrescriptions();
+        navigateToPatientScreen(uiManager::switchToPatientViewPrescriptions);
     }
 
     @FXML
     private void loadPatientMedicalHistory() {
-        uiManager.switchToPatientMedicalHistory();
+        navigateToPatientScreen(uiManager::switchToPatientMedicalHistory);
     }
 
     @FXML
     private void loadPatientUpdateProfile() {
-        uiManager.switchToPatientUpdateProfile();
+        navigateToPatientScreen(uiManager::switchToPatientUpdateProfile);
     }
 
     @FXML
     private void loadPatientViewBills() {
-        uiManager.switchToPatientViewBills();
+        navigateToPatientScreen(uiManager::switchToPatientViewBills);
+    }
+
+    /**
+     * Helper method to handle common navigation logic for patient-related
+     * screens. It checks if patientId is available and then calls the
+     * appropriate UIManager method.
+     *
+     * @param navigator A Consumer that accepts a UUID (patientId) and performs
+     * the navigation.
+     */
+    private void navigateToPatientScreen(java.util.function.Consumer<UUID> navigator) {
+        if (this.patientId == null) {
+            log.warn("Cannot navigate because patientId is null.");
+            DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
+            return;
+        }
+        navigator.accept(this.patientId);
     }
 }
