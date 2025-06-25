@@ -69,23 +69,23 @@ public class ForgotPasswordController {
                 Platform.runLater(() -> {
                     hideProgress();
                     switch (result) {
-                        case EMAIL_SENT:
+                        case EMAIL_SENT -> {
                             DialogUtil.showInfoAlert("Yêu cầu đã được xử lý",
                                     "Một email chứa mã đặt lại mật khẩu đã được gửi đến địa chỉ liên kết với tài khoản của bạn. Vui lòng kiểm tra hộp thư (bao gồm cả thư mục spam) và nhập mã đó cùng với mật khẩu mới của bạn vào màn hình tiếp theo.");
                             // Chuyển đến màn hình đặt lại mật khẩu, truyền username/email đã nhập
                             // để ResetPasswordController có thể điền sẵn nếu muốn.
                             uiManager.switchToResetPasswordScreen(input);
-                            break;
-                        case USER_NOT_FOUND_OR_NO_EMAIL:
+                        }
+                        case USER_NOT_FOUND_OR_NO_EMAIL -> {
                             setFormDisabled(false); // Kích hoạt lại form
                             showError("Tài khoản không tồn tại hoặc không có email liên kết. Vui lòng thử lại. Nếu chưa có tài khoản, bạn có thể quay lại để đăng ký.");
                             // Nút "Quay lại đăng nhập" đã có sẵn và sẽ được kích hoạt lại.
                             // Bạn có thể thêm nút "Đăng ký" vào FXML nếu muốn có tùy chọn trực tiếp.
-                            break;
-                        case EMAIL_SEND_FAILURE:
+                        }
+                        case EMAIL_SEND_FAILURE -> {
                             setFormDisabled(false); // Kích hoạt lại form
                             showError("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.");
-                            break;
+                        }
                     }
                 });
             } catch (Exception e) {
