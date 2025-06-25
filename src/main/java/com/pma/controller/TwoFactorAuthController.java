@@ -23,7 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox; // Import UUID
-import javafx.scene.input.MouseEvent; // Import MouseEvent
+import javafx.scene.input.MouseEvent;
 
 @Component
 public class TwoFactorAuthController {
@@ -48,9 +48,9 @@ public class TwoFactorAuthController {
     @FXML
     private ProgressIndicator progressIndicator2FA;
     @FXML
-    private Label resendOtpLabel; // Thêm Label để resend OTP
-    @FXML
     private Label infoLabel2FA; // Để hiển thị thông tin cho người dùng
+    @FXML
+    private Label sendEmailOtpLabel; // Đổi tên để khớp với FXML
 
     private String usernameFor2FA;
     private Authentication preAuthenticatedToken; // Lưu token từ bước 1
@@ -73,24 +73,17 @@ public class TwoFactorAuthController {
     public void initData(String username, Authentication preAuth, String infoMessage) {
         this.usernameFor2FA = username;
         this.preAuthenticatedToken = preAuth;
-        infoLabel2FA.setText(infoMessage != null ? infoMessage : "Enter the OTP code.");
-        log.info("2FA/OTP screen initialized for user: {}. Info: {}", username, infoMessage);
+        infoLabel2FA.setText(infoMessage != null ? infoMessage : "Vui lòng nhập mã OTP.");
+        log.info("Màn hình 2FA/OTP được khởi tạo cho người dùng: {}. Thông tin: {}", username, infoMessage);
 
-        // Hiển thị tùy chọn "Resend OTP" nếu đây là luồng OTP qua email
-        // (tức là preAuth != null VÀ 2FA (TOTP) chưa được bật HOẶC preAuth == null (OTP do đăng nhập sai))
+        // Hiển thị tùy chọn "Gửi mã qua Email" cho người dùng không phải là Admin
         UserAccount user = userAccountService.findByUsername(usernameFor2FA).orElse(null);
-        if (user != null && ((preAuthenticatedToken != null && !user.isTwoFactorEnabled()) || preAuthenticatedToken == null)) {
-            // If user is ADMIN, resend should also be hidden as they shouldn't be in this flow for email OTP.
-            if (user.getRole() == UserRole.ADMIN) {
-                resendOtpLabel.setVisible(false);
-                resendOtpLabel.setManaged(false);
-            } else {
-                resendOtpLabel.setVisible(true);
-                resendOtpLabel.setManaged(true);
-            }
+        if (user != null && user.getRole() != UserRole.ADMIN) {
+            sendEmailOtpLabel.setVisible(true);
+            sendEmailOtpLabel.setManaged(true);
         } else {
-            resendOtpLabel.setVisible(false);
-            resendOtpLabel.setManaged(false);
+            sendEmailOtpLabel.setVisible(false);
+            sendEmailOtpLabel.setManaged(false);
         }
     }
 
@@ -100,12 +93,12 @@ public class TwoFactorAuthController {
         clearError();
 
         if (otpCode.isEmpty()) {
-            showError("OTP code cannot be empty.");
+            showError("Mã OTP không được để trống.");
             return;
         }
         if (usernameFor2FA == null) { // preAuthenticatedToken có thể null nếu là OTP do đăng nhập sai
-            log.error("2FA/OTP verification attempted without username.");
-            showError("An error occurred. Please try logging in again.");
+            log.error("Xác thực 2FA/OTP được thực hiện mà không có username.");
+            showError("Đã xảy ra lỗi. Vui lòng đăng nhập lại.");
             return;
         }
 
@@ -116,23 +109,23 @@ public class TwoFactorAuthController {
             try {
                 // Lấy userId từ username (cần chắc chắn username là duy nhất)
                 UserAccount user = userAccountService.findByUsername(usernameFor2FA)
-                        .orElseThrow(() -> new IllegalStateException("User " + usernameFor2FA + " not found during 2FA/OTP verification."));
+                        .orElseThrow(() -> new IllegalStateException("Không tìm thấy người dùng " + usernameFor2FA + " trong quá trình xác thực 2FA/OTP."));
                 UUID userId = user.getUserId();
 
-                boolean isValidOtp;
-                // Nếu preAuthenticatedToken tồn tại VÀ người dùng đã bật 2FA (TOTP)
-                // thì đây là xác minh TOTP.
-                // Ngược lại, đây là xác minh OTP qua email (do đăng nhập sai hoặc flow khác).
-                if (preAuthenticatedToken != null && user.isTwoFactorEnabled()) {
-                    log.debug("Verifying TOTP for user {} (2FA enabled)", usernameFor2FA);
-                    isValidOtp = userAccountService.verifyTwoFactorCode(userId, otpCode); // Xác minh TOTP
-                } else {
-                    log.debug("Verifying Email OTP for user {} (2FA not enabled or OTP for recovery)", usernameFor2FA);
-                    isValidOtp = userAccountService.verifyEmailOtp(userId, otpCode); // Xác minh OTP Email
+                boolean isValidOtp = false;
+                // Logic xác thực kết hợp:
+                // 1. Thử xác thực bằng mã OTP gửi qua email trước.
+                // 2. Nếu thất bại, và người dùng đã bật 2FA, thử xác thực bằng mã TOTP từ ứng dụng.
+                if (userAccountService.verifyEmailOtp(userId, otpCode)) {
+                    isValidOtp = true;
+                    log.debug("Đã xác thực người dùng {} bằng mã OTP qua Email.", usernameFor2FA);
+                } else if (user.isTwoFactorEnabled() && userAccountService.verifyTwoFactorCode(userId, otpCode)) {
+                    isValidOtp = true;
+                    log.debug("Đã xác thực người dùng {} bằng mã TOTP.", usernameFor2FA);
                 }
 
                 if (isValidOtp) {
-                    log.info("2FA/OTP verification successful for user: {}", usernameFor2FA);
+                    log.info("Xác thực 2FA/OTP thành công cho người dùng: {}", usernameFor2FA);
                     // Quan trọng: Reset số lần đăng nhập sai và cờ yêu cầu OTP
                     userAccountService.resetFailedLoginAttempts(userId);
 
@@ -147,27 +140,27 @@ public class TwoFactorAuthController {
                         });
                     } else {
                         // Đây là luồng OTP được yêu cầu do đăng nhập sai nhiều lần
-                        log.info("OTP for failed attempts verified for user: {}. User should re-attempt login.", usernameFor2FA);
+                        log.info("Mã OTP do đăng nhập sai đã được xác thực cho người dùng: {}. Người dùng cần đăng nhập lại.", usernameFor2FA);
                         Platform.runLater(() -> {
                             hideProgress();
-                            DialogUtil.showInfoAlert("OTP Verified", "OTP verification successful. Please log in with your credentials.");
+                            DialogUtil.showInfoAlert("Xác thực OTP thành công", "Xác thực OTP thành công. Vui lòng đăng nhập bằng thông tin của bạn.");
                             uiManager.switchToLoginScreen();
                         });
                     }
                 } else {
-                    log.warn("Invalid 2FA/OTP code for user: {}", usernameFor2FA);
+                    log.warn("Mã 2FA/OTP không hợp lệ cho người dùng: {}", usernameFor2FA);
                     Platform.runLater(() -> {
                         hideProgress();
                         setFormDisabled(false);
-                        showError("Invalid or expired OTP code.");
+                        showError("Mã OTP không hợp lệ hoặc đã hết hạn.");
                     });
                 }
             } catch (Exception e) {
-                log.error("Error during 2FA/OTP verification for user '{}'", usernameFor2FA, e);
+                log.error("Lỗi trong quá trình xác thực 2FA/OTP cho người dùng '{}'", usernameFor2FA, e);
                 Platform.runLater(() -> {
                     hideProgress();
                     setFormDisabled(false);
-                    showError("An error occurred during verification.");
+                    showError("Đã xảy ra lỗi trong quá trình xác thực.");
                 });
             }
         });
@@ -177,52 +170,56 @@ public class TwoFactorAuthController {
 
     @FXML
     private void handleCancelButtonAction(ActionEvent event) {
-        log.info("2FA/OTP verification cancelled by user: {}", usernameFor2FA);
+        log.info("Người dùng {} đã hủy xác thực 2FA/OTP.", usernameFor2FA);
         // Chuyển về màn hình đăng nhập
         uiManager.switchToLoginScreen();
     }
 
+    /**
+     * Xử lý sự kiện khi người dùng nhấp vào "Gửi mã qua Email".
+     */
     @FXML
-    private void handleResendOtpAction(MouseEvent event) {
+    private void handleSendEmailOtpAction(MouseEvent event) {
         if (usernameFor2FA == null) {
-            showError("Cannot resend OTP. User context is missing.");
+            showError("Không thể gửi OTP. Thiếu thông tin người dùng.");
             return;
         }
         UserAccount user = userAccountService.findByUsername(usernameFor2FA).orElse(null);
         if (user == null) {
-            showError("Cannot resend OTP. User not found.");
+            showError("Không thể gửi OTP. Không tìm thấy người dùng.");
+            return;
+        }
+        if (user.getRole() == UserRole.ADMIN) {
+            log.warn("Đã chặn hành động gửi OTP qua email cho tài khoản ADMIN '{}'.", usernameFor2FA);
+            showError("Tính năng này không khả dụng cho tài khoản quản trị viên.");
             return;
         }
 
-        // Chỉ cho phép resend nếu đây là luồng OTP email
-        if ((preAuthenticatedToken != null && !user.isTwoFactorEnabled()) || preAuthenticatedToken == null) {
-            log.info("Resend OTP requested for user: {}", usernameFor2FA);
-            showProgress(); // Hiển thị progress
-            setFormDisabled(true); // Vô hiệu hóa form
-            resendOtpLabel.setDisable(true); // Vô hiệu hóa link resend tạm thời
+        log.info("Người dùng {} yêu cầu gửi OTP qua email.", usernameFor2FA);
+        showProgress();
+        setFormDisabled(true);
+        sendEmailOtpLabel.setDisable(true);
 
-            Thread resendThread = new Thread(() -> {
-                try {
-                    userAccountService.generateAndSendEmailOtp(user.getUserId());
-                    Platform.runLater(() -> {
-                        DialogUtil.showInfoAlert("OTP Resent", "A new OTP has been sent to your email.");
-                    });
-                } catch (Exception e) {
-                    log.error("Failed to resend OTP for user {}: {}", usernameFor2FA, e.getMessage());
-                    Platform.runLater(() -> showError("Could not resend OTP. Please try again later."));
-                } finally {
-                    Platform.runLater(() -> {
-                        hideProgress();
-                        setFormDisabled(false);
-                        resendOtpLabel.setDisable(false); // Kích hoạt lại link resend
-                    });
-                }
-            });
-            resendThread.setDaemon(true);
-            resendThread.start();
-        } else {
-            log.warn("Resend OTP clicked for user {} but it's not an email OTP flow.", usernameFor2FA);
-        }
+        Thread resendThread = new Thread(() -> {
+            try {
+                userAccountService.generateAndSendEmailOtp(user.getUserId());
+                Platform.runLater(() -> {
+                    infoLabel2FA.setText("Một mã OTP mới đã được gửi đến email của bạn.");
+                    DialogUtil.showInfoAlert("Đã gửi OTP", "Một mã OTP mới đã được gửi đến email của bạn.");
+                });
+            } catch (Exception e) {
+                log.error("Không thể gửi OTP cho người dùng {}: {}", usernameFor2FA, e.getMessage());
+                Platform.runLater(() -> showError("Không thể gửi OTP. Vui lòng thử lại sau."));
+            } finally {
+                Platform.runLater(() -> {
+                    hideProgress();
+                    setFormDisabled(false);
+                    sendEmailOtpLabel.setDisable(false);
+                });
+            }
+        });
+        resendThread.setDaemon(true);
+        resendThread.start();
     }
 
     // --- UI Helper Methods ---
@@ -232,7 +229,7 @@ public class TwoFactorAuthController {
             errorLabel2FA.setVisible(true);
             errorLabel2FA.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
         } else {
-            DialogUtil.showErrorAlert("2FA Error", message);
+            DialogUtil.showErrorAlert("Lỗi 2FA", message);
         }
     }
 
@@ -260,8 +257,6 @@ public class TwoFactorAuthController {
     private void setFormDisabled(boolean disabled) {
         if (twoFactorFormContainer != null) {
             twoFactorFormContainer.setDisable(disabled);
-
         }
-
     }
 }

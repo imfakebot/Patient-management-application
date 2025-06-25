@@ -410,7 +410,8 @@ public class EmailService {
      * @param recipientEmail Email của người nhận.
      * @param recipientName Tên của người nhận.
      * @param accountType Loại tài khoản (ví dụ: "Bệnh nhân", "Bác sĩ").
-     * @param adminUsername Tên của quản trị viên đã thực hiện hành động xóa (có thể là "Quản trị viên hệ thống" nếu không có thông tin cụ thể).
+     * @param adminUsername Tên của quản trị viên đã thực hiện hành động xóa (có
+     * thể là "Quản trị viên hệ thống" nếu không có thông tin cụ thể).
      * @return Future<Void> để theo dõi việc gửi email bất đồng bộ.
      */
     @Async

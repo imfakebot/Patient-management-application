@@ -463,7 +463,7 @@ public class UIManager {
     // }
     private void switchToPatientDashboard() {
         log.info("Switching to Patient Dashboard Screen");
-        setSceneAndMaximize("/com/pma/fxml/patient_dashboard.fxml", "PMA - Patient Dashboard", 1200, 800, true, null);
+        setSceneAndMaximize("/com/pma/fxml/patient_book_appointment.fxml", "PMA - Patient Appointment", 1200, 800, true, null);
     }
 
     public void switchToForgotPasswordScreen() {

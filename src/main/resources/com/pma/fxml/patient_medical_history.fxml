@@ -9,7 +9,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.PatientMedicalHistoryController">
+<BorderPane stylesheets="@../css/modern-style.css"
+    xmlns="http://javafx.com/javafx/23.0.1"
+    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.patient.PatientMedicalHistoryController">
     <left>
         <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
             <padding>
@@ -42,9 +44,9 @@
                         <TableColumn fx:id="appointmentColumn" prefWidth="100.0" text="Lịch hẹn" />
                         <TableColumn fx:id="notesColumn" prefWidth="200.0" text="Ghi chú" />
                     </columns>
-               <columnResizePolicy>
-                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-               </columnResizePolicy>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
                 </TableView>
                 <TableView fx:id="diagnosesTable" fixedCellSize="0.0" minHeight="300.0" prefHeight="300.0">
                     <columns>
@@ -54,9 +56,9 @@
                         <TableColumn fx:id="diagnosisDateColumn" prefWidth="100.0" text="Ngày chẩn đoán" />
                         <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Trạng thái" />
                     </columns>
-               <columnResizePolicy>
-                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-               </columnResizePolicy>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
                 </TableView>
             </VBox>
             <BorderPane.margin>
