@@ -59,24 +59,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(DaoAuthenticationProvider daoAuthenticationProvider) {
         return new ProviderManager(Collections.singletonList(daoAuthenticationProvider));
     }
-
-    // !!! LƯU Ý !!!
-    // Với @EnableWebSecurity, Spring Security sẽ cố gắng tạo một SecurityFilterChain mặc định.
-    // Đối với ứng dụng desktop không có web, điều này thường không gây vấn đề,
-    // nhưng nếu bạn gặp lỗi liên quan đến việc thiếu Servlet API hoặc các cấu hình web,
-    // bạn có thể cần định nghĩa một SecurityFilterChain rỗng hoặc tùy chỉnh nó
-    // để vô hiệu hóa các tính năng web không cần thiết.
-    // Ví dụ, để vô hiệu hóa CSRF và các cấu hình HTTP cơ bản nếu không cần:
-    /*
-    @Bean
-    public org.springframework.security.web.SecurityFilterChain securityFilterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable()) // Vô hiệu hóa CSRF nếu không dùng web form
-            .authorizeHttpRequests(authz -> authz.anyRequest().permitAll()); // Cho phép tất cả nếu không có endpoint HTTP
-        return http.build();
-    }
-     */
-    // Tuy nhiên, đối với lỗi ban đầu của bạn (không tìm thấy AuthenticationConfiguration),
-    // việc thêm @EnableWebSecurity là bước đầu tiên và quan trọng nhất.
-    // Nếu không có yêu cầu HTTP nào, SecurityFilterChain mặc định có thể không ảnh hưởng.
 }
