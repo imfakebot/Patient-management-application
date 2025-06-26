@@ -28,6 +28,7 @@
             <Button fx:id="patientMedicalHistoryButton" onAction="#loadPatientMedicalHistory" styleClass="sidebar-button" text="Lịch sử Y tế" />
             <Button fx:id="patientUpdateProfileButton" onAction="#loadPatientUpdateProfile" styleClass="sidebar-button" text="Cập nhật Hồ sơ" />
             <Button fx:id="patientViewBillsButton" onAction="#loadPatientViewBills" style="-fx-background-color: -accent-color;" styleClass="sidebar-button" text="Xem Hóa đơn" />
+            <Button fx:id="logoutBtn" text="Đăng xuất" styleClass="button" style="-fx-background-color: -error-color;" onAction="#logout"/>
         </VBox>
     </left>
     <center>
