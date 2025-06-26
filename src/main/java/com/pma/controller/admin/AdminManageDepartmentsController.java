@@ -58,6 +58,9 @@ public class AdminManageDepartmentsController implements Initializable {
     private Button adminManageDiseasesButton;
 
     @FXML
+    private Button logoutButton;
+
+    @FXML
     private TextField departmentNameField;
 
     @FXML
@@ -165,6 +168,11 @@ public class AdminManageDepartmentsController implements Initializable {
     @FXML
     void loadAdminManageDiseases(ActionEvent event) {
         uiManager.switchToAdminManageDiseases();
+    }
+
+    @FXML
+    void logout(ActionEvent event) {
+        uiManager.switchToLoginScreen();
     }
 
     @FXML

@@ -34,6 +34,21 @@ public class PatientMedicalHistoryController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @FXML
+    private Button patientBookAppointmentButton;
+    @FXML
+    private Button patientViewPrescriptionsButton;
+    @FXML
+    private Button patientMedicalHistoryButton;
+    @FXML
+    private Button patientUpdateProfileButton;
+    @FXML
+    private Button patientReviewButton;
+    @FXML
+    private Button patientViewBillsButton;
+    @FXML 
+    private Button logoutBtn;
+
+    @FXML
     private TableView<MedicalRecord> medicalRecordsTable;
 
     @FXML
@@ -204,6 +219,11 @@ public class PatientMedicalHistoryController {
     @FXML
     private void loadPatientViewBills() {
         navigateToPatientScreen(uiManager::switchToPatientViewBills);
+    }
+
+    @FXML
+    private void logout() {
+        uiManager.switchToLoginScreen();
     }
 
     /**

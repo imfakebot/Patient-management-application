@@ -44,6 +44,8 @@ public class PatientUpdateProfileController implements Initializable {
     private Button patientReviewButton;
     @FXML
     private Button patientViewBillsButton;
+    @FXML
+    private Button logoutBtn;
 
     @FXML
     private TextField fullNameField;
@@ -263,5 +265,10 @@ public class PatientUpdateProfileController implements Initializable {
             log.warn("Cannot switch to View Bills screen because currentPatient is null.");
             DialogUtil.showErrorAlert("Lỗi", "Không thể lấy thông tin bệnh nhân để điều hướng.");
         }
+    }
+
+    @FXML
+    private void logout() {
+        uiManager.switchToLoginScreen();
     }
 }

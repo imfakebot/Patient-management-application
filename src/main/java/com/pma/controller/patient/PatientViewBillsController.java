@@ -48,6 +48,8 @@ public class PatientViewBillsController {
     private Button patientReviewButton;
     @FXML
     private Button patientViewBillsButton;
+    @FXML
+    private Button logoutBtn;
 
     @FXML
     private TableView<Bill> billsTable;
@@ -259,5 +261,10 @@ public class PatientViewBillsController {
             return;
         }
         uiManager.switchToPatientViewBills(patientId);
+    }
+
+    @FXML
+    private void logout() {
+        uiManager.switchToLoginScreen();
     }
 }

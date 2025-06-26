@@ -61,6 +61,8 @@ public class AdminManageUserAccountsController implements Initializable {
     private Button adminManageUserAccountsButton;
     @FXML
     private Button adminManageDiseasesButton;
+    @FXML
+    private Button logoutButton;
 
     @FXML
     private TableView<UserAccount> userAccountsTable;
@@ -475,5 +477,10 @@ public class AdminManageUserAccountsController implements Initializable {
     void loadAdminManageDiseases(ActionEvent event) {
         log.info("Navigating to Admin Manage Diseases screen.");
         uiManager.switchToAdminManageDiseases();
+    }
+
+    @FXML
+    private void logout() {
+        uiManager.switchToLoginScreen();
     }
 }

@@ -47,6 +47,8 @@ public class PatientBookAppointmentController {
     private Button patientReviewButton;
     @FXML
     private Button patientViewBillsButton;
+    @FXML 
+    private Button logoutBtn;
 
     @FXML
     private ComboBox<Doctor> doctorCombo; // Hộp chọn bác sĩ
@@ -356,6 +358,11 @@ public class PatientBookAppointmentController {
             return;
         }
         uiManager.switchToPatientViewBills(patientId);
+    }
+
+    @FXML
+    private void logout() {
+        uiManager.switchToLoginScreen();  
     }
 
 }

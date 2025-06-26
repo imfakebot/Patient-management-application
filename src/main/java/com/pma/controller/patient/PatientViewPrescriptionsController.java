@@ -46,6 +46,8 @@ public class PatientViewPrescriptionsController {
     private Button patientReviewButton;
     @FXML
     private Button patientViewBillsButton;
+    @FXML
+    private Button logoutBtn;
 
     @FXML
     private TableView<Prescription> prescriptionsTable;
@@ -273,5 +275,10 @@ public class PatientViewPrescriptionsController {
             return;
         }
         uiManager.switchToPatientViewBills(this.patientId);
+    }
+
+    @FXML
+    private void logout() {
+        uiManager.switchToLoginScreen();
     }
 }

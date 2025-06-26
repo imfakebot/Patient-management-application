@@ -62,6 +62,8 @@ public class AdminViewRevenueController implements Initializable {
     private Button adminManageUserAccountsButton;
     @FXML
     private Button adminManageDiseasesButton;
+    @FXML
+    private Button logoutButton;
 
     // Bills Table
     @FXML
@@ -258,5 +260,10 @@ public class AdminViewRevenueController implements Initializable {
     private void loadAdminManageDiseases(ActionEvent event) {
         log.info("Navigating to Admin Manage Diseases screen.");
         uiManager.switchToAdminManageDiseases();
+    }
+
+    @FXML
+    private void logout(ActionEvent event) {
+        uiManager.switchToLoginScreen();
     }
 }

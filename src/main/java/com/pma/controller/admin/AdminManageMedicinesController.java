@@ -58,6 +58,23 @@ public class AdminManageMedicinesController implements Initializable {
     private Button adminManageUserAccountsButton;
     @FXML
     private Button adminManageDiseasesButton;
+    @FXML
+    private Button patientBookAppointmentButton;
+
+    @FXML
+    private Button patientViewPrescriptionsButton;
+
+    @FXML
+    private Button patientMedicalHistoryButton;
+
+    @FXML
+    private Button patientUpdateProfileButton;
+
+    @FXML
+    private Button patientViewBillsButton;
+
+    @FXML
+    private Button logoutBtn;
 
     @FXML
     private TextField medicineNameField;
@@ -434,5 +451,10 @@ public class AdminManageMedicinesController implements Initializable {
     @FXML
     void loadAdminManageDiseases(ActionEvent event) {
         uiManager.switchToAdminManageDiseases();
+    }
+
+    @FXML
+    private void logout() {
+        uiManager.switchToLoginScreen();
     }
 }
