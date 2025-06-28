@@ -39,6 +39,7 @@
             <Button fx:id="adminManageMedicinesButton" onAction="#loadAdminManageMedicines" styleClass="sidebar-button" text="Quản lý Thuốc" />
             <Button fx:id="adminManageUserAccountsButton" onAction="#loadAdminManageUserAccounts" style="-fx-background-color: -accent-color;" styleClass="sidebar-button" text="Quản lý Tài khoản" />
             <Button fx:id="adminManageDiseasesButton" onAction="#loadAdminManageDiseases" styleClass="sidebar-button" text="Quản lý Bệnh" />
+            <Button fx:id="logoutBtn" text="Đăng xuất" styleClass="button" style="-fx-background-color: -error-color;" onAction="#logout"/>
         </VBox>
     </left>
     <center>

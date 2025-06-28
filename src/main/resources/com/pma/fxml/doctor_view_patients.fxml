@@ -28,6 +28,7 @@
             <Button fx:id="doctorMedicalRecordsButton" onAction="#loadDoctorMedicalRecords" styleClass="sidebar-button" text="Hồ sơ Y tế" />
             <Button fx:id="doctorPrescribeButton" onAction="#loadDoctorPrescribe" styleClass="sidebar-button" text="Kê Đơn thuốc" />
             <Button fx:id="doctorBookAppointmentButton" onAction="#loadDoctorBookAppointment" styleClass="sidebar-button" text="Đặt Lịch hẹn" />
+            <Button fx:id="logoutBtn" text="Đăng xuất" styleClass="button" style="-fx-background-color: -error-color;" onAction="#logout"/>
         </VBox>
     </left>
     <center>
