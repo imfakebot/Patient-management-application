@@ -1,5 +1,7 @@
 package com.pma.controller.doctor;
 
+import com.pma.model.entity.Diagnosis;
+import com.pma.model.entity.Disease;
 import com.pma.model.entity.Doctor;
 import com.pma.model.entity.Medicine;
 import com.pma.model.entity.Patient;
@@ -7,6 +9,7 @@ import com.pma.model.entity.Prescription;
 import com.pma.model.entity.PrescriptionDetail;
 import com.pma.model.enums.PrescriptionStatus;
 import com.pma.service.DoctorService;
+import com.pma.service.DiagnosisService;
 import com.pma.service.MedicineService;
 import com.pma.service.PatientService;
 import com.pma.service.PrescriptionService;
@@ -31,6 +34,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Controller
 public class DoctorPrescribeController {
@@ -68,6 +73,8 @@ public class DoctorPrescribeController {
     @FXML
     private TextArea instructionsField;
     @FXML
+    private ComboBox<Disease> diseaseCombo; // New FXML component for disease selection
+    @FXML
     private Button prescribeButton;
     @FXML
     private Button updateButton;
@@ -91,6 +98,7 @@ public class DoctorPrescribeController {
     private final PrescriptionService prescriptionService;
     private final PatientService patientService;
     private final MedicineService medicineService;
+    private final DiagnosisService diagnosisService; // Inject DiagnosisService
     private final DoctorService doctorService;
 
     private Doctor currentDoctor;
@@ -103,10 +111,12 @@ public class DoctorPrescribeController {
             PrescriptionService prescriptionService,
             PatientService patientService,
             MedicineService medicineService,
-            DoctorService doctorService) {
+            DoctorService doctorService,
+            DiagnosisService diagnosisService) { // Add DiagnosisService to constructor
         this.prescriptionService = prescriptionService;
         this.patientService = patientService;
         this.medicineService = medicineService;
+        this.diagnosisService = diagnosisService; // Assign it
         this.doctorService = doctorService;
     }
 
@@ -120,6 +130,7 @@ public class DoctorPrescribeController {
         // Initialize ComboBoxes
         loadPatients();
         loadMedicines();
+        loadDiseases(); // Load diseases for the new combo box
         loadStatusOptions();
 
         // Initialize Prescriptions TableView
@@ -136,7 +147,7 @@ public class DoctorPrescribeController {
         loadPrescriptions();
 
         // Add listener for table selection
-        prescriptionsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+        prescriptionsTable.getSelectionModel().selectedItemProperty().addListener((_, _, newSelection) -> {
             if (newSelection != null) {
                 selectedPrescription = newSelection;
                 populateForm(newSelection);
@@ -149,7 +160,7 @@ public class DoctorPrescribeController {
         });
 
         // Add listener for medicineCombo to auto-fill unitPriceField
-        medicineCombo.getSelectionModel().selectedItemProperty().addListener((obs, oldMedicine, newMedicine) -> {
+        medicineCombo.getSelectionModel().selectedItemProperty().addListener((_, _, newMedicine) -> {
             if (newMedicine != null) {
                 unitPriceField.setText(newMedicine.getPrice().toString());
                 log.debug("Auto-filled unit price for medicine {}: {}", newMedicine.getMedicineName(),
@@ -182,14 +193,14 @@ public class DoctorPrescribeController {
         List<Patient> patients = patientService.findAll();
         ObservableList<Patient> patientList = FXCollections.observableArrayList(patients);
         patientCombo.setItems(patientList);
-        patientCombo.setCellFactory(lv -> new ListCell<Patient>() {
+        patientCombo.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(Patient patient, boolean empty) {
                 super.updateItem(patient, empty);
                 setText(empty ? null : patient.getFullName());
             }
         });
-        patientCombo.setButtonCell(new ListCell<Patient>() {
+        patientCombo.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(Patient patient, boolean empty) {
                 super.updateItem(patient, empty);
@@ -202,14 +213,14 @@ public class DoctorPrescribeController {
         List<Medicine> medicines = medicineService.searchMedicinesByName("");
         ObservableList<Medicine> medicineList = FXCollections.observableArrayList(medicines);
         medicineCombo.setItems(medicineList);
-        medicineCombo.setCellFactory(lv -> new ListCell<Medicine>() {
+        medicineCombo.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(Medicine medicine, boolean empty) {
                 super.updateItem(medicine, empty);
                 setText(empty ? null : medicine.getMedicineName());
             }
         });
-        medicineCombo.setButtonCell(new ListCell<Medicine>() {
+        medicineCombo.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(Medicine medicine, boolean empty) {
                 super.updateItem(medicine, empty);
@@ -223,31 +234,94 @@ public class DoctorPrescribeController {
         statusCombo.setItems(statusList);
     }
 
+    /**
+     * Loads diseases into the diseaseCombo.
+     */
+    private void loadDiseases() {
+        List<Disease> diseases = diagnosisService.getAllDiseases(); // Assuming DiagnosisService has getAllDiseases
+        ObservableList<Disease> diseaseList = FXCollections.observableArrayList(diseases);
+        diseaseCombo.setItems(diseaseList);
+        diseaseCombo.setPromptText("Chọn Bệnh");
+        diseaseCombo.setCellFactory(_ -> new ListCell<>() {
+            @Override
+            protected void updateItem(Disease disease, boolean empty) {
+                super.updateItem(disease, empty);
+                setText(empty ? null : disease.getDiseaseName() + " (" + disease.getDiseaseCode() + ")");
+            }
+        });
+        diseaseCombo.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Disease disease, boolean empty) {
+                super.updateItem(disease, empty);
+                setText(empty ? null : disease.getDiseaseName() + " (" + disease.getDiseaseCode() + ")");
+            }
+        });
+    }
+
     private void loadPrescriptions() {
-        List<Prescription> prescriptions = prescriptionService.getPrescriptionsByPatient(null, null).getContent();
-        prescriptionsTable.setItems(FXCollections.observableArrayList(prescriptions));
+        if (currentDoctor != null) {
+            List<Prescription> prescriptions = prescriptionService.getPrescriptionsByDoctor(currentDoctor.getDoctorId());
+            prescriptionsTable.setItems(FXCollections.observableArrayList(prescriptions));
+        } else {
+            prescriptionsTable.getItems().clear();
+            log.warn("Cannot load prescriptions because currentDoctor is null.");
+        }
     }
 
     @FXML
     private void prescribe(ActionEvent event) {
         try {
-            Prescription prescription = new Prescription();
-            validateAndPopulatePrescription(prescription);
+            // 1. Validate and gather data from the form
+            if (patientCombo.getValue() == null) {
+                throw new IllegalArgumentException("Phải chọn bệnh nhân.");
+            }
+            if (prescriptionDatePicker.getValue() == null) {
+                throw new IllegalArgumentException("Phải chọn ngày kê đơn.");
+            }
+            if (statusCombo.getValue() == null) {
+                throw new IllegalArgumentException("Phải chọn trạng thái.");
+            }
+
+            // Create a temporary Prescription object to hold form data
+            Prescription prescriptionData = new Prescription();
+            prescriptionData.setPrescriptionDate(prescriptionDatePicker.getValue());
+            prescriptionData.setNotes(notesField.getText());
+            prescriptionData.setStatus(statusCombo.getValue());
+
+            // Create DTO for prescription details
             PrescriptionDetailDTO detail = new PrescriptionDetailDTO();
             validateAndPopulateDetail(detail);
+
+            // 2. Call the service with IDs and DTOs
             Prescription savedPrescription = prescriptionService.createPrescription(
-                    prescription,
+                    prescriptionData,
                     patientCombo.getValue().getPatientId(),
                     currentDoctor.getDoctorId(),
-                    null, // MedicalRecordId not used
+                    null, // medicalRecordId
                     Collections.singletonList(detail));
+
+            // 4. Create Diagnosis if a disease is selected
+            Disease selectedDisease = diseaseCombo.getValue();
+            if (selectedDisease != null) {
+                Diagnosis newDiagnosis = new Diagnosis();
+                newDiagnosis.setDiagnosisDate(LocalDate.now()); // Or from a new DatePicker
+                newDiagnosis.setDiagnosisDescription(notesField.getText()); // Reuse notes or add a new field
+                newDiagnosis.setStatus(com.pma.model.enums.DiagnosisStatus.Active); // Default status
+
+                diagnosisService.createDiagnosis(
+                        newDiagnosis,
+                        savedPrescription.getMedicalRecord().getRecordId(), // Get the ID of the newly created MedicalRecord
+                        selectedDisease.getDiseaseCode());
+                log.info("Diagnosis created for medical record: {} with disease: {}", savedPrescription.getMedicalRecord().getRecordId(), selectedDisease.getDiseaseName());
+            }
+            // 3. Update UI
             prescriptionsTable.getItems().add(savedPrescription);
             clearForm(null);
             showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã tạo đơn thuốc thành công.");
             log.info("Prescription created for patient: {}", savedPrescription.getPatient().getFullName());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | EntityNotFoundException e) {
             showAlert(Alert.AlertType.ERROR, "Lỗi", e.getMessage());
-            log.error("Failed to create prescription: {}", e.getMessage());
+            log.error("Failed to create prescription: {}", e.getMessage(), e);
         }
     }
 
@@ -258,18 +332,33 @@ public class DoctorPrescribeController {
             return;
         }
         try {
-            validateAndPopulatePrescription(selectedPrescription);
-            selectedPrescription.setUpdatedAt(LocalDateTime.now());
-            Prescription updatedPrescription = prescriptionService.updatePrescriptionStatus(
+            // Create a temporary Prescription object to hold form data
+            Prescription prescriptionUpdateData = new Prescription();
+            populatePrescriptionFromForm(prescriptionUpdateData); // Populate with date, notes, status
+
+            // Create DTO for prescription details from the form
+            PrescriptionDetailDTO detail = new PrescriptionDetailDTO();
+            validateAndPopulateDetail(detail);
+
+            // Call the new update service method
+            Prescription updatedPrescription = prescriptionService.updatePrescription(
                     selectedPrescription.getPrescriptionId(),
-                    selectedPrescription.getStatus());
-            prescriptionsTable.refresh();
+                    prescriptionUpdateData,
+                    Collections.singletonList(detail));
+
+            // Update UI
+            int index = prescriptionsTable.getItems().indexOf(selectedPrescription);
+            if (index != -1) {
+                prescriptionsTable.getItems().set(index, updatedPrescription);
+            } else {
+                loadPrescriptions(); // Fallback to reload all if item not found
+            }
             clearForm(null);
             showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã cập nhật trạng thái đơn thuốc thành công.");
             log.info("Prescription updated for patient: {}", updatedPrescription.getPatient().getFullName());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | EntityNotFoundException e) {
             showAlert(Alert.AlertType.ERROR, "Lỗi", e.getMessage());
-            log.error("Failed to update prescription: {}", e.getMessage());
+            log.error("Failed to update prescription: {}", e.getMessage(), e);
         }
     }
 
@@ -280,6 +369,7 @@ public class DoctorPrescribeController {
         notesField.clear();
         statusCombo.getSelectionModel().clearSelection();
         medicineCombo.getSelectionModel().clearSelection();
+        diseaseCombo.getSelectionModel().clearSelection(); // Clear disease selection
         quantityField.clear();
         unitPriceField.clear();
         dosageField.clear();
@@ -288,7 +378,14 @@ public class DoctorPrescribeController {
         updateButton.setDisable(true);
     }
 
-    private void validateAndPopulatePrescription(Prescription prescription) {
+    /**
+     * Populates a Prescription object from the form fields. Does not handle
+     * entity associations. This is used for both creating a new prescription
+     * data object and updating an existing one.
+     *
+     * @param prescription The prescription object to populate.
+     */
+    private void populatePrescriptionFromForm(Prescription prescription) {
         if (patientCombo.getValue() == null) {
             throw new IllegalArgumentException("Phải chọn bệnh nhân.");
         }
@@ -298,12 +395,9 @@ public class DoctorPrescribeController {
         if (statusCombo.getValue() == null) {
             throw new IllegalArgumentException("Phải chọn trạng thái.");
         }
-
-        prescription.setPatient(patientCombo.getValue());
         prescription.setPrescriptionDate(prescriptionDatePicker.getValue());
         prescription.setNotes(notesField.getText());
         prescription.setStatus(statusCombo.getValue());
-        prescription.setDoctor(currentDoctor);
     }
 
     private void validateAndPopulateDetail(PrescriptionDetailDTO detail) {
@@ -331,6 +425,7 @@ public class DoctorPrescribeController {
         prescriptionDatePicker.setValue(prescription.getPrescriptionDate());
         notesField.setText(prescription.getNotes());
         statusCombo.setValue(prescription.getStatus());
+        diseaseCombo.setValue(null); // Clear disease selection when populating form from existing prescription
         // Populate the first PrescriptionDetail if available
         try {
             Set<PrescriptionDetail> details = prescription.getPrescriptionDetailsView();
@@ -369,7 +464,7 @@ public class DoctorPrescribeController {
         alert.showAndWait();
     }
 
-        @FXML
+    @FXML
     private void loadDoctorViewPatients(ActionEvent event) {
         uiManager.switchToDoctorViewPatients();
     }

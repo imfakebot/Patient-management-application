@@ -77,9 +77,11 @@
                         </items>
                     </ComboBox>
                     <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                        <children>
                         <padding>
                             <Insets top="10.0" />
                         </padding>
+                        </children>
                         <Button fx:id="prescribeButton" onAction="#prescribe" text="Kê Đơn" />
                         <Button fx:id="updateButton" onAction="#update" text="Cập Nhật" />
                         <Button fx:id="clearButton" onAction="#clearForm" text="Xóa Form" />
@@ -97,6 +99,10 @@
                         <RowConstraints percentHeight="0.0" />
                         <RowConstraints percentHeight="0.0" />
                         <RowConstraints percentHeight="0.0" />
+                        <RowConstraints percentHeight="0.0" />
+                    </rowConstraints>
+                    <Label text="Mã bệnh:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                    <ComboBox fx:id="diseaseCombo" minWidth="178.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                     </rowConstraints>
                 </GridPane>
                 <TableView fx:id="prescriptionsTable" prefHeight="249.0" prefWidth="1029.0">

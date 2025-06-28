@@ -15,6 +15,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import com.pma.util.UIManager;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import org.springframework.data.domain.Page;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,6 +31,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 @Component
 public class DoctorMedicalRecordsController implements Initializable {
 
@@ -94,6 +98,15 @@ public class DoctorMedicalRecordsController implements Initializable {
     // --- Doctor hiện tại ---
     private Doctor currentDoctor;
 
+    // --- Pagination Controls ---
+    @FXML
+    private Button prevPageButton;
+    @FXML
+    private Button nextPageButton;
+    @FXML
+    private Label pageInfoLabel;
+    private int currentPage = 0;
+    private final int pageSize = 10; // Số lượng bản ghi trên mỗi trang
     // --- DateTimeFormatter để định dạng ngày giờ ---
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -109,6 +122,7 @@ public class DoctorMedicalRecordsController implements Initializable {
         setupDiagnosesTable();
 
         // Load dữ liệu ban đầu
+        setupPaginationControls();
         loadMedicalRecords();
 
         // Listener để load diagnoses khi chọn một MedicalRecord
@@ -120,6 +134,28 @@ public class DoctorMedicalRecordsController implements Initializable {
                         diagnosesList.clear(); // Xóa danh sách diagnoses nếu không có MedicalRecord được chọn
                     }
                 });
+    }
+
+    private void setupPaginationControls() {
+        prevPageButton.setOnAction(event -> {
+            if (currentPage > 0) {
+                currentPage--;
+                loadMedicalRecords();
+            }
+        });
+
+        nextPageButton.setOnAction(event -> {
+            currentPage++;
+            loadMedicalRecords();
+        });
+    }
+
+    private void updatePaginationButtons(Page<MedicalRecord> page) {
+        prevPageButton.setDisable(!page.hasPrevious());
+        nextPageButton.setDisable(!page.hasNext());
+        pageInfoLabel.setText(String.format("Trang %d/%d (%d bản ghi)",
+                page.getNumber() + 1, page.getTotalPages(), page.getTotalElements()));
+        medicalRecordsTable.setItems(FXCollections.observableArrayList(page.getContent()));
     }
 
     private void setCurrentDoctorFromSecurityContext() {
@@ -203,9 +239,12 @@ public class DoctorMedicalRecordsController implements Initializable {
 
     private void loadMedicalRecords() {
         if (currentDoctor != null) {
-            List<MedicalRecord> records = medicalRecordRepository.findByDoctor(currentDoctor);
-            medicalRecordsList.setAll(records);
+            Pageable pageable = PageRequest.of(currentPage, pageSize);
+            Page<MedicalRecord> page = medicalRecordRepository.findByDoctorWithDetails(currentDoctor, pageable);
+            medicalRecordsList.setAll(page.getContent());
+            updatePaginationButtons(page);
         } else {
+            updatePaginationButtons(Page.empty()); // Cập nhật nút khi không có bác sĩ
             medicalRecordsList.clear();
         }
     }
@@ -219,7 +258,7 @@ public class DoctorMedicalRecordsController implements Initializable {
         }
     }
 
-        @FXML
+    @FXML
     private void loadDoctorViewPatients(ActionEvent event) {
         uiManager.switchToDoctorViewPatients();
     }

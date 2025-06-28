@@ -46,16 +46,18 @@ public class DiagnosisService {
     }
 
     /**
-     * Tạo một chẩn đoán mới và liên kết nó với MedicalRecord và Disease.
-     * Lưu ý: Cách này tạo Diagnosis độc lập. Thường thì Diagnosis được tạo
-     * như một phần của việc tạo/cập nhật MedicalRecord thông qua cascade.
-     * Tuy nhiên, phương thức này hữu ích nếu cần tạo Diagnosis riêng lẻ.
+     * Tạo một chẩn đoán mới và liên kết nó với MedicalRecord và Disease. Lưu ý:
+     * Cách này tạo Diagnosis độc lập. Thường thì Diagnosis được tạo như một
+     * phần của việc tạo/cập nhật MedicalRecord thông qua cascade. Tuy nhiên,
+     * phương thức này hữu ích nếu cần tạo Diagnosis riêng lẻ.
      *
-     * @param diagnosis   Đối tượng Diagnosis (chưa có ID, MedicalRecord, Disease).
-     * @param recordId    ID của MedicalRecord.
+     * @param diagnosis Đối tượng Diagnosis (chưa có ID, MedicalRecord,
+     * Disease).
+     * @param recordId ID của MedicalRecord.
      * @param diseaseCode Mã của Disease.
      * @return Diagnosis đã được lưu.
-     * @throws EntityNotFoundException nếu MedicalRecord hoặc Disease không tồn tại.
+     * @throws EntityNotFoundException nếu MedicalRecord hoặc Disease không tồn
+     * tại.
      */
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
     public Diagnosis createDiagnosis(Diagnosis diagnosis, UUID recordId, String diseaseCode) {
@@ -90,7 +92,7 @@ public class DiagnosisService {
 
     /**
      * Lấy danh sách tất cả các chẩn đoán cho một Medical Record.
-     * 
+     *
      * @param recordId ID của Medical Record.
      * @return List các Diagnosis.
      */
@@ -104,7 +106,7 @@ public class DiagnosisService {
 
     /**
      * Lấy danh sách các chẩn đoán cho một Bệnh nhân.
-     * 
+     *
      * @param patientId ID của Patient.
      * @return List các Diagnosis.
      */
@@ -116,10 +118,21 @@ public class DiagnosisService {
     }
 
     /**
+     * Lấy danh sách tất cả các loại bệnh.
+     *
+     * @return List các Disease.
+     */
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
+    public List<Disease> getAllDiseases() {
+        log.info("Fetching all diseases for selection.");
+        return diseaseRepository.findAll();
+    }
+
+    /**
      * Cập nhật trạng thái hoặc mô tả của một Diagnosis.
      *
-     * @param diagnosisId    ID của Diagnosis cần cập nhật.
-     * @param newStatus      (Optional) Trạng thái mới.
+     * @param diagnosisId ID của Diagnosis cần cập nhật.
+     * @param newStatus (Optional) Trạng thái mới.
      * @param newDescription (Optional) Mô tả mới.
      * @return Diagnosis đã được cập nhật.
      * @throws EntityNotFoundException nếu không tìm thấy Diagnosis.
@@ -151,9 +164,9 @@ public class DiagnosisService {
     }
 
     /**
-     * Xóa một Diagnosis theo ID.
-     * Thường được quản lý bởi cascade từ MedicalRecord, nhưng phương thức này
-     * cho phép xóa độc lập nếu cần (và nếu không có ràng buộc nào khác).
+     * Xóa một Diagnosis theo ID. Thường được quản lý bởi cascade từ
+     * MedicalRecord, nhưng phương thức này cho phép xóa độc lập nếu cần (và nếu
+     * không có ràng buộc nào khác).
      *
      * @param diagnosisId ID của Diagnosis cần xóa.
      * @throws EntityNotFoundException nếu không tìm thấy Diagnosis.

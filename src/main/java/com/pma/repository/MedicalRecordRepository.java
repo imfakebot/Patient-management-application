@@ -7,6 +7,7 @@ import com.pma.model.entity.Patient; // Import Patient để tìm theo bệnh nh
 import org.springframework.data.domain.Page; // Import cho phân trang
 import org.springframework.data.domain.Pageable; // Import cho phân trang
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query; // Import nếu dùng @Query
 import org.springframework.data.repository.query.Param; // Import nếu dùng @Query với tham số
 import org.springframework.stereotype.Repository;
@@ -24,12 +25,10 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
 
     // --- Các phương thức CRUD cơ bản được cung cấp sẵn ---
     // save, findById, findAll, deleteById, count, existsById, etc.
-
     // --- Định nghĩa các phương thức truy vấn tùy chỉnh theo quy ước đặt tên ---
-
     /**
      * Tìm danh sách các bản ghi y tế của một bệnh nhân cụ thể.
-     * 
+     *
      * @param patient Đối tượng Patient.
      * @return Danh sách các MedicalRecord của bệnh nhân đó.
      */
@@ -37,23 +36,25 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
 
     /**
      * Tìm danh sách các bản ghi y tế của một bệnh nhân theo ID của bệnh nhân.
-     * 
+     *
      * @param patientId ID của Patient.
      * @return Danh sách các MedicalRecord của bệnh nhân đó.
      */
+    @EntityGraph(attributePaths = {"doctor", "appointment"})
     List<MedicalRecord> findByPatient_PatientId(UUID patientId);
 
     /**
      * Tìm danh sách các bản ghi y tế được tạo bởi một bác sĩ cụ thể.
-     * 
+     *
      * @param doctor Đối tượng Doctor.
      * @return Danh sách các MedicalRecord được tạo bởi bác sĩ đó.
      */
     List<MedicalRecord> findByDoctor(Doctor doctor);
 
     /**
-     * Tìm danh sách các bản ghi y tế được tạo bởi một bác sĩ theo ID của bác sĩ.
-     * 
+     * Tìm danh sách các bản ghi y tế được tạo bởi một bác sĩ theo ID của bác
+     * sĩ.
+     *
      * @param doctorId ID của Doctor.
      * @return Danh sách các MedicalRecord được tạo bởi bác sĩ đó.
      */
@@ -61,7 +62,7 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
 
     /**
      * Tìm danh sách các bản ghi y tế liên quan đến một cuộc hẹn cụ thể.
-     * 
+     *
      * @param appointment Đối tượng Appointment.
      * @return Danh sách các MedicalRecord liên quan (có thể rỗng).
      */
@@ -69,7 +70,7 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
 
     /**
      * Tìm danh sách các bản ghi y tế liên quan đến một cuộc hẹn theo ID.
-     * 
+     *
      * @param appointmentId ID của Appointment.
      * @return Danh sách các MedicalRecord liên quan.
      */
@@ -77,9 +78,9 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
 
     /**
      * Tìm danh sách các bản ghi y tế được ghi nhận trong một khoảng ngày.
-     * 
+     *
      * @param startDate Ngày bắt đầu (bao gồm).
-     * @param endDate   Ngày kết thúc (bao gồm).
+     * @param endDate Ngày kết thúc (bao gồm).
      * @return Danh sách các MedicalRecord phù hợp.
      */
     List<MedicalRecord> findByRecordDateBetween(LocalDate startDate, LocalDate endDate);
@@ -87,10 +88,10 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
     /**
      * Tìm danh sách các bản ghi y tế của một bệnh nhân được ghi nhận trong một
      * khoảng ngày.
-     * 
+     *
      * @param patientId ID của Patient.
      * @param startDate Ngày bắt đầu.
-     * @param endDate   Ngày kết thúc.
+     * @param endDate Ngày kết thúc.
      * @return Danh sách MedicalRecord phù hợp.
      */
     List<MedicalRecord> findByPatient_PatientIdAndRecordDateBetween(UUID patientId, LocalDate startDate,
@@ -98,11 +99,11 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
 
     // --- Ví dụ sử dụng Phân trang và Sắp xếp ---
     /**
-     * Tìm các bản ghi y tế của một bệnh nhân, sắp xếp theo ngày ghi nhận giảm dần,
-     * có phân trang.
-     * 
+     * Tìm các bản ghi y tế của một bệnh nhân, sắp xếp theo ngày ghi nhận giảm
+     * dần, có phân trang.
+     *
      * @param patientId ID của Patient.
-     * @param pageable  Đối tượng chứa thông tin phân trang và sắp xếp.
+     * @param pageable Đối tượng chứa thông tin phân trang và sắp xếp.
      * @return Một trang (Page) chứa danh sách MedicalRecord.
      */
     Page<MedicalRecord> findByPatient_PatientIdOrderByRecordDateDesc(UUID patientId, Pageable pageable);
@@ -110,7 +111,7 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
     // --- Ví dụ sử dụng @Query ---
     /**
      * Tìm các bản ghi y tế chứa một từ khóa trong phần ghi chú (notes).
-     * 
+     *
      * @param keyword Từ khóa tìm kiếm.
      * @return Danh sách các MedicalRecord phù hợp.
      */
@@ -120,5 +121,19 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UU
      * List<MedicalRecord> searchByNotesContaining(@Param("keyword") String
      * keyword);
      */
+    /**
+     * Finds all medical records for a given doctor and eagerly fetches the
+     * associated Patient and Appointment entities to prevent
+     * LazyInitializationException, with pagination support.
+     *
+     * @param doctor The doctor whose medical records are to be retrieved.
+     * @param pageable The pagination information (page number, size, and sort
+     * order).
+     * @return A Page of MedicalRecord entities with Patient and Appointment
+     * data pre-loaded.
+     */
+    @Query(value = "SELECT mr FROM MedicalRecord mr JOIN FETCH mr.patient p LEFT JOIN FETCH mr.appointment a WHERE mr.doctor = :doctor",
+            countQuery = "SELECT count(mr) FROM MedicalRecord mr WHERE mr.doctor = :doctor")
+    Page<MedicalRecord> findByDoctorWithDetails(@Param("doctor") Doctor doctor, Pageable pageable);
 
 }

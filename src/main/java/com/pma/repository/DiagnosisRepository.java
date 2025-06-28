@@ -5,6 +5,7 @@ import java.util.List; // Import Disease để tìm theo loại bệnh
 import java.util.UUID;// Import MedicalRecord để tìm theo bản ghi y tế
 
 import org.springframework.data.jpa.repository.JpaRepository; // Import Enum DiagnosisStatus
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param; // Import nếu dùng @Query
 import org.springframework.stereotype.Repository; // Import nếu dùng @Query với tham số
@@ -30,6 +31,7 @@ public interface DiagnosisRepository extends JpaRepository<Diagnosis, UUID> {
      * @param medicalRecord Đối tượng MedicalRecord.
      * @return Danh sách các Diagnosis thuộc bản ghi đó.
      */
+    @EntityGraph(attributePaths = {"disease"})
     List<Diagnosis> findByMedicalRecord(MedicalRecord medicalRecord);
 
     /**
@@ -38,6 +40,7 @@ public interface DiagnosisRepository extends JpaRepository<Diagnosis, UUID> {
      * @param recordId ID của MedicalRecord.
      * @return Danh sách các Diagnosis thuộc bản ghi đó.
      */
+    @EntityGraph(attributePaths = {"disease"})
     List<Diagnosis> findByMedicalRecord_RecordId(UUID recordId);
 
     /**
@@ -75,8 +78,10 @@ public interface DiagnosisRepository extends JpaRepository<Diagnosis, UUID> {
 
     /**
      * Tìm các chẩn đoán của một bệnh nhân (thông qua MedicalRecord). Cần dùng
+     *
      * @Query vì liên quan đến join qua nhiều bảng.
      */
+    @EntityGraph(attributePaths = {"disease", "medicalRecord"})
     @Query("SELECT diag FROM Diagnosis diag JOIN diag.medicalRecord mr WHERE mr.patient.patientId = :patientId")
     List<Diagnosis> findDiagnosesByPatientId(@Param("patientId") UUID patientId);
 
@@ -84,6 +89,7 @@ public interface DiagnosisRepository extends JpaRepository<Diagnosis, UUID> {
      * Tìm các chẩn đoán của một bệnh nhân cho một loại bệnh cụ thể.
      */
     @Query("SELECT diag FROM Diagnosis diag JOIN diag.medicalRecord mr WHERE mr.patient.patientId = :patientId AND diag.disease.diseaseCode = :diseaseCode")
+    @EntityGraph(attributePaths = {"disease", "medicalRecord"})
     List<Diagnosis> findDiagnosesByPatientIdAndDiseaseCode(
             @Param("patientId") UUID patientId,
             @Param("diseaseCode") String diseaseCode);
@@ -92,6 +98,7 @@ public interface DiagnosisRepository extends JpaRepository<Diagnosis, UUID> {
      * Tìm các chẩn đoán của một bệnh nhân theo trạng thái.
      */
     @Query("SELECT diag FROM Diagnosis diag JOIN diag.medicalRecord mr WHERE mr.patient.patientId = :patientId AND diag.status = :status")
+    @EntityGraph(attributePaths = {"disease", "medicalRecord"})
     List<Diagnosis> findDiagnosesByPatientIdAndStatus(
             @Param("patientId") UUID patientId,
             @Param("status") DiagnosisStatus status);

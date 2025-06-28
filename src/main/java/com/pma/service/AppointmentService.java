@@ -99,32 +99,8 @@ public class AppointmentService {
             doctor = doctorRepository.findById(doctorId)
                     .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + doctorId));
 
-            // Giả định mỗi cuộc hẹn có thời lượng cố định (ví dụ: 60 phút).
-            // Cần điều chỉnh nếu Appointment model có trường duration hoặc endTime.
-            final long DEFAULT_APPOINTMENT_DURATION_MINUTES = 60;
-            LocalDateTime newAppStartTime = appointment.getAppointmentDatetime();
-            LocalDateTime newAppEndTime = newAppStartTime.plusMinutes(DEFAULT_APPOINTMENT_DURATION_MINUTES);
-
-            // Lấy tất cả các cuộc hẹn "Scheduled" (chưa hoàn thành) của bác sĩ
-            List<Appointment> doctorScheduledAppointments = appointmentRepository
-                    .findByDoctor_DoctorIdAndStatus(doctorId, AppointmentStatus.Scheduled);
-
-            for (Appointment existingApp : doctorScheduledAppointments) {
-                LocalDateTime existingAppStartTime = existingApp.getAppointmentDatetime();
-                // Giả sử các cuộc hẹn đã có cũng có cùng thời lượng mặc định
-                LocalDateTime existingAppEndTime = existingAppStartTime.plusMinutes(DEFAULT_APPOINTMENT_DURATION_MINUTES);
-
-                // Kiểm tra chồng chéo: (StartA < EndB) AND (EndA > StartB)
-                if (newAppStartTime.isBefore(existingAppEndTime) && newAppEndTime.isAfter(existingAppStartTime)) {
-                    log.warn("Scheduling failed. Doctor {} (ID: {}) has an overlapping scheduled appointment (ID: {}) "
-                            + "from {} to {}. New appointment attempted for {} to {}.",
-                            doctor.getFullName(), doctorId, existingApp.getAppointmentId(),
-                            existingAppStartTime, existingAppEndTime, newAppStartTime, newAppEndTime);
-                    throw new IllegalArgumentException(
-                            "Doctor is not available at the selected time due to an overlapping appointment. "
-                            + "Please choose a different time slot.");
-                }
-            }
+            // Kiểm tra chồng chéo lịch hẹn
+            checkAppointmentOverlap(appointment.getAppointmentDatetime(), doctorId, null);
         }
 
         // --- Thiết lập và Lưu ---
@@ -149,6 +125,57 @@ public class AppointmentService {
     }
 
     /**
+     * Cập nhật thông tin của một cuộc hẹn đã tồn tại.
+     *
+     * @param appointmentId ID của cuộc hẹn cần cập nhật.
+     * @param appointmentUpdateData Đối tượng Appointment chứa dữ liệu cập nhật từ form.
+     * @param patientId ID của bệnh nhân.
+     * @param doctorId ID của bác sĩ.
+     * @return Appointment đã được cập nhật.
+     * @throws EntityNotFoundException nếu không tìm thấy Appointment, Patient, hoặc Doctor.
+     * @throws IllegalArgumentException nếu thời gian hẹn không hợp lệ hoặc bị chồng chéo.
+     */
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    public Appointment updateAppointment(UUID appointmentId, Appointment appointmentUpdateData, UUID patientId, UUID doctorId) {
+        log.info("Attempting to update appointment with id: {}", appointmentId);
+
+        // 1. Tải thực thể cuộc hẹn hiện tại (managed entity)
+        Appointment existingAppointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + appointmentId));
+
+        // 2. Tải các thực thể liên quan (managed entities)
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new EntityNotFoundException("Patient not found with id: " + patientId));
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new EntityNotFoundException("Doctor not found with id: " + doctorId));
+
+        // 3. Kiểm tra thời gian hẹn có hợp lệ không
+        if (appointmentUpdateData.getAppointmentDatetime() == null
+                || appointmentUpdateData.getAppointmentDatetime().isBefore(LocalDateTime.now())) {
+            log.warn("Update failed. Appointment datetime is invalid: {}", appointmentUpdateData.getAppointmentDatetime());
+            throw new IllegalArgumentException("Appointment date and time must be in the future.");
+        }
+
+        // 4. Kiểm tra chồng chéo lịch hẹn (loại trừ chính cuộc hẹn đang cập nhật)
+        checkAppointmentOverlap(appointmentUpdateData.getAppointmentDatetime(), doctorId, appointmentId);
+
+        // 5. Cập nhật các thuộc tính của existingAppointment
+        existingAppointment.setAppointmentDatetime(appointmentUpdateData.getAppointmentDatetime());
+        existingAppointment.setReason(appointmentUpdateData.getReason());
+        existingAppointment.setAppointmentType(appointmentUpdateData.getAppointmentType());
+        existingAppointment.setStatus(appointmentUpdateData.getStatus());
+        
+        // Cập nhật các mối quan hệ nếu có thay đổi (sẽ không thay đổi Patient/Doctor ID trong trường hợp này)
+        // Nhưng vẫn set lại để đảm bảo đối tượng managed được liên kết đúng
+        existingAppointment.setPatient(patient);
+        existingAppointment.setDoctor(doctor);
+
+        // Transaction commit sẽ tự động lưu các thay đổi
+        log.info("Successfully updated appointment with id: {}", appointmentId);
+        return existingAppointment;
+    }
+
+    /**
      * Lấy thông tin chi tiết của một cuộc hẹn bằng ID.
      *
      * @param id UUID của Appointment.
@@ -160,6 +187,41 @@ public class AppointmentService {
         log.info("Fetching appointment with id: {}", id);
         return appointmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Appointment not found with id: " + id));
+    }
+    
+    /**
+     * Phương thức helper để kiểm tra chồng chéo lịch hẹn cho một bác sĩ.
+     *
+     * @param newDateTime Thời gian bắt đầu của cuộc hẹn mới.
+     * @param doctorId ID của bác sĩ.
+     * @param appointmentIdToExclude ID của cuộc hẹn cần loại trừ khỏi kiểm tra (dùng khi cập nhật). Null nếu là cuộc hẹn mới.
+     * @throws IllegalArgumentException nếu có lịch hẹn chồng chéo.
+     */
+    private void checkAppointmentOverlap(LocalDateTime newDateTime, UUID doctorId, UUID appointmentIdToExclude) {
+        final long DEFAULT_APPOINTMENT_DURATION_MINUTES = 60; // Giả định thời lượng cuộc hẹn
+        LocalDateTime newAppStartTime = newDateTime;
+        LocalDateTime newAppEndTime = newAppStartTime.plusMinutes(DEFAULT_APPOINTMENT_DURATION_MINUTES);
+
+        // Lấy tất cả các cuộc hẹn "Scheduled" (chưa hoàn thành) của bác sĩ
+        List<Appointment> doctorScheduledAppointments = appointmentRepository
+                .findByDoctor_DoctorIdAndStatus(doctorId, AppointmentStatus.Scheduled);
+
+        for (Appointment existingApp : doctorScheduledAppointments) {
+            // Bỏ qua cuộc hẹn đang được cập nhật (nếu có)
+            if (appointmentIdToExclude != null && existingApp.getAppointmentId().equals(appointmentIdToExclude)) {
+                continue;
+            }
+
+            LocalDateTime existingAppStartTime = existingApp.getAppointmentDatetime();
+            LocalDateTime existingAppEndTime = existingAppStartTime.plusMinutes(DEFAULT_APPOINTMENT_DURATION_MINUTES);
+
+            // Kiểm tra chồng chéo: (StartA < EndB) AND (EndA > StartB)
+            if (newAppStartTime.isBefore(existingAppEndTime) && newAppEndTime.isAfter(existingAppStartTime)) {
+                log.warn("Lịch hẹn chồng chéo phát hiện cho bác sĩ {} (ID: {}). Lịch hẹn hiện có (ID: {}) từ {} đến {}. Lịch hẹn mới/cập nhật từ {} đến {}.",
+                        doctorId, doctorId, existingApp.getAppointmentId(), existingAppStartTime, existingAppEndTime, newAppStartTime, newAppEndTime);
+                throw new IllegalArgumentException("Bác sĩ không rảnh vào thời gian đã chọn do có lịch hẹn chồng chéo. Vui lòng chọn khung giờ khác.");
+            }
+        }
     }
 
     /**

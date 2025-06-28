@@ -6,12 +6,13 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane stylesheets="@../css/modern-style.css" xmlns="http://javafx.com/javafx/23.0.1"
-    xmlns:fx="http://javafx.com/fxml/1"
-    fx:controller="com.pma.controller.doctor.DoctorMedicalRecordsController">
+<BorderPane stylesheets="@../css/modern-style.css"
+    xmlns="http://javafx.com/javafx/23.0.1"
+    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pma.controller.doctor.DoctorMedicalRecordsController">
     <left>
         <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="200.0" spacing="15.0" styleClass="sidebar">
             <padding>
@@ -48,6 +49,12 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                     </columnResizePolicy>
                 </TableView>
+                <!-- Pagination Controls -->
+                <HBox alignment="CENTER" spacing="10.0">
+                    <Button fx:id="prevPageButton" text="Trang trước" />
+                    <Label fx:id="pageInfoLabel" text="Trang 1/1 (0 bản ghi)" />
+                    <Button fx:id="nextPageButton" text="Trang sau" />
+                </HBox>
                 <TableView fx:id="diagnosesTable" prefHeight="300.0">
                     <columns>
                         <TableColumn fx:id="diseaseCodeColumn" prefWidth="100.0" text="Mã bệnh" />

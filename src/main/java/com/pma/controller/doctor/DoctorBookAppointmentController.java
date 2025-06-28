@@ -121,9 +121,6 @@ public class DoctorBookAppointmentController {
     private DoctorService doctorService;
 
     @Autowired
-    private PatientRepository patientRepository; // Giả định tồn tại
-
-    @Autowired
     private PatientService patientService; // Thêm dòng này để tiêm PatientService
 
     private Doctor currentDoctor;
@@ -229,7 +226,7 @@ public class DoctorBookAppointmentController {
      */
     private void loadPatients() {
         try {
-            List<Patient> patients = patientRepository.findAll();
+            List<Patient> patients = patientService.getAllPatients(); // Sử dụng PatientService
             patientComboBox.getItems().setAll(patients);
             patientComboBox.setConverter(new StringConverter<Patient>() {
                 @Override
@@ -299,9 +296,13 @@ public class DoctorBookAppointmentController {
     private void bookAppointment(ActionEvent event) {
         log.info("Đang cố gắng đặt lịch hẹn mới");
         try {
-            Appointment appointment = createAppointmentFromForm();
-            appointmentService.scheduleAppointment(appointment, appointment.getPatient().getPatientId(),
-                    currentDoctor.getDoctorId());
+            // Lấy dữ liệu từ form
+            Appointment appointmentData = createAppointmentFromForm();
+            Patient selectedPatient = patientComboBox.getValue();
+
+            // Gọi service để tạo và lưu lịch hẹn trong một transaction
+            appointmentService.scheduleAppointment(appointmentData, selectedPatient.getPatientId(), currentDoctor.getDoctorId());
+
             loadAppointments();
             clearForm(null);
             DialogUtil.showSuccessAlert("Thành công", "Đã đặt lịch hẹn thành công.");
@@ -348,12 +349,13 @@ public class DoctorBookAppointmentController {
             return;
         }
         try {
-            Appointment updatedAppointment = createAppointmentFromForm();
-            updatedAppointment.setAppointmentId(selected.getAppointmentId());
-            updatedAppointment.setCreatedAt(selected.getCreatedAt());
-            // Sử dụng scheduleAppointment để kiểm tra chồng lấn lịch
-            appointmentService.scheduleAppointment(updatedAppointment, updatedAppointment.getPatient().getPatientId(),
-                    currentDoctor.getDoctorId());
+            // Lấy dữ liệu đã cập nhật từ form
+            Appointment appointmentUpdateData = createAppointmentFromForm();
+            Patient selectedPatient = patientComboBox.getValue();
+
+            // Gọi service để cập nhật lịch hẹn (Giả định có phương thức updateAppointment trong service)
+            appointmentService.updateAppointment(selected.getAppointmentId(), appointmentUpdateData, selectedPatient.getPatientId(), currentDoctor.getDoctorId());
+
             loadAppointments();
             clearForm(null);
             DialogUtil.showSuccessAlert("Thành công", "Đã cập nhật lịch hẹn thành công.");
@@ -405,14 +407,9 @@ public class DoctorBookAppointmentController {
             throw new IllegalArgumentException("Phải chọn trạng thái.");
         }
 
+        // Chỉ tạo một đối tượng tạm thời với dữ liệu từ form.
+        // Việc liên kết với Patient và Doctor sẽ được thực hiện trong tầng Service.
         Appointment appointment = new Appointment();
-        // Lấy Patient từ ComboBox (đây là một detached entity)
-        Patient selectedPatient = patientComboBox.getValue();
-        // Tải lại Patient từ service để đảm bảo nó là một managed entity trong transaction hiện tại
-        // Điều này cho phép truy cập các collection lazy-loaded của Patient.
-        Patient managedPatient = patientService.getPatientById(selectedPatient.getPatientId());
-        appointment.setPatient(managedPatient);
-        appointment.setDoctor(currentDoctor);
         LocalDate date = appointmentDatePicker.getValue();
         LocalTime time = LocalTime.of(
                 Integer.parseInt(comboHourBox.getValue()),

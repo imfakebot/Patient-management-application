@@ -3,6 +3,7 @@ package com.pma.repository; // Đảm bảo đúng package
 import java.time.LocalDateTime; // Import Entity Appointment
 import java.util.List; // Import Doctor để tìm theo bác sĩ
 import java.util.UUID; // Import Patient để tìm theo bệnh nhân
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import org.springframework.data.domain.Page; // Import Enum AppointmentStatus
 import org.springframework.data.domain.Pageable; // Import cho phân trang
@@ -72,6 +73,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
      * @return Danh sách các Appointment phù hợp.
      */
     List<Appointment> findByDoctor_DoctorIdAndStatus(UUID doctorId, AppointmentStatus status);
+
     /**
      * Tìm danh sách các cuộc hẹn diễn ra sau một thời điểm nhất định.
      *
@@ -129,6 +131,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
      * @param pageable Đối tượng chứa thông tin phân trang và sắp xếp.
      * @return Một trang (Page) chứa danh sách Appointment.
      */
+    @EntityGraph(attributePaths = "doctor") // Eagerly fetch the doctor to prevent LazyInitializationException in UI
     Page<Appointment> findByPatient_PatientIdOrderByAppointmentDatetimeDesc(UUID patientId, Pageable pageable);
 
     /**
@@ -139,6 +142,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
      * @param pageable Đối tượng chứa thông tin phân trang và sắp xếp.
      * @return Một trang (Page) chứa danh sách Appointment.
      */
+    @EntityGraph(attributePaths = "patient") // Eagerly fetch the patient associated with the appointment
     Page<Appointment> findByDoctor_DoctorIdOrderByAppointmentDatetimeDesc(UUID doctorId, Pageable pageable);
 
     /**

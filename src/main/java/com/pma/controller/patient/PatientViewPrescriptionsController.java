@@ -3,6 +3,7 @@ package com.pma.controller.patient;
 import com.pma.model.entity.Prescription;
 import com.pma.model.entity.PrescriptionDetail;
 import com.pma.repository.PrescriptionRepository;
+import com.pma.service.PrescriptionService;
 import com.pma.util.DialogUtil;
 import com.pma.util.UIManager;
 import javafx.collections.FXCollections;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +29,8 @@ import java.util.UUID;
  * (patient_view_prescriptions.fxml). Hiển thị danh sách đơn thuốc và chi tiết
  * thuốc khi bệnh nhân chọn một đơn thuốc.
  *
- * */
+ *
+ */
 @Component
 public class PatientViewPrescriptionsController {
 
@@ -81,6 +84,9 @@ public class PatientViewPrescriptionsController {
 
     @FXML
     private TableColumn<PrescriptionDetail, String> instructionsColumn;
+
+    @Autowired
+    private PrescriptionService prescriptionService; // Inject PrescriptionService
 
     @Autowired
     private PrescriptionRepository prescriptionRepository;
@@ -217,9 +223,15 @@ public class PatientViewPrescriptionsController {
      */
     private void loadPrescriptionDetails(UUID prescriptionId) {
         try {
-            // Lấy toàn bộ thông tin đơn thuốc, bao gồm cả chi tiết
-            Prescription prescription = prescriptionRepository.findById(prescriptionId).orElseThrow();
-            prescriptionDetailList.setAll(prescription.getPrescriptionDetailsView());
+            // Sử dụng PrescriptionService để lấy toàn bộ thông tin đơn thuốc, bao gồm cả chi tiết
+            Optional<Prescription> prescriptionOptional = prescriptionService.getPrescriptionByIdWithDetails(prescriptionId);
+            if (prescriptionOptional.isPresent()) {
+                Prescription prescription = prescriptionOptional.get();
+                prescriptionDetailList.setAll(prescription.getPrescriptionDetailsView());
+            } else {
+                log.warn("Prescription not found with ID: {}", prescriptionId);
+                prescriptionDetailList.clear(); // Clear details if prescription not found
+            }
         } catch (Exception e) {
             log.error("Lỗi khi tải chi tiết đơn thuốc cho prescriptionId: {}", prescriptionId, e);
             DialogUtil.showExceptionDialog("Lỗi tải dữ liệu", "Không thể tải chi tiết đơn thuốc.",
