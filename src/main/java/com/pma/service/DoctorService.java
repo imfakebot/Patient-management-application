@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.pma.model.entity.Department;
 import com.pma.model.entity.Doctor;
-import com.pma.model.entity.Patient;
 import com.pma.model.entity.UserAccount;
 import com.pma.model.enums.UserRole;
 import com.pma.repository.DepartmentRepository;
